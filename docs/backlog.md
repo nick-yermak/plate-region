@@ -26,7 +26,7 @@ Outcome: an empty but properly configured monorepo that builds, tests and deploy
 - [ ] Create empty `plate-domain` and `plate-data` libraries, enforce module boundaries with Nx tags
 - [ ] Connect Nx MCP in Cursor and explore what it gives the agent (project graph, generators)
 - [ ] Set up ESLint, Prettier, husky + lint-staged, Conventional Commits
-- [ ] Write base Cursor rules (`.cursor/rules`): Angular code style (signals, standalone, OnPush, control flow), Nx structure, testing rules
+- [ ] Write base Cursor rules (`.cursor/rules`): Angular code style (signals, standalone, OnPush, control flow), Nx structure, testing rules; plus a single review checklist rule (`.cursor/rules/review.mdc`) — the one source of review criteria for Cursor's local review (Find Issues) and the AI PR review in CI
 - [ ] Write the first project skill for Cursor: "create a feature to project standards" (component + test + story)
 - [ ] GitHub Actions: lint, test, build via `nx affected`
 - [ ] Connect Vercel: preview deploy for every PR, production on main
@@ -37,7 +37,7 @@ Outcome: an empty but properly configured monorepo that builds, tests and deploy
 Outcome: a pure TypeScript library that turns a plate string into voivodeship, powiat and plate type, with 100% test coverage. Built strictly test-first, no Angular.
 
 - [ ] Find the primary source of plate codes: the annex to the Minister of Infrastructure regulation on registration plates; record the source and revision date in the README
-- [ ] Design the data model: voivodeship (letter prefix), powiat (2–3 character code), PL/EN names, plate type
+- [ ] Design the data model: voivodeship (letter prefix), powiat (2–3 character code), PL/EN names, plate type. Make it country-ready without building a multi-country abstraction yet: `country: 'PL'` in registry records and parse results; Polish logic in a `pl/` folder behind each library's public API; neutral region-level names in public types (e.g. `region1`/`region2`), with Polish terms only inside the `pl/` module
 - [ ] Fill `plate-data` with the full registry as JSON and write a validator test (unique codes, every powiat belongs to a voivodeship)
 - [ ] TDD: input normalisation (case, spaces, dashes, look-alike characters O/0, I/1)
 - [ ] TDD: voivodeship from the first letter
@@ -138,7 +138,7 @@ Outcome: an MCP server in `apps/mcp-server` on top of `plate-domain` and `plate-
 
 Outcome: the end-to-end flow "issue → agent → PR → AI review → merge" works for tasks labelled `good-for-agent`. First steps can start right after Epic 0.
 
-- [ ] AI PR review in GitHub Actions: the agent comments on PRs using the project's Cursor rules
+- [ ] AI PR review in GitHub Actions: the agent comments on PRs using the shared review checklist `.cursor/rules/review.mdc` — no duplicated review criteria in the workflow
 - [ ] Cursor background agents: delegate a task from an issue, get a PR, compare with how you would have done it
 - [ ] Failing-test agent: on red CI, suggests a fix as a separate commit or a comment
 - [ ] Triage agent: new issues get labels, size and an epic
