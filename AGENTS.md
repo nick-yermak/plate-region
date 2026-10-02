@@ -7,6 +7,7 @@ Context and working rules for AI agents (Cursor and others) in this repository.
 PlateRegion identifies the Polish region (voivodeship and powiat) a vehicle was registered in, from a licence plate that is typed in or photographed.
 
 Goals, in order of how decisions should be weighed:
+
 1. A tool the author actually uses, with potential to become a product.
 2. A learning playground for modern Angular, layout/styling, testing and AI-assisted development. Prefer the modern, idiomatic approach over the quickest hack — learning the right way is part of the point.
 
@@ -44,4 +45,4 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Do not invent plate codes or regions. The registry in `libs/plate-data` is the only source of truth; if data is missing, say so.
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
-- Comments explain *why* — intent, constraints, non-obvious decisions — never *what* the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
+- Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
