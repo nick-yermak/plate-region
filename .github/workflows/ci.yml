@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  HUSKY: 0
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/cache@v6
+        with:
+          path: .nx/cache
+          key: nx-checks-${{ runner.os }}-${{ github.sha }}
+          restore-keys: nx-checks-${{ runner.os }}-
+
+      - run: npx nx format:check --all
+
+      - run: npx nx affected -t lint test build typecheck
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: nrwl/nx-set-shas@v5
+
+      - uses: actions/cache@v6
+        with:
+          path: .nx/cache
+          key: nx-e2e-${{ runner.os }}-${{ github.sha }}
+          restore-keys: nx-e2e-${{ runner.os }}-
+
+      - name: Check whether e2e is affected
+        id: affected
+        run: |
+          if npx nx show projects --affected --with-target e2e | grep -q .; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright Chromium
+        if: steps.affected.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - run: npx nx affected -t e2e
+        if: steps.affected.outputs.run == 'true'
