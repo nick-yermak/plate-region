@@ -46,3 +46,13 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
 - Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
+- If a tool or MCP call fails, report the exact error before using a fallback; never silently switch approaches.
+
+## Nx
+
+- Prefer `npx nx` for workspace tasks (`run`, `run-many`, `affected`, `g`) over calling the underlying tools directly.
+- Use the Nx MCP tools for the project graph, project details and generators when they help.
+- Never guess CLI flags — check `nx_docs` or `npx nx <command> --help` first.
+- For plugin-specific guidance, look for `node_modules/@nx/<plugin>/PLUGIN.md` when it exists.
+- If Nx or the Nx MCP server returns stale or inconsistent results, run `npx nx reset` and restart the MCP server before changing any configuration.
+- `nx_project_details` fails with nx-mcp 0.25.0 on Nx 22.7+ (fixed upstream but not yet released: https://github.com/nrwl/nx-console/issues/3186). Use `nx_workspace` or `npx nx show project <name>` instead; remove this note once a fixed nx-mcp is published.
