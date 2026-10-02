@@ -111,7 +111,7 @@ Outcome: every recognised plate adds to a personal collection of regions stored 
 
 Outcome: e2e, accessibility and visual regression run in CI on every PR. Pick these tasks up as screens appear rather than leaving them for the end.
 
-- [ ] Playwright: base config, mobile and desktop profiles, runs against the preview deploy
+- [ ] Playwright: base config with two profiles — Desktop Chrome and iPhone (WebKit, since every iOS browser runs on WebKit and PWA install, offline and camera behave differently there; Firefox not needed); runs against the preview deploy
 - [ ] Connect Playwright MCP in Cursor; ask the agent to walk through a scenario in the browser and write an e2e test from it
 - [ ] e2e: plate → region, language switch, offline mode, photo recognition on a test image
 - [ ] Visual regression: `toHaveScreenshot` for key screens in light and dark theme, baseline storage
