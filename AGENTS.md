@@ -15,6 +15,7 @@ Goals, in order of how decisions should be weighed:
 
 **Epic 0 — Foundation** (Nx workspace, linting, Cursor rules, CI, deployment).
 Full backlog: `docs/backlog.md`. Do not start work from later epics unless asked.
+Architecture and workflow decisions with their reasons: `docs/decisions.md`. Read it before proposing changes to architecture, tooling or workflow; if a change contradicts a decision, say so explicitly.
 
 ## Stack
 

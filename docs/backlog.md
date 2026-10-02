@@ -1,6 +1,6 @@
 # PlateRegion — project backlog
 
-Oct 1, 2026 · @Nick Yermak
+This is the original plan. Task status lives on the GitHub Projects board and in issues — checkboxes here are not updated.
 
 ## Board setup
 
