@@ -2,41 +2,41 @@
 
 **Which part of Poland is that car from?** Type or snap a Polish licence plate and PlateRegion tells you the voivodeship and powiat it was registered in. Works offline, installs on your phone, and turns every plate you spot into a growing collection of regions.
 
-> 🚧 **Status: early development.** The project is being built in public. Features below marked as *planned* are not implemented yet — see the [project board](#roadmap) for progress.
+> 🚧 **Status: early development.** The project is being built in public. Features below marked as _planned_ are not implemented yet — see the [project board](#roadmap) for progress.
 
 ## Features
 
-- **Manual lookup** — type a plate (or just its first letters) and get the voivodeship, powiat and plate type instantly *(planned)*
-- **Photo recognition** — take a picture or upload one; recognition runs locally in the browser, with a cloud vision model as a fallback for hard cases *(planned)*
-- **Offline-first PWA** — the full region registry is cached on the device, so manual lookup works without a connection *(planned)*
-- **Region collection** — count the plates you meet, fill in the map of Poland and unlock achievements; all data stays on your device *(planned)*
-- **Polish & English** interface *(planned)*
-- **Region pages** — a prerendered page for every plate code, e.g. `/wa`, `/kr` *(planned)*
+- **Manual lookup** — type a plate (or just its first letters) and get the voivodeship, powiat and plate type instantly _(planned)_
+- **Photo recognition** — take a picture or upload one; recognition runs locally in the browser, with a cloud vision model as a fallback for hard cases _(planned)_
+- **Offline-first PWA** — the full region registry is cached on the device, so manual lookup works without a connection _(planned)_
+- **Region collection** — count the plates you meet, fill in the map of Poland and unlock achievements; all data stays on your device _(planned)_
+- **Polish & English** interface _(planned)_
+- **Region pages** — a prerendered page for every plate code, e.g. `/wa`, `/kr` _(planned)_
 
 ## How it works
 
 Polish plates encode where the vehicle was registered:
 
-| Part | Example | Meaning |
-| --- | --- | --- |
-| 1st letter | **W** WA 12345 | Voivodeship (W = mazowieckie) |
-| 2–3 letters | **WA** 12345 | Powiat or city with powiat rights (WA = Warszawa) |
-| Rest | WA **12345** | Individual vehicle identifier |
+| Part        | Example        | Meaning                                           |
+| ----------- | -------------- | ------------------------------------------------- |
+| 1st letter  | **W** WA 12345 | Voivodeship (W = mazowieckie)                     |
+| 2–3 letters | **WA** 12345   | Powiat or city with powiat rights (WA = Warszawa) |
+| Rest        | WA **12345**   | Individual vehicle identifier                     |
 
 PlateRegion normalises the input, matches the longest known prefix against an official registry of codes, and handles special cases (custom, military, diplomatic, temporary and vintage plates) by saying honestly when a region can't be determined.
 
 ## Tech stack
 
-| Area | Tools |
-| --- | --- |
-| Frontend | Angular (standalone, zoneless, signals, Signal Forms, `resource`/`httpResource`) |
-| Styling | Tailwind CSS, responsive mobile-first layout, light/dark theme |
-| Rendering | Prerender + hydration, PWA (service worker, offline, install) |
-| Recognition | Tesseract.js in a Web Worker + cloud vision model via a serverless function |
-| Testing | Vitest, Playwright (e2e + visual regression), axe-core (a11y), Storybook |
-| Monorepo | Nx |
-| Hosting & CI | Vercel, GitHub Actions |
-| AI tooling | Cursor rules & skills, MCP servers (GitHub, Nx, Playwright + a custom one), AI agents in CI |
+| Area         | Tools                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| Frontend     | Angular (standalone, zoneless, signals, Signal Forms, `resource`/`httpResource`)            |
+| Styling      | Tailwind CSS, responsive mobile-first layout, light/dark theme                              |
+| Rendering    | Prerender + hydration, PWA (service worker, offline, install)                               |
+| Recognition  | Tesseract.js in a Web Worker + cloud vision model via a serverless function                 |
+| Testing      | Vitest, Playwright (e2e + visual regression), axe-core (a11y), Storybook                    |
+| Monorepo     | Nx                                                                                          |
+| Hosting & CI | Vercel, GitHub Actions                                                                      |
+| AI tooling   | Cursor rules & skills, MCP servers (GitHub, Nx, Playwright + a custom one), AI agents in CI |
 
 ## Project structure
 
@@ -49,7 +49,7 @@ libs/
   plate-data/     Registry of voivodeship and powiat codes
 ```
 
-*(Structure will appear as the Nx workspace is set up.)*
+_(Structure will appear as the Nx workspace is set up.)_
 
 ## Getting started
 
@@ -61,6 +61,16 @@ cd plate-region
 npm install
 npx nx serve web
 ```
+
+## Development
+
+```bash
+npx nx run-many -t lint test
+npx nx format:check
+npx nx format:write
+```
+
+Pre-commit runs Prettier and ESLint on staged files via lint-staged. Commit messages must follow Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …); an optional Nx project scope is allowed, e.g. `feat(plate-domain): …`.
 
 ## Roadmap
 
@@ -86,7 +96,7 @@ Photos are processed only to read the plate and are never stored. Your region co
 
 ## Data source
 
-Plate codes are based on the official Polish regulation on vehicle registration plates. *(Exact source and revision date to be added.)*
+Plate codes are based on the official Polish regulation on vehicle registration plates. _(Exact source and revision date to be added.)_
 
 ## License
 
