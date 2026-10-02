@@ -5,11 +5,13 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist', '**/out-tsc'],
+    ignores: ['**/dist', '**/out-tsc', '**/vitest.config.*.timestamp*'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
+      // Dependency direction: app/e2e → domain → data. Domain and data stay
+      // framework-free (no @angular/*). Wildcard *→* is intentionally absent.
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -17,8 +19,22 @@ export default [
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: ['type:domain', 'type:data'],
+            },
+            {
+              sourceTag: 'type:e2e',
+              onlyDependOnLibsWithTags: ['type:domain', 'type:data'],
+            },
+            {
+              sourceTag: 'type:domain',
+              onlyDependOnLibsWithTags: ['type:data'],
+              bannedExternalImports: ['@angular/*'],
+            },
+            {
+              sourceTag: 'type:data',
+              onlyDependOnLibsWithTags: [],
+              bannedExternalImports: ['@angular/*'],
             },
           ],
         },
