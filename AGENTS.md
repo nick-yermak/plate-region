@@ -44,3 +44,4 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Do not invent plate codes or regions. The registry in `libs/plate-data` is the only source of truth; if data is missing, say so.
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
+- Comments explain *why* — intent, constraints, non-obvious decisions — never *what* the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
