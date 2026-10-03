@@ -81,7 +81,7 @@ Built-in Angular i18n (per-locale builds, fits prerender) vs Transloco (runtime 
 
 ### D-10 Modern Angular defaults — Accepted
 
-Standalone components, signals, Signal Forms, `resource`/`httpResource`, new control flow, OnPush.
+Standalone components, signals, Signal Forms, `resource`/`httpResource`, new control flow, OnPush (the default in Angular 22 — never opt into `Eager`).
 Zoneless is the default in this Angular version: there is no `zone.js` and no `provideZonelessChangeDetection()` — do not add either.
 
 ### D-11 Tailwind with plain CSS — Accepted
@@ -177,6 +177,19 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 - When Nx or Nx MCP returns stale results, run `npx nx reset` and restart the MCP server before changing configuration. (An "Nx bug" here turned out to be stale daemon state; a config change made for it was reverted.)
 - Comments explain _why_, never _what_.
 
-### D-23 One review checklist — Planned (issue #7)
+### D-23 One review checklist — Accepted
 
-`.cursor/rules/review.mdc` is the single source of review criteria for Cursor's local review and the AI PR review in CI (Epic 8). No duplicated criteria in workflows.
+`.cursor/BUGBOT.md` is the single source of review criteria. Cursor's Agent Review (Find Issues, `/agent-review`) reads it regardless of whether Bugbot is enabled; `/review`, `/review-bugbot` and Bugbot read it too, and it can be @-mentioned in chat. The AI PR review in CI (Epic 8) uses the same file. No duplicated criteria in workflows.
+
+- **Why:** Agent Review reads `BUGBOT.md`, while Bugbot ignores `.cursor/rules/*.mdc` (Cursor docs).
+- **Rejected:** `.cursor/rules/review.mdc` as the source (invisible to Agent Review and Bugbot); a `BUGBOT.md` that only links to `review.mdc` (following links is not documented); a `review.mdc` pointer — redundant with built-in review commands.
+- **Open (Epic 8):** whether the CI AI review is a custom GitHub Actions workflow or Bugbot — decide in Epic 8.
+
+### D-24 Agent context split: AGENTS.md vs .cursor/rules — Accepted
+
+- `AGENTS.md` is the always-on layer: project context, goals, working rules, language, commits, how to run Nx.
+- `.cursor/rules/*.mdc` hold narrow technical rules. Cursor lists them to the agent; the agent loads a rule when it works on files matching its globs (`nx` can also be requested by description). None is `alwaysApply`.
+- Rules state what to do and cite decision IDs; reasoning stays in this file. Rules never restate `AGENTS.md`.
+
+- **Why:** always-on context is paid on every request, so it holds only what applies everywhere; file-scoped rules load only where they matter; one home for reasoning keeps rules short and prevents drift.
+- **Rejected:** everything in `AGENTS.md` (grows unbounded, mostly irrelevant per task); nested `AGENTS.md` per project (cannot target file types such as `*.spec.ts` or `project.json` across folders); `alwaysApply` rules (duplicate the role of `AGENTS.md`); copying reasoning into rules (drifts from this log).

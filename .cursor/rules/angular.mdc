@@ -1,0 +1,47 @@
+---
+globs: apps/web/**/*.ts, apps/web/**/*.html, apps/web/**/*.css
+alwaysApply: false
+---
+
+# Angular (apps/web)
+
+- Standalone components only. Do not write `standalone: true`.
+- Use `input()`, `output()`, `model()` — never `@Input` / `@Output`.
+- Derived state: `computed`. Use `effect` only to sync with the outside world (DOM APIs, storage, logging).
+
+```ts
+// bad — effect writing into a signal
+effect(() => this.total.set(this.a() + this.b()));
+
+// good
+readonly total = computed(() => this.a() + this.b());
+```
+
+- Prefer `inject()` over constructor injection.
+- Templates: `@if` / `@for` (with `track`) / `@switch` only. Lazy-load heavy blocks with `@defer`.
+- OnPush is the default (D-10). Omit `changeDetection`. Never set `Eager` or `Default`.
+- Zoneless (D-10): no `zone.js`, no `NgZone`, no `provideZonelessChangeDetection()`, no packages that require zone.js.
+
+```ts
+// bad — "enabling" zoneless that is already the default
+providers: [provideZonelessChangeDetection()]
+```
+
+- Forms: Signal Forms (`form()` from `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+- Async data: `resource` / `httpResource`.
+- SSR-safe: touch `window` / `document` only inside `afterNextRender`.
+
+```ts
+// bad
+private readonly width = window.innerWidth;
+
+// good
+constructor() {
+  afterNextRender(() => {
+    this.width.set(window.innerWidth);
+  });
+}
+```
+
+- Styling (D-11): Tailwind via plain CSS (`@theme`). No `tailwind.config.js`, no SCSS. Mobile-first (base styles, then `sm:` / `md:`).
+- i18n library is still Open (D-09) — do not introduce one here.

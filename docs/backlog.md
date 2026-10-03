@@ -26,7 +26,7 @@ Outcome: an empty but properly configured monorepo that builds, tests and deploy
 - [ ] Create empty `plate-domain` and `plate-data` libraries, enforce module boundaries with Nx tags
 - [ ] Connect Nx MCP in Cursor and explore what it gives the agent (project graph, generators)
 - [ ] Set up ESLint, Prettier, husky + lint-staged, Conventional Commits
-- [ ] Write base Cursor rules (`.cursor/rules`): Angular code style (signals, standalone, OnPush, control flow), Nx structure, testing rules; plus a single review checklist rule (`.cursor/rules/review.mdc`) — the one source of review criteria for Cursor's local review (Find Issues) and the AI PR review in CI
+- [ ] Write base Cursor rules (`.cursor/rules`): Angular code style (signals, standalone, OnPush, control flow), Nx structure, testing rules; plus a single review checklist (`.cursor/BUGBOT.md`) — the one source of review criteria for Cursor's Agent Review (Find Issues) and the AI PR review in CI
 - [ ] Write the first project skill for Cursor: "create a feature to project standards" (component + test + story)
 - [ ] GitHub Actions: lint, test, build via `nx affected`
 - [ ] Connect Vercel: preview deploy for every PR, production on main
@@ -138,7 +138,7 @@ Outcome: an MCP server in `apps/mcp-server` on top of `plate-domain` and `plate-
 
 Outcome: the end-to-end flow "issue → agent → PR → AI review → merge" works for tasks labelled `good-for-agent`. First steps can start right after Epic 0.
 
-- [ ] AI PR review in GitHub Actions: the agent comments on PRs using the shared review checklist `.cursor/rules/review.mdc` — no duplicated review criteria in the workflow
+- [ ] AI PR review in GitHub Actions: the agent comments on PRs using the shared review checklist `.cursor/BUGBOT.md` — no duplicated review criteria in the workflow
 - [ ] Cursor background agents: delegate a task from an issue, get a PR, compare with how you would have done it
 - [ ] Failing-test agent: on red CI, suggests a fix as a separate commit or a comment
 - [ ] Triage agent: new issues get labels, size and an epic
