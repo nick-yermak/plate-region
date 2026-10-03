@@ -1,0 +1,29 @@
+---
+globs: apps/web-e2e/**, apps/**/*.spec.ts, libs/**/*.spec.ts
+alwaysApply: false
+---
+
+# Testing
+
+## All tests
+
+- Two Vitest runners (D-12): `web` uses `@angular/build:unit-test`; libraries use `@nx/vitest`. Do not migrate either.
+- Stub timers with `vi.useFakeTimers()` only. No `fakeAsync` / `tick` (zoneless, D-10).
+
+## Angular (apps/web)
+
+- Await render with `await fixture.whenStable()`.
+- Set signal inputs via `fixture.componentRef.setInput()`.
+- Assert behaviour through the DOM, not private component fields or methods.
+
+## Libraries
+
+- Vitest does not type-check. After changing library code or specs, run `npx nx run <lib>:typecheck` (D-13).
+- TDD for `plate-domain`: see `AGENTS.md`.
+
+## E2E (apps/web-e2e)
+
+- Locators: `getByRole`, `getByText`, `getByLabel`. No CSS selectors, no `waitForTimeout`.
+- Prefer web-first assertions (`await expect(locator).toHaveText(…)`).
+- Chromium only for now (D-14).
+- E2E may import `@plate-region/plate-data` to assert real regions (D-06).

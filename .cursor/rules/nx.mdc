@@ -1,0 +1,26 @@
+---
+description: Nx structure, generators, tags and module boundaries. Use when creating projects or libraries, deciding where code belongs, or editing project.json, nx.json or ESLint config.
+globs: nx.json, libs/**, apps/*/project.json, eslint.config.mjs, apps/*/eslint.config.mjs
+alwaysApply: false
+---
+
+# Nx structure and boundaries
+
+How to run Nx and use Nx MCP: see `AGENTS.md`.
+
+- Create projects, libraries and components with generators (`npx nx g …`). Check the schema via `nx_generator_schema` or `--help`; never guess flags.
+- Tag scheme and allowed dependency directions (D-06, root `eslint.config.mjs`):
+
+| Project        | Tag           | May depend on              |
+| -------------- | ------------- | -------------------------- |
+| `web`          | `type:app`    | `type:domain`, `type:data` |
+| `web-e2e`      | `type:e2e`    | `type:domain`, `type:data` |
+| `plate-domain` | `type:domain` | `type:data`                |
+| `plate-data`   | `type:data`   | —                          |
+
+- Assign a new project one of the existing `type:*` tags. A new tag needs a new decision.
+- `@angular/*` is banned in `type:domain` and `type:data` via `bannedExternalImports`.
+- The default wildcard constraint (`*` → `*`) is intentionally absent — never re-add it.
+- Import libraries only through their public API (`@plate-region/<lib>` → `src/index.ts`). No deep imports.
+- Fix a module-boundary violation by fixing the dependency. Never loosen the lint rule or add `eslint-disable`.
+- Libraries have a `typecheck` target in `targetDefaults` (D-13). New libraries need `"typecheck": {}` in `project.json` plus `tsconfig.lib.json` and `tsconfig.spec.json`.
