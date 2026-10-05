@@ -51,12 +51,12 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
 - Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
 - If a tool or MCP call fails, report the exact error before using a fallback; never silently switch approaches.
+- The Cursor sandbox blocks some IPC and network calls: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`. Report the exact error, then rerun the same command outside the sandbox.
 - At the end of a task, ask whether anything should go into `AGENTS.md`.
 
 ## Nx
 
 - Prefer `npx nx` for workspace tasks (`run`, `run-many`, `affected`, `g`) over calling the underlying tools directly.
-- When Nx fails in the Cursor sandbox with a unix-socket `EPERM`, report it and rerun the same command outside the sandbox.
 - Use the Nx MCP tools for the project graph, project details and generators when they help.
 - Never guess CLI flags — check `nx_docs` or `npx nx <command> --help` first.
 - For plugin-specific guidance, look for `node_modules/@nx/<plugin>/PLUGIN.md` when it exists.
