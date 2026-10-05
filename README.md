@@ -1,8 +1,12 @@
 # PlateRegion
 
+[![CI](https://github.com/nick-yermak/plate-region/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nick-yermak/plate-region/actions/workflows/ci.yml)
+
 **Which part of Poland is that car from?** Type or snap a Polish licence plate and PlateRegion tells you the voivodeship and powiat it was registered in. Works offline, installs on your phone, and turns every plate you spot into a growing collection of regions.
 
-> 🚧 **Status: early development.** The project is being built in public. Features below marked as _planned_ are not implemented yet — see the [project board](#roadmap) for progress.
+> 🚧 **Status: early development.** The project is being built in public. Features below marked as _planned_ are not implemented yet — see the [project board](https://github.com/users/nick-yermak/projects/2) for progress.
+>
+> Live: https://plate-region.vercel.app
 
 ## Features
 
@@ -23,58 +27,68 @@ Polish plates encode where the vehicle was registered:
 | 2–3 letters | **WA** 12345   | Powiat or city with powiat rights (WA = Warszawa) |
 | Rest        | WA **12345**   | Individual vehicle identifier                     |
 
-PlateRegion normalises the input, matches the longest known prefix against an official registry of codes, and handles special cases (custom, military, diplomatic, temporary and vintage plates) by saying honestly when a region can't be determined.
+PlateRegion will normalise the input, match the longest known prefix against an official registry of codes, and handle special cases (custom, military, diplomatic, temporary and vintage plates) by saying honestly when a region can't be determined. _(planned)_
 
 ## Tech stack
 
-| Area         | Tools                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| Frontend     | Angular (standalone, zoneless, signals, Signal Forms, `resource`/`httpResource`)            |
-| Styling      | Tailwind CSS, responsive mobile-first layout, light/dark theme                              |
-| Rendering    | Prerender + hydration, PWA (service worker, offline, install)                               |
-| Recognition  | Tesseract.js in a Web Worker + cloud vision model via a serverless function                 |
-| Testing      | Vitest, Playwright (e2e + visual regression), axe-core (a11y), Storybook                    |
-| Monorepo     | Nx                                                                                          |
-| Hosting & CI | Vercel, GitHub Actions                                                                      |
-| AI tooling   | Cursor rules & skills, MCP servers (GitHub, Nx, Playwright + a custom one), AI agents in CI |
+Versions for Angular, Nx and other packages are in [`package.json`](package.json). Node is pinned to 24 (see Getting started).
+
+| Area         | Tools                                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| Frontend     | Angular (standalone, zoneless); signals, Signal Forms, `resource`/`httpResource` _(planned)_                   |
+| Styling      | Tailwind CSS, responsive mobile-first layout, light/dark theme _(planned)_                                     |
+| Rendering    | Prerender + hydration, PWA (service worker, offline, install) _(planned)_                                      |
+| Recognition  | Tesseract.js in a Web Worker + cloud vision model via a serverless function _(planned)_                        |
+| Testing      | Vitest, Playwright (e2e, Chromium); visual regression, axe-core (a11y), Storybook _(planned)_                  |
+| Monorepo     | Nx                                                                                                             |
+| Hosting & CI | Vercel (preview deploy per PR, production on `main`), GitHub Actions                                           |
+| AI tooling   | Cursor rules & skills; MCP servers: GitHub, Nx; Playwright MCP, custom MCP server, AI agents in CI _(planned)_ |
 
 ## Project structure
 
 ```
 apps/
   web/            Angular application
+  web-e2e/        Playwright end-to-end tests for web
   mcp-server/     MCP server exposing the region registry to AI agents  (planned)
 libs/
-  plate-domain/   Pure TypeScript plate parsing logic, framework-free
-  plate-data/     Registry of voivodeship and powiat codes
+  plate-domain/   Pure TypeScript plate parsing, framework-free  (src/lib/pl/)
+  plate-data/     Registry of voivodeship and powiat codes       (src/lib/pl/)
 ```
 
-_(Structure will appear as the Nx workspace is set up.)_
+Dependency direction: `web` / `web-e2e` → `plate-domain` → `plate-data`. Enforced by Nx tags — see [D-06](docs/decisions.md).
 
 ## Getting started
 
-> Setup instructions will be added once the workspace is generated.
+Requires [Node 24](.nvmrc). `.npmrc` has `engine-strict=true`, so `npm ci` fails with `EBADENGINE` on a different Node major.
 
 ```bash
-git clone https://github.com/<your-username>/plate-region.git
+git clone https://github.com/nick-yermak/plate-region.git
 cd plate-region
-npm install
+fnm use   # or: nvm use — reads .nvmrc (Node 24)
+npm ci
 npx nx serve web
 ```
+
+The app is served at http://localhost:4200.
 
 ## Development
 
 ```bash
-npx nx run-many -t lint test
-npx nx format:check
+npx nx run-many -t lint test typecheck build
+npx playwright install chromium   # once; on Linux use: npx playwright install --with-deps chromium
+npx nx e2e web-e2e
+npx nx format:check --all
 npx nx format:write
 ```
 
-Pre-commit runs Prettier and ESLint on staged files via lint-staged. Commit messages must follow Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …); an optional Nx project scope is allowed, e.g. `feat(plate-domain): …`.
+Libraries have a `typecheck` target because Vitest does not type-check, and the libraries have no `build` (see [D-13](docs/decisions.md)).
+
+Pre-commit runs Prettier and ESLint on staged files via lint-staged. Commit messages must follow Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …); an optional Nx project scope is allowed, e.g. `feat(plate-domain): …`. Pull requests are squash-merged and the PR title becomes the commit message, so PR titles must also be Conventional Commits (see [D-16](docs/decisions.md)).
 
 ## Roadmap
 
-Work is tracked on the GitHub Projects board, split into epics:
+Work is tracked on the [GitHub Projects board](https://github.com/users/nick-yermak/projects/2), split into epics:
 
 0. Foundation — Nx workspace, CI, Cursor rules
 1. Core — plate registry and parsing (TDD)
@@ -85,6 +99,12 @@ Work is tracked on the GitHub Projects board, split into epics:
 6. Quality — e2e, accessibility, visual regression
 7. Custom MCP server
 8. AI agents in CI
+
+## Project docs
+
+- [AGENTS.md](AGENTS.md) — working rules for agents and contributors
+- [docs/decisions.md](docs/decisions.md) — architecture and workflow decisions
+- [docs/backlog.md](docs/backlog.md) — original epic plan
 
 ## Why this project
 
@@ -100,4 +120,4 @@ Plate codes are based on the official Polish regulation on vehicle registration 
 
 ## License
 
-TBD
+[MIT](LICENSE)
