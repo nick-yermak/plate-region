@@ -136,6 +136,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - `main` is protected by a ruleset: PR required (0 approvals — solo developer), required checks `checks`, `e2e`, `pr-title`, no force pushes or deletion. Head branches are deleted automatically.
 - Commits use the GitHub noreply email. No AI attribution in history: the `commit-msg` hook strips `cursoragent@cursor.com` trailers.
 - Branch first, then commit.
+- The repository and the Projects board are public: the project is built in public, and rulesets on GitHub Free require a public repository.
 
 ### D-17 Git hooks are fast; CI is authoritative — Accepted
 
