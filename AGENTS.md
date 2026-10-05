@@ -44,7 +44,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - In rule frontmatter, a `globs` value must not start with `*` (YAML alias token — the rule silently fails to load). Start with a literal path segment, e.g. `apps/**/*.spec.ts`, not `**/*.spec.ts`.
 - Never commit or push unless asked. Branch first, then commit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.
 - Never add `Co-authored-by` trailers or any mention of AI tools to commits or PRs.
-- npm only; Node version from `.nvmrc`; `engines.node` in `package.json` stays on the same major (D-15). Never `--legacy-peer-deps` or `npm audit fix --force` — fix the cause. New install scripts need approval in `allowScripts`.
+- npm only; Node version from `.nvmrc`; `engines.node` in `package.json` stays on the same major (D-15). Never `--legacy-peer-deps` or `npm audit fix --force` — fix the cause. New install scripts need approval in `allowScripts`. Never delete or regenerate `package-lock.json` without approval; on ERESOLVE, stop and report the exact error.
 - Domain logic in `libs/plate-domain` is written test-first (TDD) and stays framework-free.
 - Do not invent plate codes or regions. The registry in `libs/plate-data` is the only source of truth; if data is missing, say so.
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
