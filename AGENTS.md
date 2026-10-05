@@ -40,7 +40,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 ## Working rules
 
 - Do nothing without an explicit request. For anything larger than a small edit, propose a plan first and wait for approval.
-- File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here.
+- File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here. Multi-step workflows live in `.cursor/skills/` (D-25).
 - In rule frontmatter, a `globs` value must not start with `*` (YAML alias token — the rule silently fails to load). Start with a literal path segment, e.g. `apps/**/*.spec.ts`, not `**/*.spec.ts`.
 - Never commit or push unless asked. Branch first, then commit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.
 - Never add `Co-authored-by` trailers or any mention of AI tools to commits or PRs.
@@ -56,6 +56,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 ## Nx
 
 - Prefer `npx nx` for workspace tasks (`run`, `run-many`, `affected`, `g`) over calling the underlying tools directly.
+- When Nx fails in the Cursor sandbox with a unix-socket `EPERM`, report it and rerun the same command outside the sandbox.
 - Use the Nx MCP tools for the project graph, project details and generators when they help.
 - Never guess CLI flags — check `nx_docs` or `npx nx <command> --help` first.
 - For plugin-specific guidance, look for `node_modules/@nx/<plugin>/PLUGIN.md` when it exists.
