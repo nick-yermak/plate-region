@@ -27,8 +27,13 @@ Region pages (`/wa`, `/kr`, …) are generated at build time from the registry, 
 
 ### D-03 Hosting on Vercel — Accepted
 
-- **Why:** preview deploys per PR, serverless functions for D-04, static hosting for prerendered pages.
-- **Rejected:** Netlify (initially chosen, switched by preference; technically equivalent for this project).
+Git integration with `nick-yermak/plate-region`: preview deployment per pull request, production deployment on every push to `main` (https://plate-region.vercel.app). No deploy step in GitHub Actions, no Vercel token in secrets, and the Vercel deployment is not a required status check (D-16).
+
+Build settings live in root `vercel.json` (`installCommand`, `buildCommand`, `outputDirectory`); those fields override Project Settings for each deployment, so dashboard Build/Output/Install overrides stay off. `buildCommand` starts with `node -v && npm -v` so every build log records the Node and npm versions in use (JSON has no comments). Dashboard retains Root Directory `./`, Framework Preset Angular, and Deployment Protection Standard (previews require a Vercel login).
+
+- **Why:** preview deploys per PR, serverless functions for D-04, static hosting for prerendered pages; build config reproducible from the repo (D-19).
+- **Rejected:** Netlify (initially chosen, switched by preference; technically equivalent for this project); deploy from Actions with a Vercel token (extra secret, duplicates Git integration); build settings only in the dashboard (invisible in review, drifts from `project.json`).
+- **Not set up:** SPA rewrites, prerender/SSR, Ignored Build Step based on `nx affected`, function region, Deployment Protection bypass for e2e, custom domain, Speed Insights.
 
 ### D-04 Hybrid photo recognition — Planned (Epic 4)
 
@@ -119,8 +124,8 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 ### D-15 Toolchain — Accepted
 
 - **Nx monorepo** (vs Angular CLI workspace or pnpm workspaces): shared libraries, `nx affected`, module boundaries, Nx MCP.
-- **Node 24** via fnm, pinned in `.nvmrc` — one source for developers, agents and CI.
-- **npm**, with install scripts explicitly approved (allowlist in `package.json`).
+- **Node 24** via fnm, pinned in `.nvmrc` — source of truth for developers, agents and CI (`setup-node` reads it). Vercel does not read `.nvmrc`; it uses `engines.node` in `package.json` (then Project Settings, then its default). Keep `engines.node` on the same major as `.nvmrc` (e.g. `24.x`). `.npmrc` has `engine-strict=true` so `npm ci` fails with `EBADENGINE` if they diverge — CI's required `checks`/`e2e` jobs catch that without changing `ci.yml`.
+- **npm**, with install scripts explicitly approved (`allowScripts` in `package.json`). On npm 11 the field is advisory (unreviewed scripts still run; npm prints a notice); npm 12 blocks them by default.
 - **Never** `--legacy-peer-deps` or `npm audit fix --force`: they hide or force past real incompatibilities. Fix the cause instead (e.g. a clean reinstall for a corrupted lockfile).
 - **ESLint 10** with inferred lint targets (`@nx/eslint/plugin`); Prettier for formatting.
 
