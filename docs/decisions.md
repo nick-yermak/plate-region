@@ -164,7 +164,7 @@ Plan new tasks with the strongest model (Opus) in Plan mode; execute the approve
 ### D-21 MCP servers — Accepted
 
 - **GitHub MCP** (remote): user-level `~/.cursor/mcp.json` (holds a token — never committed), explicit toolsets `context,repos,issues,pull_requests,projects,labels`. `gh` CLI covers gaps such as milestones; both act as the user.
-- **Nx MCP**: project-level `.cursor/mcp.json` (no secrets, committed), `npx nx mcp --no-minimal` so workspace tools (`nx_workspace`, generators, schemas) are exposed. Nx's official skills are deferred to issue #8 as reference material.
+- **Nx MCP**: project-level `.cursor/mcp.json` (no secrets, committed), `npx nx mcp --no-minimal` so workspace tools (`nx_workspace`, generators, schemas) are exposed. Nx's official skills were reviewed and not installed — see D-25.
 - Known issue: `nx_project_details` fails with nx-mcp 0.25.0 on Nx 22.7+ (fixed upstream, not released — nrwl/nx-console#3186).
 - Duplicate servers with overlapping tools are disabled (they confuse tool selection).
 
@@ -193,3 +193,10 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 
 - **Why:** always-on context is paid on every request, so it holds only what applies everywhere; file-scoped rules load only where they matter; one home for reasoning keeps rules short and prevents drift.
 - **Rejected:** everything in `AGENTS.md` (grows unbounded, mostly irrelevant per task); nested `AGENTS.md` per project (cannot target file types such as `*.spec.ts` or `project.json` across folders); `alwaysApply` rules (duplicate the role of `AGENTS.md`); copying reasoning into rules (drifts from this log).
+
+### D-25 Skills hold multi-step workflows — Accepted
+
+Project skills live in `.cursor/skills/<name>/SKILL.md`, next to `.cursor/rules/`. A skill describes a repeatable multi-step workflow — commands, file placement, checklists, verification — and cites rules and decision IDs instead of restating them. The agent picks a skill from its `description`; the first is `create-web-feature`. Nx's official skills (deferred by D-21) were reviewed as reference and not installed; the useful parts (non-interactive generation, dry run first, verify after generating) are folded into `create-web-feature`.
+
+- **Why:** rules describe what code must look like and load by file globs; a workflow spans several files and commands and is needed before those files exist. Citing rules keeps one source per rule, as in D-24.
+- **Rejected:** `.agents/skills/` (cross-tool portability is not needed — the project uses one agent tool); restating rules inside skills (drift); installing Nx's official skills (`nx configure-ai-agents` writes a managed block into `AGENTS.md`; their broad descriptions would compete with project skills for the same requests).
