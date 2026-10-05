@@ -101,6 +101,7 @@ Tailwind is configured through CSS; no SCSS. Mobile-first responsive layout, lig
 
 - `web`: Angular's built-in unit-test builder (`@angular/build:unit-test`, Vitest runner).
 - Libraries: `@nx/vitest`.
+- Libraries resolve tsconfig path mappings with Vite's native `resolve.tsconfigPaths` (experimental in Vite 8). **Rejected:** `nxViteTsPaths` / `nxCopyAssetsPlugin` (deprecated, removed in Nx v24; the copy plugin has no effect in tests), `vite-tsconfig-paths` (Vite itself warns it is redundant). Fallback if the option changes: `vite-tsconfig-paths`, with approval.
 
 - **Why:** the built-in builder is the official Angular path, compiling tests with the same toolchain as the app; plain TypeScript libraries don't need Angular compilation.
 - **Rejected:** `@nx/vitest` for the app (needs a third-party Vite plugin for Angular — more moving parts).

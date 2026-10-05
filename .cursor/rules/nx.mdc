@@ -24,3 +24,4 @@ How to run Nx and use Nx MCP: see `AGENTS.md`.
 - Import libraries only through their public API (`@plate-region/<lib>` → `src/index.ts`). No deep imports.
 - Fix a module-boundary violation by fixing the dependency. Never loosen the lint rule or add `eslint-disable`.
 - Libraries have a `typecheck` target in `targetDefaults` (D-13). New libraries need `"typecheck": {}` in `project.json` plus `tsconfig.lib.json` and `tsconfig.spec.json`.
+- Nx 23 library generators still emit deprecated `nxViteTsPaths` / `nxCopyAssetsPlugin` in `vitest.config.mts` for this workspace; replace them with `resolve: { tsconfigPaths: true }` (D-12).
