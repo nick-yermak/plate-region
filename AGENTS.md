@@ -13,7 +13,7 @@ Goals, in order of how decisions should be weighed:
 
 ## Current focus
 
-**Epic 0 — Foundation** (Nx workspace, linting, Cursor rules, CI, deployment).
+**Epic 1 — Core: plate registry and parsing** (pure TypeScript, test-first, no Angular).
 Full backlog: `docs/backlog.md`. Do not start work from later epics unless asked.
 Architecture and workflow decisions with their reasons: `docs/decisions.md`. Read it before proposing changes to architecture, tooling or workflow; if a change contradicts a decision, say so explicitly.
 
