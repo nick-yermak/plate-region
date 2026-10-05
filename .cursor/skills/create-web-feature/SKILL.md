@@ -43,7 +43,7 @@ Rules to apply (read them; do not restate them):
 npx nx g @nx/angular:component <path> --dry-run --no-interactive
 ```
 
-All files must land in `apps/web/src/app/<feature>/`. Note the defaults it applied (file names, symbol, selector) for the summary.
+Created component files must land in `apps/web/src/app/<feature>/`. A generator-default write to `nx.json` is expected — report it. Any other change outside the feature folder → stop and ask. Note the defaults it applied (file names, symbol, selector) for the summary.
 
 **4. Generate.** Same command without `--dry-run`.
 
@@ -61,4 +61,4 @@ npx nx format:check --all
 
 On failure, report the exact error and fix the cause; never loosen lint rules or add `eslint-disable`.
 
-**8. Summary.** Report: created and modified files; generator defaults observed; deviations fixed in step 5; each command with its result. Do not commit.
+**8. Summary.** Report: the dry-run file list; created and modified files; generator defaults observed; deviations fixed in step 5; each command with its result. Do not commit.
