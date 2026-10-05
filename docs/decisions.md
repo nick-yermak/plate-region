@@ -125,7 +125,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 
 - **Nx monorepo** (vs Angular CLI workspace or pnpm workspaces): shared libraries, `nx affected`, module boundaries, Nx MCP.
 - **Node 24** via fnm, pinned in `.nvmrc` — source of truth for developers, agents and CI (`setup-node` reads it). Vercel does not read `.nvmrc`; it uses `engines.node` in `package.json` (then Project Settings, then its default). Keep `engines.node` on the same major as `.nvmrc` (e.g. `24.x`). `.npmrc` has `engine-strict=true` so `npm ci` fails with `EBADENGINE` if they diverge — CI's required `checks`/`e2e` jobs catch that without changing `ci.yml`.
-- **npm**, with install scripts explicitly approved (`allowScripts` in `package.json`). On npm 11 the field is advisory (unreviewed scripts still run; npm prints a notice); npm 12 blocks them by default.
+- **npm**, with install scripts explicitly approved (`allowScripts` in `package.json`). On npm 11 the field is advisory (unreviewed scripts still run; npm prints a notice); npm 12 blocks them by default. Vercel's npm 11.19.0 (with Node 24) reads `allowScripts`, and the allowlist covers every install script on Vercel's Linux build (no uncovered-scripts warning).
 - **Never** `--legacy-peer-deps` or `npm audit fix --force`: they hide or force past real incompatibilities. Fix the cause instead (e.g. a clean reinstall for a corrupted lockfile).
 - **ESLint 10** with inferred lint targets (`@nx/eslint/plugin`); Prettier for formatting.
 
