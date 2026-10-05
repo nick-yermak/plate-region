@@ -20,6 +20,7 @@ alwaysApply: false
 
 - Vitest does not type-check. After changing library code or specs, run `npx nx run <lib>:typecheck` (D-13).
 - TDD for `plate-domain`: see `AGENTS.md`.
+- `plate-domain` enforces 100% lines and branches (D-18): an uncovered branch fails `test`. Cover it with a test — never with an ignore hint or a coverage exclusion.
 
 ## E2E (apps/web-e2e)
 

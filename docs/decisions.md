@@ -154,6 +154,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - `nx affected` with full history and `nrwl/nx-set-shas`; Node from `.nvmrc`; npm cache via `setup-node`; local Nx cache via `actions/cache`.
 - In-progress runs are cancelled only for PRs — runs on `main` must complete, because `nx-set-shas` uses the last successful one as the base.
 - Minimal token permissions (`contents: read`, `actions: read`). No Nx Cloud.
+- `plate-domain` enforces 100% lines and branches in its own `vitest.config.mts` (`coverage.enabled`, `coverage.include: ['src/**/*.ts']`, `thresholds`); without `include`, Vitest 4 counts only files loaded by tests. **Why:** one place, so `test` behaves the same locally and in CI and `ci.yml` stays unchanged. **Rejected:** `nx affected -t test --coverage` (the flag also reaches `web`). The atomized `test-ci--*` targets run one spec file each, so they fail the threshold once plate-domain has more than one source file; use `test`.
 
 ---
 
