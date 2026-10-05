@@ -22,6 +22,7 @@ How to run Nx and use Nx MCP: see `AGENTS.md`.
 - `@angular/*` is banned in `type:domain` and `type:data` via `bannedExternalImports`.
 - The default wildcard constraint (`*` → `*`) is intentionally absent — never re-add it.
 - Import libraries only through their public API (`@plate-region/<lib>` → `src/index.ts`). No deep imports.
+- Inside a project, import its own files with relative paths; never through the project's own `@plate-region/<lib>` alias — `@nx/enforce-module-boundaries` rejects it.
 - Fix a module-boundary violation by fixing the dependency. Never loosen the lint rule or add `eslint-disable`.
 - Libraries have a `typecheck` target in `targetDefaults` (D-13). New libraries need `"typecheck": {}` in `project.json` plus `tsconfig.lib.json` and `tsconfig.spec.json`.
 - Nx 23 library generators still emit deprecated `nxViteTsPaths` / `nxCopyAssetsPlugin` in `vitest.config.mts` for this workspace; replace them with `resolve: { tsconfigPaths: true }` (D-12).
