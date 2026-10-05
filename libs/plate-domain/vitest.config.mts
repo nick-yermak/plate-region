@@ -14,8 +14,14 @@ export default defineConfig(() => ({
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {
+      enabled: true,
+      include: ['src/**/*.ts'],
       reportsDirectory: '../../coverage/libs/plate-domain',
       provider: 'v8' as const,
+      thresholds: {
+        lines: 100,
+        branches: 100,
+      },
     },
   },
 }));
