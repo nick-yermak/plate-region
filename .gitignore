@@ -46,6 +46,8 @@ Thumbs.db
 
 .angular
 
+.vercel
+
 __screenshots__/
 
 vitest.config.*.timestamp*
