@@ -116,7 +116,7 @@ Photos are processed only to read the plate and are never stored. Your region co
 
 ## Data source
 
-Plate codes are based on the official Polish regulation on vehicle registration plates. _(Exact source and revision date to be added.)_
+Plate codes come from Annex 13 (the table of registration codes) to the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. (Dz.U. 2024 poz. 1709), as amended by Dz.U. 2025 poz. 939 (§ 1 pkt 4) and Dz.U. 2026 poz. 891 (§ 1 pkt 9) — legal state as of 2026-10-05. Source scope and update policy: [D-26](docs/decisions.md).
 
 ## License
 

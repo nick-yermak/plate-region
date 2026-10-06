@@ -210,3 +210,19 @@ Project skills live in `.cursor/skills/<name>/SKILL.md`, next to `.cursor/rules/
 
 - **Why:** rules describe what code must look like and load by file globs; a workflow spans several files and commands and is needed before those files exist. Citing rules keeps one source per rule, as in D-24.
 - **Rejected:** `.agents/skills/` (cross-tool portability is not needed — the project uses one agent tool); restating rules inside skills (drift); installing Nx's official skills (`nx configure-ai-agents` writes a managed block into `AGENTS.md`; their broad descriptions would compete with project skills for the same requests).
+
+---
+
+## Data
+
+### D-26 Plate registry source and update policy — Accepted
+
+`plate-data` is built from the full official source from the start: the table of registration codes in Annex 13 to the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. (Dz.U. 2024 poz. 1709), as amended by Dz.U. 2025 poz. 939 (§ 1 pkt 4) and Dz.U. 2026 poz. 891 (§ 1 pkt 9), the provisions that change Annex 13. These are the only amending acts listed on ISAP, and both are in force as of 2026-10-05. No consolidated text (tekst ujednolicony) exists, so the registry is the base table with the amendments applied in order.
+
+- No fixture or sample registry, and no invented codes anywhere — including tests and docs.
+- Scope: the current Annex 13 only. Historical (withdrawn) codes are out of scope; a code not in the table is reported as "not in the current registry", never guessed.
+- Names: Polish names come from the act. Voivodeship names are stored in their lowercase official form (e.g. `dolnośląskie`); the uppercase in Annex 13 is table typography. This is the only normalisation applied to source names. The 16 voivodeships additionally get English names, explicitly marked as not taken from the act.
+- Update policy: before each release that touches `plate-data`, and at least quarterly, check "Akty zmieniające" for Dz.U. 2024 poz. 1709 on ISAP manually. A new amending act gets its own issue; the import (#34) is updated, then this entry and the README "Data source" section.
+
+- **Why:** plate codes have legal force, so every code must be traceable to the act. Two amendments within two years show the table does change, so the bundled registry (D-01) needs an explicit source and update policy; with a defined scope, "not in the current registry" is an honest answer rather than a gap.
+- **Rejected:** a hand-written fixture first (would bake in invented codes); unofficial lists such as Wikipedia (no authority, no revision trail); including historical codes now (no official current source for them; conflicts with "not in the current registry").
