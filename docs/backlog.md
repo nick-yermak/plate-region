@@ -36,8 +36,8 @@ Outcome: an empty but properly configured monorepo that builds, tests and deploy
 
 Outcome: a pure TypeScript library that turns a plate string into voivodeship, powiat and plate type, with 100% test coverage. Built strictly test-first, no Angular.
 
-- [ ] Find the primary source of plate codes: the annex to the Minister of Infrastructure regulation on registration plates; record the source and revision date in the README
-- [ ] Design the data model: voivodeship (letter prefix), powiat (2–3 character code), PL/EN names, plate type. Make it country-ready without building a multi-country abstraction yet: `country: 'PL'` in registry records and parse results; Polish logic in a `pl/` folder behind each library's public API; neutral region-level names in public types (e.g. `region1`/`region2`), with Polish terms only inside the `pl/` module
+- [ ] Find the primary source of plate codes: Annex 13 to the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. w sprawie rejestracji i oznaczania pojazdów, wymagań dla tablic rejestracyjnych oraz wzorów innych dokumentów związanych z rejestracją pojazdów (Dz.U. 2024 poz. 1709), as amended; record the source and revision date in the README
+- [ ] Design the data model: voivodeship (letter prefix), powiat (2–3 character code), Polish names (plus conventional English names for voivodeships only, D-26), plate type. Make it country-ready without building a multi-country abstraction yet: `country: 'PL'` in registry records and parse results; Polish logic in a `pl/` folder behind each library's public API; neutral region-level names in public types (e.g. `region1`/`region2`), with Polish terms only inside the `pl/` module
 - [ ] Fill `plate-data` with the full registry as JSON and write a validator test (unique codes, every powiat belongs to a voivodeship)
 - [ ] TDD: input normalisation (case, spaces, dashes, look-alike characters O/0, I/1)
 - [ ] TDD: voivodeship from the first letter
@@ -156,3 +156,4 @@ Not part of the first version; file them in Backlog without priority.
 - Plates from other countries (Germany, Czechia, Lithuania) as a registry extension
 - Accounts and collection sync across devices
 - Leaderboard among friends
+- Historical (withdrawn) plate codes
