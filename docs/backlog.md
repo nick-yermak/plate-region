@@ -43,6 +43,8 @@ Outcome: a pure TypeScript library that turns a plate string into voivodeship, p
 - [ ] TDD: voivodeship from the first letter
 - [ ] TDD: powiat by longest matching prefix (3 characters, then 2)
 - [ ] TDD: special plates — custom, service, military, diplomatic, temporary, vintage; an honest "region can't be determined" answer
+- [ ] TDD: serial-number formats per § 30 (from the act, nothing invented — D-26) and variant counts per code and per region1
+- [ ] Example plate generator: pure function with an injected random source, deterministic in tests
 - [ ] TDD: partial input — return candidates while typing (for autocomplete)
 - [ ] Public library API and JSDoc; Cursor rule "domain logic is pure functions only, no dependencies"
 - [ ] Let an agent generate some of the tests, then review them: where did it get the domain wrong
@@ -51,12 +53,14 @@ Outcome: a pure TypeScript library that turns a plate string into voivodeship, p
 
 Outcome: the first useful version — type a plate, see the region. Responsive layout, two languages, modern Angular. After this epic the product can be shown to people.
 
-- [ ] Add Tailwind, define design tokens (colours, typography, spacing), light and dark theme
+- [ ] Add NG-ZORRO and Less: switch the nx.json component generator style to less, convert apps/web global styles, theme tokens, light and dark theme (D-28), and add a `.css` component-styles flag to `.cursor/BUGBOT.md`
 - [ ] Build the input styled as a Polish plate (blue PL strip, monospace font)
 - [ ] Input form with Signal Forms: format validation, error hints
 - [ ] State with signals and `computed`: the result recalculates on every keystroke
 - [ ] Result card: voivodeship, powiat, plate type, clear message for special plates
 - [ ] Autocomplete candidates for partial input
+- [ ] Registry browser: nz-table with filters and sorting by region1, region2, code, kind and serial pattern — rows are registry codes, serial parts are patterns derived from the act, no invented plates
+- [ ] Charts: pick the library (D-29), plate variants per region1
 - [ ] SVG map of Poland highlighting the voivodeship (and the powiat, if a lightweight geometry source exists)
 - [ ] Routing: home, region page `/:code`, about
 - [ ] i18n PL/EN: compare built-in Angular i18n and Transloco on a small prototype, pick one and adopt it
@@ -146,13 +150,25 @@ Outcome: the end-to-end flow "issue → agent → PR → AI review → merge" wo
 - [ ] Security boundaries: token permissions, what the agent may merge itself and what it may only propose
 - [ ] Retrospective: which tasks agents handle well and where they fail; update rules and skills accordingly
 
+## Epic 9 — Node API
+
+Outcome: a Node API in `apps/api` on top of `plate-domain` and `plate-data` (D-30) — a backend learning ground and an interface for clients that cannot run TypeScript. Lookup in every client stays on the device (D-01). Starts after Epic 3.
+
+- [ ] Pick the framework (NestJS vs Fastify/Hono) and the hosting (Vercel functions vs a long-running server); record the choice in D-30
+- [ ] Decide the Nx tag for `apps/api` (`type:app` or a new tag with its own decision)
+- [ ] Generate `apps/api` with Nx, reusing the core libraries
+- [ ] Read-only endpoints for external consumers and native clients: registry export and plate lookup
+- [ ] API tests and an OpenAPI description
+- [ ] Later: move the D-04 OCR function here; stateful features (accounts, sync, leaderboard) each get their own decision
+
 ## Ideas for later
 
 Not part of the first version; file them in Backlog without priority.
 
 - Freemium: cloud recognition paid beyond a free quota
 - "On the road" mode: continuous recognition from the camera without pressing a button
-- Native build with Capacitor and app store release
+- React learning app in the monorepo (imports the libraries directly)
+- iOS app via React Native/Expo or Capacitor, app store release
 - Plates from other countries (Germany, Czechia, Lithuania) as a registry extension
 - Accounts and collection sync across devices
 - Leaderboard among friends

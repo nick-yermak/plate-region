@@ -15,7 +15,7 @@ Scope: one standalone component and its unit test in `apps/web`. Not for librari
 
 Rules to apply (read them; do not restate them):
 
-- `.cursor/rules/angular.mdc` — D-10, D-11
+- `.cursor/rules/angular.mdc` — D-10, D-28
 - `.cursor/rules/testing.mdc` — D-12
 - `.cursor/rules/nx.mdc` — D-06
 - `.cursor/BUGBOT.md` — Angular idioms, Tests, Accessibility

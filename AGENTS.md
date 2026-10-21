@@ -21,18 +21,21 @@ Architecture and workflow decisions with their reasons: `docs/decisions.md`. Rea
 
 - Nx monorepo
 - Angular: standalone components, zoneless change detection, signals, Signal Forms, `resource`/`httpResource`, new control flow
-- Tailwind CSS, responsive mobile-first, light/dark theme
+- NG-ZORRO (ng-zorro-antd) with Less, responsive mobile-first, light/dark theme
+- Charts: library per D-29
 - Prerender + hydration, PWA (service worker, offline, install)
 - i18n: Polish and English
 - Photo recognition: Tesseract.js in a Web Worker, cloud vision model fallback via a serverless function
 - Testing: Vitest (unit), Playwright (e2e, visual regression), axe-core (a11y), Storybook
 - Hosting: Vercel; CI: GitHub Actions
+- Node API: planned (D-30)
 
 ## Planned structure
 
 ```
 apps/web            Angular application
 apps/mcp-server     Custom MCP server over the plate registry (later)
+apps/api            Node API over the core libraries (planned)
 libs/plate-domain   Pure TypeScript plate parsing — no Angular, no side effects
 libs/plate-data     Registry of voivodeship and powiat codes
 ```

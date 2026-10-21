@@ -10,8 +10,8 @@ Scope: changed lines only. Do not flag formatting, import order or naming — Pr
 
 ## Angular idioms
 
-- See `.cursor/rules/angular.mdc` and D-10 / D-11.
-- Flag: `@Input`/`@Output`, constructor DI, old control flow, explicit `Eager`/`Default`, `zone.js` / `NgZone` / `provideZonelessChangeDetection()`, Reactive or template-driven forms, `window`/`document` outside `afterNextRender`, SCSS or `tailwind.config.js`.
+- See `.cursor/rules/angular.mdc` and D-10 / D-28.
+- Flag: `@Input`/`@Output`, constructor DI, old control flow, explicit `Eager`/`Default`, `zone.js` / `NgZone` / `provideZonelessChangeDetection()`, Reactive or template-driven forms, `window`/`document` outside `afterNextRender`, Tailwind, SCSS.
 
 ## Module boundaries
 
