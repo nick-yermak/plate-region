@@ -273,10 +273,16 @@ Import (#34): committed, re-runnable and deterministic — re-running on the sam
 
 ### D-27 Parse result and registry access in plate-domain — Accepted (design)
 
-The type is written test-first in #36.
+The type is written test-first in #37, where the region1+region2 path first becomes reachable; #36 adds only an internal region1 step, because a type written there would have variants real data cannot reach (D-18).
 
 - The parse result is a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings.
-- Variants: region1 and region2 resolved; region1 only (reduced single-row plates carry no powiat code, § 27 ust. 3 and § 30 ust. 2 pkt 2; column-6 codes); region undeterminable (valid special plate); ambiguous (several interpretations); not in the current registry (D-26); invalid input.
+- Variants:
+  - region1 and region2 resolved;
+  - region1 only, for two separate reasons: reduced single-row plates carry a column-4 letter followed by the vehicle part and no powiat code (§ 27 ust. 3, § 30 ust. 2 pkt 2); individual and temporary plates carry a column-6 letter+digit code (§ 30 ust. 2 pkt 4 and 6). The first two characters do not tell them apart: reduced (pkt 2) and diplomatic (pkt 7) plates also start with a column-4 letter followed by a digit. A column-6 code at the start is therefore a registry fact, not a plate type; the plate type is decided in #38;
+  - region undeterminable (valid special plate);
+  - ambiguous (several interpretations);
+  - not in the current registry (D-26);
+  - invalid input.
 - Partial-input candidates (#39) get a separate function and type.
 - plate-domain uses the plate-data registry directly and builds its lookup index once at module level; tests run against the full real registry.
 
@@ -285,7 +291,7 @@ The type is written test-first in #36.
 
 ### D-31 Normalised plate input keeps group boundaries; invalid input is its own variant — Accepted
 
-`normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#36) maps `invalid` to its own invalid-input variant (D-27).
+`normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#37) maps `invalid` to its own invalid-input variant (D-27).
 
-- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so a boundary the user typed may help #36 choose between interpretations; whether it does is decided in #36, and normalisation must not discard it. Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
-- **Rejected:** deleting separators and returning only the compact string (the boundary is lost before #36 can decide whether it matters); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
+- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so a boundary the user typed may help choose between region2 interpretations, and normalisation must not discard it. Region1 resolution (#36) reads only `compact`: no Annex 13 full code is a single letter (a column-4 letter plus a column-5 suffix of at least one letter), and no column-5 suffix contains a digit, so a boundary after the first character or inside a letter+digit code cannot select a different region1. Whether a boundary breaks ties between region2 codes is decided in #37. Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
+- **Rejected:** deleting separators and returning only the compact string (the boundary is lost before #37 can decide whether it matters); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
