@@ -1,1 +1,1 @@
-export * from './lib/pl/plate-domain';
+export * from './lib/pl/normalise-plate-input';

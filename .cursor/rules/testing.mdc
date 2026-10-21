@@ -22,6 +22,7 @@ alwaysApply: false
 - TDD for `plate-domain`: see `AGENTS.md`.
 - `plate-domain` enforces 100% lines and branches (D-18): an uncovered branch fails `test`. Cover it with a test — never with an ignore hint or a coverage exclusion.
 - Data invariant specs collect violations and assert `toEqual([])`; never `it.each` over data arrays (an empty array yields zero tests).
+- Property-style tests (idempotency, prefix compatibility, round-trips) also assert the literal expected result; a check that only compares two runs passes a constant stub.
 
 ## E2E (apps/web-e2e)
 
