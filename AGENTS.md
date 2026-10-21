@@ -43,6 +43,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 ## Working rules
 
 - Do nothing without an explicit request. For anything larger than a small edit, propose a plan first and wait for approval.
+- On the GitHub Projects board, only epics that have started have issues; later epics stay in `docs/backlog.md` (D-16). Do not create issues for them unless asked.
 - File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here. Multi-step workflows live in `.cursor/skills/` (D-25).
 - In rule frontmatter, a `globs` value must not start with `*` (YAML alias token — the rule silently fails to load). Start with a literal path segment, e.g. `apps/**/*.spec.ts`, not `**/*.spec.ts`.
 - Never commit or push unless asked. Branch first, then commit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.

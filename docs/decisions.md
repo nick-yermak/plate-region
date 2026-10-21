@@ -176,6 +176,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 ### D-16 Git and GitHub workflow — Accepted
 
 - Kanban in **GitHub Projects** (vs Trello or Linear): issues, PRs and the board live next to the code and are reachable by agents via GitHub MCP.
+- Issues are created per epic when the epic starts, all at once from `docs/backlog.md`. Later epics have a milestone and an Epic field option but no issues. **Why:** a partly filled epic misrepresents its scope, and backlog lines still change before an epic starts (e.g. PR #50).
 - All changes go through PRs; **squash merge only**, with the PR title as the commit message — so PR titles must be Conventional Commits.
 - `main` is protected by a ruleset: PR required (0 approvals — solo developer), required checks `checks`, `e2e`, `pr-title`, no force pushes or deletion. Head branches are deleted automatically.
 - Commits use the GitHub noreply email. No AI attribution in history: the `commit-msg` hook strips `cursoragent@cursor.com` trailers.
