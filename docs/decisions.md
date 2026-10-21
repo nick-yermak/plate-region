@@ -282,3 +282,10 @@ The type is written test-first in #36.
 
 - **Why:** A discriminated union lets consumers narrow exhaustively (`@switch` in the app, `switch` in TypeScript), and each honest answer — region1 only, undeterminable, ambiguous, not in the current registry — is its own state instead of a combination of nullable fields. With 100% branch coverage (D-18) there are no branches real data cannot reach and no default-parameter branches.
 - **Rejected:** a single result with nullable fields (invalid combinations become representable); the registry as a parameter defaulting to plate-data. A `createParser(registry)` factory stays an additive option.
+
+### D-31 Normalised plate input keeps group boundaries; invalid input is its own variant — Accepted
+
+`normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#36) maps `invalid` to its own invalid-input variant (D-27).
+
+- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so a boundary the user typed may help #36 choose between interpretations; whether it does is decided in #36, and normalisation must not discard it. Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
+- **Rejected:** deleting separators and returning only the compact string (the boundary is lost before #36 can decide whether it matters); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
