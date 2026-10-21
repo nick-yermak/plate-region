@@ -10,13 +10,13 @@ When a decision changes, update its entry and status instead of deleting it.
 
 ## Product and architecture
 
-### D-01 No backend; lookup runs on the device — Accepted
+### D-01 No lookup backend; lookup runs on the device — Accepted
 
 The plate registry is small and almost never changes, so the whole lookup (parsing + registry) is bundled into the app and runs in the browser, including offline.
 Lookup never needs server-side code. Server-side code is limited to the cloud OCR fallback serverless function (D-04), needed solely to keep the vision API key secret, and the planned Node API (D-30); neither is a lookup dependency.
 
 - **Why:** instant results, offline support for the PWA, nothing to operate, near-zero hosting cost.
-- **Rejected:** a lookup API (adds latency, breaks offline mode, needs hosting); NestJS or BaaS (no data to store server-side).
+- **Rejected:** a lookup API (adds latency, breaks offline mode, needs hosting); NestJS or BaaS as a lookup backend (no data to store server-side).
 
 ### D-02 Prerender instead of runtime SSR — Planned (Epic 3)
 
@@ -130,7 +130,7 @@ Charts such as plate variants per region1 in the registry browser.
 
 - **Leaning:** Apache ECharts used directly behind a thin in-house wrapper component: rendered only in `afterNextRender`, loaded via `@defer`, kept in sync with `effect`.
 - **To evaluate:** AntV G2; ready-made Angular wrappers (check Angular 22 support); D3 (too low-level for bar charts); Highcharts (commercial licence).
-- Chart data is computed by pure functions in plate-domain, not in components.
+- Chart data is computed by pure functions in `plate-domain`, not in components.
 
 ---
 
