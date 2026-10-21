@@ -16,6 +16,7 @@
 - **Region collection** — count the plates you meet, fill in the map of Poland and unlock achievements; all data stays on your device _(planned)_
 - **Polish & English** interface _(planned)_
 - **Region pages** — a prerendered page for every plate code, e.g. `/wa`, `/kr` _(planned)_
+- **Registry browser** — every registry code in a filterable, sortable table (voivodeship, powiat, code, kind, serial-number pattern), with charts such as plate variants per voivodeship _(planned)_
 
 ## How it works
 
@@ -36,7 +37,7 @@ Versions for Angular, Nx and other packages are in [`package.json`](package.json
 | Area         | Tools                                                                                                          |
 | ------------ | -------------------------------------------------------------------------------------------------------------- |
 | Frontend     | Angular (standalone, zoneless); signals, Signal Forms, `resource`/`httpResource` _(planned)_                   |
-| Styling      | Tailwind CSS, responsive mobile-first layout, light/dark theme _(planned)_                                     |
+| Styling      | NG-ZORRO with a Less theme, responsive mobile-first layout, light/dark theme _(planned)_                       |
 | Rendering    | Prerender + hydration, PWA (service worker, offline, install) _(planned)_                                      |
 | Recognition  | Tesseract.js in a Web Worker + cloud vision model via a serverless function _(planned)_                        |
 | Testing      | Vitest, Playwright (e2e, Chromium); visual regression, axe-core (a11y), Storybook _(planned)_                  |
@@ -51,6 +52,7 @@ apps/
   web/            Angular application
   web-e2e/        Playwright end-to-end tests for web
   mcp-server/     MCP server exposing the region registry to AI agents  (planned)
+  api/            Node API reusing the core libraries  (planned)
 libs/
   plate-domain/   Pure TypeScript plate parsing, framework-free  (src/lib/pl/)
   plate-data/     Registry of voivodeship and powiat codes       (src/lib/pl/)
@@ -99,6 +101,7 @@ Work is tracked on the [GitHub Projects board](https://github.com/users/nick-yer
 6. Quality — e2e, accessibility, visual regression
 7. Custom MCP server
 8. AI agents in CI
+9. Node API
 
 ## Project docs
 

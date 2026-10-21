@@ -2,7 +2,7 @@
 
 Why PlateRegion is built the way it is. Each entry records the decision, the reasoning and the alternatives that were rejected, so they don't get re-litigated or silently undone.
 
-Statuses: **Accepted** — in effect; **Planned** — agreed, not implemented yet; **Open** — to be decided at the noted point.
+Statuses: **Accepted** — in effect; **Planned** — agreed, not implemented yet; **Open** — to be decided at the noted point; **Superseded** — replaced by the decision named in its heading; kept for history.
 
 When a decision changes, update its entry and status instead of deleting it.
 
@@ -10,13 +10,13 @@ When a decision changes, update its entry and status instead of deleting it.
 
 ## Product and architecture
 
-### D-01 No backend; lookup runs on the device — Accepted
+### D-01 No lookup backend; lookup runs on the device — Accepted
 
 The plate registry is small and almost never changes, so the whole lookup (parsing + registry) is bundled into the app and runs in the browser, including offline.
-The only server-side code is a single serverless function for the cloud OCR fallback (D-04), needed solely to keep the vision API key secret.
+Lookup never needs server-side code. Server-side code is limited to the cloud OCR fallback serverless function (D-04), needed solely to keep the vision API key secret, and the planned Node API (D-30); neither is a lookup dependency.
 
 - **Why:** instant results, offline support for the PWA, nothing to operate, near-zero hosting cost.
-- **Rejected:** a lookup API (adds latency, breaks offline mode, needs hosting); NestJS or BaaS (no data to store server-side).
+- **Rejected:** a lookup API (adds latency, breaks offline mode, needs hosting); NestJS or BaaS as a lookup backend (no data to store server-side).
 
 ### D-02 Prerender instead of runtime SSR — Planned (Epic 3)
 
@@ -46,7 +46,7 @@ Local OCR first (Tesseract.js in a Web Worker); fall back to a cloud vision mode
 
 `libs/plate-data` holds the registry (single source of truth for codes); `libs/plate-domain` holds the parsing logic and may depend on `plate-data`. Both are pure TypeScript.
 
-- **Why:** reused by three consumers — the Angular app, the serverless function (D-04) and the custom MCP server (Epic 7); fast TDD without TestBed; unaffected by Angular upgrades.
+- **Why:** reused by four consumers — the Angular app, the serverless function (D-04), the custom MCP server (Epic 7) and the planned Node API (D-30); fast TDD without TestBed; unaffected by Angular upgrades.
 - **Rejected:** Angular libraries or services (would tie the logic to the framework and block reuse).
 
 ### D-06 Module boundaries enforced by Nx tags — Accepted
@@ -90,6 +90,14 @@ IndexedDB, no accounts; export/import as JSON to survive a phone change.
 
 Built-in Angular i18n (per-locale builds, fits prerender) vs Transloco (runtime switching) — decide after a small prototype in Epic 2.
 
+### D-30 Node API as an additional consumer — Planned (Epic 9, after Epic 3)
+
+A Node API in `apps/api` reuses `plate-domain` and `plate-data` (D-05). Every client keeps lookup on the device; web never depends on the API for lookup (offline PWA, D-01).
+
+- **Why:** learning backend development; an API for a future native iOS client and for external consumers; later a home for the D-04 OCR function and for any stateful features (accounts, sync, leaderboard).
+- **Open:** framework (NestJS vs Fastify/Hono); hosting (Vercel functions vs a long-running server); Nx tag (`type:app` vs a new tag — a new tag needs its own decision, per `nx.mdc`).
+- **Rejected:** lookup via the API (breaks offline, D-01). A React app or a React Native/Expo client imports the libraries directly; the API is needed only for clients that cannot run TypeScript (native Swift).
+
 ---
 
 ## Frontend
@@ -99,9 +107,30 @@ Built-in Angular i18n (per-locale builds, fits prerender) vs Transloco (runtime 
 Standalone components, signals, Signal Forms, `resource`/`httpResource`, new control flow, OnPush (the default in Angular 22 — never opt into `Eager`).
 Zoneless is the default in this Angular version: there is no `zone.js` and no `provideZonelessChangeDetection()` — do not add either.
 
-### D-11 Tailwind with plain CSS — Accepted
+### D-11 Tailwind with plain CSS — Superseded by D-28
 
 Tailwind is configured through CSS; no SCSS. Mobile-first responsive layout, light/dark theme via design tokens.
+
+### D-28 UI library and styling: NG-ZORRO with Less — Accepted
+
+Supersedes D-11. UI components come from NG-ZORRO (`ng-zorro-antd` 22.x). Less is used for the global theme and for our own component styles. No Tailwind, no SCSS. Mobile-first stays.
+
+- `ng-zorro-antd` keeps its major version in sync with `@angular/core`; 22.x supports Angular `^22`. It supports zoneless and OnPush (D-10). Components are imported per subpath (e.g. `ng-zorro-antd/button`). Its theme is written in Less.
+- Theming goes through NG-ZORRO's Less variables: overrides, a dark theme built from its dark-theme variables, and per-component style imports instead of the full library CSS.
+- Signal Forms remain the rule (D-10): `nz-input` is a directive on a native input and binds natively; ControlValueAccessor-based components (`nz-select`, `nz-autocomplete`, …) bind through Angular's ControlValueAccessor interop.
+
+- **Why:** the registry browser needs a filterable, sortable data table over all registry codes, plus form and feedback components.
+- **Rejected:** Tailwind with hand-written components (a filterable data table is too much custom work); SCSS (cannot customise the NG-ZORRO Less theme); Less and SCSS together (two preprocessors, two variable systems); plain CSS with the prebuilt NG-ZORRO builds (no theme customisation, full library CSS).
+- **Open (Epic 2):** light/dark runtime switching. Less variables exist only at compile time, so the options are swapping two compiled stylesheets or CSS custom properties (NG-ZORRO's CSS-variable build is experimental).
+- **To verify in the first Epic 2 prototype:** prerender/hydration behaviour; whether the Angular build needs the `less` package; NG-ZORRO's own locale system must follow the D-09 choice.
+
+### D-29 Charts library — Open (Epic 2)
+
+Charts such as plate variants per region1 in the registry browser.
+
+- **Leaning:** Apache ECharts used directly behind a thin in-house wrapper component: rendered only in `afterNextRender`, loaded via `@defer`, kept in sync with `effect`.
+- **To evaluate:** AntV G2; ready-made Angular wrappers (check Angular 22 support); D3 (too low-level for bar charts); Highcharts (commercial licence).
+- Chart data is computed by pure functions in `plate-domain`, not in components.
 
 ---
 
