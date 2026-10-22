@@ -56,6 +56,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
 - If a tool or MCP call fails, report the exact error before using a fallback; never silently switch approaches.
 - The Cursor sandbox blocks some IPC and network calls: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`. Report the exact error, then rerun the same command outside the sandbox.
+- When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22).
 - At the end of a task, ask whether anything should go into `AGENTS.md`.
 
 ## Nx

@@ -18,7 +18,7 @@ alwaysApply: false
 
 ## Libraries
 
-- Vitest does not type-check. After changing library code or specs, run `npx nx run <lib>:typecheck` (D-13).
+- After changing library code or specs, run `npx nx run <lib>:typecheck` (D-13). At the TDD checkpoint (specs plus a stub with the final types), it runs next to the red test run and must pass before the implementation is written.
 - TDD for `plate-domain`: see `AGENTS.md`.
 - `plate-domain` enforces 100% lines and branches (D-18): an uncovered branch fails `test`. Cover it with a test — never with an ignore hint or a coverage exclusion.
 - Data invariant specs collect violations and assert `toEqual([])`; never `it.each` over data arrays (an empty array yields zero tests).

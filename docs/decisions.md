@@ -154,6 +154,8 @@ Libraries have a `typecheck` target (`tsc --noEmit` for lib and spec tsconfigs, 
 
 `plate-data` overrides the default command to also run `tsc --noEmit -p tsconfig.scripts.json` (the Annex 13 import script, D-26). A change to the `targetDefaults` command must be mirrored in that override.
 
+Because Vitest strips types without checking them, a red test run at the TDD checkpoint does not show that the spec compiles. The checkpoint has a stub with the final types, so `typecheck` passing there shows the spec compiles (`testing.mdc`). In #36 a type error in the spec surfaced only because `typecheck` was run by hand before the implementation.
+
 ### D-14 E2E browsers — Accepted (Chromium) / Planned (Epic 6)
 
 Now: Chromium only, to keep CI fast while the app is a placeholder.
@@ -228,6 +230,7 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 - If a tool or MCP call fails, report the exact error before any fallback.
 - When Nx or Nx MCP returns stale results, run `npx nx reset` and restart the MCP server before changing configuration. (An "Nx bug" here turned out to be stale daemon state; a config change made for it was reverted.)
 - Comments explain _why_, never _what_.
+- A diff in a report includes new files, because `git diff` does not show untracked files. (The #36 report said new files were "in the diff above" when they were not.)
 
 ### D-23 One review checklist — Accepted
 
