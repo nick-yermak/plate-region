@@ -274,27 +274,47 @@ Project skills live in `.cursor/skills/<name>/SKILL.md`, next to `.cursor/rules/
 
 Import (#34): committed, re-runnable and deterministic — re-running on the same input gives a byte-identical file (empty `git diff`). It lives in `libs/plate-data/scripts/` as an `.mts` file run with Node 24 type stripping (D-15) and type-checked by `tsconfig.scripts.json` as part of `plate-data:typecheck` (D-13). The base table is parsed from `pdftotext -layout` output (the input is not committed); amendments are an explicit typed patch list, each patch citing its act and provision. The layout output depends on the poppler version (verified with 26.10.0); determinism holds for the same input, and a layout change makes the script throw on an unclassifiable line rather than produce different data. No tool version appears in the generated output.
 
-### D-27 Parse result and registry access in plate-domain — Accepted (design)
+### D-27 Parse result and registry access in plate-domain — Accepted
 
-The type is written test-first in #37, where the region1+region2 path first becomes reachable; #36 adds only an internal region1 step, because a type written there would have variants real data cannot reach (D-18).
+`parsePlate` (#37) returns a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings. plate-domain uses the plate-data registry directly and builds its lookup indexes once at module level; tests run against the full real registry. Partial-input candidates (#39) get a separate function and type. The type was written in #37 rather than #36 because a type written in #36 would have had variants real data cannot reach (D-18).
 
-- The parse result is a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings.
-- Variants:
-  - region1 and region2 resolved;
-  - region1 only, for two separate reasons: reduced single-row plates carry a column-4 letter followed by the vehicle part and no powiat code (§ 27 ust. 3, § 30 ust. 2 pkt 2); individual and temporary plates carry a column-6 letter+digit code (§ 30 ust. 2 pkt 4 and 6). The first two characters do not tell them apart: reduced (pkt 2) and diplomatic (pkt 7) plates also start with a column-4 letter followed by a digit. A column-6 code at the start is therefore a registry fact, not a plate type; the plate type is decided in #38;
-  - region undeterminable (valid special plate);
-  - ambiguous (several interpretations);
-  - not in the current registry (D-26);
-  - invalid input.
-- Partial-input candidates (#39) get a separate function and type.
-- plate-domain uses the plate-data registry directly and builds its lookup index once at module level; tests run against the full real registry.
+Variants of `ParseResult`:
 
-- **Why:** A discriminated union lets consumers narrow exhaustively (`@switch` in the app, `switch` in TypeScript), and each honest answer — region1 only, undeterminable, ambiguous, not in the current registry — is its own state instead of a combination of nullable fields. With 100% branch coverage (D-18) there are no branches real data cannot reach and no default-parameter branches.
-- **Rejected:** a single result with nullable fields (invalid combinations become representable); the registry as a parameter defaulting to plate-data. A `createParser(registry)` factory stays an additive option.
+- `resolved` — every reading names the same region2;
+- `region1-only` — no reading carries a region2: reduced (§ 27 ust. 3, § 30 ust. 2 pkt 2), diplomatic (pkt 7), temporary (pkt 6) or individual (pkt 4) plates. Reduced formats in pkt 2 lit. d, f and g put a letter immediately after the voivodeship letter, and those are the layouts that coincide with full codes (`WA12` is mazowieckie reduced, not a powiat). A column-6 code at the start is a registry fact, not a plate type; the plate type is decided in #38;
+- `ambiguous` — only after look-alike substitution (L2): one reading names a region2 and another carries none; region1 is the same in every reading. A list of region2 would describe states real data never reaches (D-18);
+- `region2-not-in-registry` — valid column-4+5 shape whose distinguisher is not in the current registry (D-26);
+- `not-in-registry` — first character is a letter outside column 4 (currently H and U; provisional until #38);
+- `invalid-input` — `invalid-characters` (from normalisation) or `no-matching-format` (including a leading digit: no § 30 ust. 2 template starts with one);
+- `empty` — empty or separator-only input.
+
+The earlier design variant «region undeterminable (valid special plate)» moves to #38 (D-18): #37 has no reachable special-plate path that leaves the region unknown once formats are checked.
+
+- **Why:** A discriminated union lets consumers narrow exhaustively (`@switch` in the app, `switch` in TypeScript), and each honest answer is its own state instead of a combination of nullable fields. With 100% branch coverage (D-18) there are no branches real data cannot reach and no default-parameter branches.
+- **Rejected:** a single result with nullable fields (invalid combinations become representable); the registry as a parameter defaulting to plate-data; an `ambiguous` with a list of region2 (unreachable under the L1/L2 invariants). A `createParser(registry)` factory stays an additive option.
 
 ### D-31 Normalised plate input keeps group boundaries; invalid input is its own variant — Accepted
 
-`normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#37) maps `invalid` to its own invalid-input variant (D-27).
+`normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#37) maps `invalid` to its own invalid-input variant (D-27) and reads only `compact`: group boundaries are not used in #37.
 
-- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so a boundary the user typed may help choose between region2 interpretations, and normalisation must not discard it. Region1 resolution (#36) reads only `compact`: no Annex 13 full code is a single letter (a column-4 letter plus a column-5 suffix of at least one letter), and no column-5 suffix contains a digit, so a boundary after the first character or inside a letter+digit code cannot select a different region1. Whether a boundary breaks ties between region2 codes is decided in #37. Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
-- **Rejected:** deleting separators and returning only the compact string (the boundary is lost before #37 can decide whether it matters); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
+- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so normalisation must keep the boundary for later use. Region1 resolution (#36) already reads only `compact`: no Annex 13 full code is a single letter, and no column-5 suffix contains a digit. In #37, reading as typed never yields two readings with different regions, so there is nothing for a boundary to break; on L2 a typed boundary would help only some look-alike cases and can itself be wrong (`DWL 123`). Boundaries are therefore kept for partial-input candidates (#39). Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
+- **Rejected:** deleting separators and returning only the compact string (the boundary would be lost before #39); using group boundaries in #37 to break L2 ties (incomplete and can follow a mistyped separator); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
+
+### D-32 Format-aware readings in levels — Accepted
+
+Replaces the backlog item «powiat by longest matching prefix (3 characters, then 2)» the same way D-07 records the departure from «as JSON». `parsePlate` builds readings — a registry distinguisher (column-4 letter, column-4+5 full code from plate-data `fullCodes`, or column-6 code) plus a vehicle part that matches a § 30 ust. 2 template — and takes the first level that yields any:
+
+1. **L1** — the input as typed;
+2. **L2.1** — 0↔O and 1↔I swapped at positions 2–3, one substitution; **L2.2** — both positions, only if L2.1 is empty;
+3. **L3** — as typed, a valid column-4+5 shape whose distinguisher is not in the registry (`region2-not-in-registry`), only if L2 is empty;
+
+otherwise `invalid-input` / `no-matching-format`. A leading digit is `no-matching-format`: no § 30 ust. 2 pkt 1–7 template starts with one (digits 0 and 1 in the first position are already mapped to O and I by normalisation). Incomplete input such as `D`, `DW` or `WA1` is also `no-matching-format` by design; candidates while typing are #39.
+
+Vehicle-part character rules are applied in #37: letters exclude B, D, I, O and Z (§ 31 ust. 1), except on individual plates (§ 32 ust. 2 as amended by Dz.U. 2025 poz. 939 § 1 pkt 3), and every digit group is non-zero (the «od 0…01» ranges in each tiret). They belong here because the parser now answers «no valid reading»; a partial rule set would change answers later when the rest landed. The templates are internal data, each with one citation, and are meant to be reused by #51.
+
+Classification of the readings at the winning level: none carry region2 → `region1-only`; all carry region2 → `resolved`; otherwise → `ambiguous` (only observed on L2, as one region2 plus a region1-only reading).
+
+Enumeration counts below are strings of a representative domain (digit runs filled with `2`, letter runs with `A`), not numbers of plates. The full domain is 23 column-4 letters × 35² characters on positions 2–3 × 62 fills of length 1–5 = 1 746 850 strings (L1 readings 140 359; L1 multi-region2 and L1 mixed both 0; L2 mixed after ranking 168; swapping L2 and L3 would change 7 650 strings). The readings invariant spec runs on the narrowed domain of 6 258 length-3 prefixes that can yield a full code in some look-alike variant (387 996 strings; L1 readings 43 096; mixed on L2 still 168), because the full domain took ~11 s under Vitest with coverage.
+
+- **Why:** Format checks make motorcycle/moped and reduced plates resolve to the right distinguisher where a longest prefix would not, and levels prefer the typed input as evidence: fewer look-alike changes stay closer to what was typed (the same reason L1 precedes L2). L2 precedes L3 because a look-alike that hits the registry is stronger evidence than guessing a new code; 7 650 strings depend on that order. Ranking on L2 cuts mixed outcomes from 312 to 168 and keeps cases such as `SOI234` as Sosnowiec (one substitution) instead of ambiguous with the two-substitution temporary reading. Classification relies on the invariant enforced by the readings spec (0 multi-region2 on L1 and L2, 0 mixed on L1), which is why `resolved` may take region2 from any reading.
+- **Rejected:** longest matching prefix (wrong for 212 motorcycle/moped pairs and for 119 two-character and 316 three-character full codes that a reduced plate can imitate); a candidate list without format checks (274 codes would always yield two candidates, and «no valid reading» would be unreachable); L2 without ranking by substitution count (312 mixed strings instead of 168; `SOI234` would be ambiguous).
