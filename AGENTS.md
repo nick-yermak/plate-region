@@ -51,6 +51,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - npm only; Node version from `.nvmrc`; `engines.node` in `package.json` stays on the same major (D-15). Never `--legacy-peer-deps` or `npm audit fix --force` — fix the cause. New install scripts need approval in `allowScripts`. Never delete or regenerate `package-lock.json` without approval; on ERESOLVE, stop and report the exact error.
 - Domain logic in `libs/plate-domain` is written test-first (TDD) and stays framework-free.
 - Do not invent plate codes or regions. The registry in `libs/plate-data` is the only source of truth; if data is missing, say so.
+- Legal rules cite row IDs from `docs/pl-plate-rules.md` (D-33); a new rule gets a row there before code cites it.
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
 - Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.

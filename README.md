@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/nick-yermak/plate-region/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nick-yermak/plate-region/actions/workflows/ci.yml)
 
-**Which part of Poland is that car from?** Type or snap a Polish licence plate and PlateRegion tells you the voivodeship and powiat it was registered in. Works offline, installs on your phone, and turns every plate you spot into a growing collection of regions.
+**Which part of Poland is that car from?** Type or snap a Polish licence plate and PlateRegion tells you which voivodeship — and, when the plate encodes one, which powiat — its registration code belongs to. Works offline, installs on your phone, and turns every plate you spot into a growing collection of regions.
 
 > 🚧 **Status: early development.** The project is being built in public. Features below marked as _planned_ are not implemented yet — see the [project board](https://github.com/users/nick-yermak/projects/2) for progress.
 >
@@ -10,7 +10,7 @@
 
 ## Features
 
-- **Manual lookup** — type a plate (or just its first letters) and get the voivodeship, powiat and plate type instantly _(planned)_
+- **Manual lookup** — type a plate (or just its first letters) and get the voivodeship, the powiat when the plate encodes one, and the plate type — or every type the characters allow — instantly _(planned)_
 - **Photo recognition** — take a picture or upload one; recognition runs locally in the browser, with a cloud vision model as a fallback for hard cases _(planned)_
 - **Offline-first PWA** — the full region registry is cached on the device, so manual lookup works without a connection _(planned)_
 - **Region collection** — count the plates you meet, fill in the map of Poland and unlock achievements; all data stays on your device _(planned)_
@@ -20,15 +20,15 @@
 
 ## How it works
 
-Polish plates encode where the vehicle was registered:
+Polish plates carry registration codes from an official registry: a voivodeship code and, on most plates, a powiat code:
 
-| Part        | Example        | Meaning                                           |
-| ----------- | -------------- | ------------------------------------------------- |
-| 1st letter  | **W** WA 12345 | Voivodeship (W = mazowieckie)                     |
-| 2–3 letters | **WA** 12345   | Powiat or city with powiat rights (WA = Warszawa) |
-| Rest        | WA **12345**   | Individual vehicle identifier                     |
+| Part                    | Example      | Meaning                                                                                                                                                 |
+| ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1st letter              | **W**A 12345 | Voivodeship code (W = mazowieckie)                                                                                                                      |
+| First 2 or 3 characters | **WA** 12345 | Full code of a powiat or a city with powiat rights (WA = m.st. Warszawa); per the act, the powiat distinguisher itself is the 2nd or the 2nd–3rd letter |
+| Rest                    | WA **12345** | Vehicle distinguisher                                                                                                                                   |
 
-PlateRegion will normalise the input, match the longest known prefix against an official registry of codes, and handle special cases (custom, military, diplomatic, temporary and vintage plates) by saying honestly when a region can't be determined. _(planned)_
+The rules come from the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. (Dz.U. 2024 poz. 1709, as amended); each one is listed with its provision in [docs/pl-plate-rules.md](docs/pl-plate-rules.md). The parser normalises the input and reads it against the official code registry and the formats the act sets for its five plate types: ordinary, individual (custom), vintage, temporary and diplomatic. Reduced, individual, temporary and diplomatic plates carry only a voivodeship code, so the answer stops at the voivodeship. When the characters fit more than one plate type — reduced ordinary, temporary and vintage plates differ only in colour — every possible type is listed. Military, service and trade plates are not covered by this act and are not recognised. The lookup UI is _(planned)_.
 
 ## Tech stack
 

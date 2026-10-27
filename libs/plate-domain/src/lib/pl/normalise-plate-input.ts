@@ -16,7 +16,7 @@ export type NormalisedPlateInput =
 
 /**
  * Digits read as the letter they resemble, in the first position only: every plate type starts with a letter
- * (§ 30 ust. 2 pkt 1–7 Dz.U. 2024 poz. 1709). Later positions are left as typed because telling them apart
+ * (§ 30 ust. 2 pkt 1–7 Dz.U. 2024 poz. 1709, R-24–R-33). Later positions are left as typed because telling them apart
  * needs the registry (`SO` Sosnowiec vs `S0` śląskie).
  */
 const FIRST_POSITION_LOOK_ALIKES: ReadonlyMap<string, string> = new Map([
@@ -36,7 +36,7 @@ function uppercaseAscii(char: string): string {
  * Whitespace, dash punctuation and '.' separate groups; a run of them is one boundary, and leading or trailing
  * ones are dropped. Only ASCII a–z is uppercased, and no Unicode normalisation is applied, so characters such
  * as 'ı', 'ſ' or fullwidth letters stay outside the alphabet instead of turning into valid letters.
- * Any character outside the § 30 ust. 1 alphabet makes the result `invalid`.
+ * Any character outside the § 30 ust. 1 alphabet (R-23) makes the result `invalid`.
  * Empty or separator-only input is `ok` with no groups, because partial input starts empty.
  */
 export function normalisePlateInput(input: string): NormalisedPlateInput {
@@ -55,7 +55,7 @@ export function normalisePlateInput(input: string): NormalisedPlateInput {
     return { status: 'invalid', invalidCharacters };
   }
 
-  // Safe to index by code unit: every remaining character is ASCII (§ 30 ust. 1 alphabet).
+  // Safe to index by code unit: every remaining character is ASCII (§ 30 ust. 1 alphabet, R-23).
   const groups = rawGroups.map((group) => {
     let normalised = '';
     for (let i = 0; i < group.length; i++) {

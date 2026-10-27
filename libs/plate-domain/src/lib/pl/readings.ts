@@ -1,11 +1,12 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
 import type { Region1, Region2 } from '@plate-region/plate-data';
 
+import { mergePlateTypes, type PlateTypes } from './plate-type';
 import {
-  COLUMN_4_5_PATTERNS,
-  COLUMN_4_PATTERNS,
-  COLUMN_6_PATTERNS,
-  matchesTemplate,
+  COLUMN_4_5_GROUPS,
+  COLUMN_4_GROUP,
+  COLUMN_6_GROUP,
+  plateTypesOf,
 } from './vehicle-part-templates';
 
 /**
@@ -15,6 +16,7 @@ import {
  */
 export type Reading = {
   readonly region2: Region2 | undefined;
+  readonly plateTypes: PlateTypes;
 };
 
 /** region2 rows that belong to this region1 (primary letter), for index builds. */
@@ -88,7 +90,7 @@ function withLookAlikeAt(
 
 /**
  * Resolves region1 from the first character via Annex 13 column-4 letters
- * (including secondary letters such as I for śląskie).
+ * (including secondary letters such as I for śląskie; R-37, R-48).
  */
 export function region1ForFirstLetter(compact: string): Region1 | undefined {
   // Empty compact: charAt(0) is '', which is absent from BY_LETTER.
@@ -96,16 +98,17 @@ export function region1ForFirstLetter(compact: string): Region1 | undefined {
 }
 
 /**
- * All readings of `compact` as typed (L1): column-4, full codes, and column-6.
- * Column 6 is tried regardless of the second character: membership in the
- * letter+digit code set decides whether that distinguisher applies, not a
- * character-class check on position 2.
+ * All readings of `compact` as typed (L1): Annex 13 column-4, full codes
+ * (columns 4–5), and column-6 (R-37, R-48). Column 6 is tried regardless of
+ * the second character: membership in the letter+digit code set decides
+ * whether that distinguisher applies, not a character-class check on position 2.
  */
 export function readingsOf(compact: string): readonly Reading[] {
   const readings: Reading[] = [];
 
-  if (matchesTemplate(COLUMN_4_PATTERNS, compact.slice(1))) {
-    readings.push({ region2: undefined });
+  const column4Types = plateTypesOf(COLUMN_4_GROUP, compact.slice(1));
+  if (column4Types !== undefined) {
+    readings.push({ region2: undefined, plateTypes: column4Types });
   }
 
   for (const suffixLen of [1, 2] as const) {
@@ -114,16 +117,19 @@ export function readingsOf(compact: string): readonly Reading[] {
     if (region2 === undefined) {
       continue;
     }
-    if (
-      matchesTemplate(COLUMN_4_5_PATTERNS[suffixLen], compact.slice(codeLen))
-    ) {
-      readings.push({ region2 });
+    const plateTypes = plateTypesOf(
+      COLUMN_4_5_GROUPS[suffixLen],
+      compact.slice(codeLen),
+    );
+    if (plateTypes !== undefined) {
+      readings.push({ region2, plateTypes });
     }
   }
 
   if (COLUMN_6_CODES.has(compact.slice(0, 2))) {
-    if (matchesTemplate(COLUMN_6_PATTERNS, compact.slice(2))) {
-      readings.push({ region2: undefined });
+    const plateTypes = plateTypesOf(COLUMN_6_GROUP, compact.slice(2));
+    if (plateTypes !== undefined) {
+      readings.push({ region2: undefined, plateTypes });
     }
   }
 
@@ -150,12 +156,14 @@ export function lookAlikeVariants(
 }
 
 /**
- * Whether `compact` as typed has a valid column-4+5 shape (column-4 letter +
- * 1–2 any letters + matching vehicle part). Called only after empty L1/L2, so a
- * match implies the distinguisher is not in the registry (D-18: no explicit
- * not-in-registry branch).
+ * Plate types of a valid column-4+5 shape whose distinguisher is not in the
+ * registry, or undefined when no such shape matches (D-18: no explicit
+ * not-in-registry branch). Called only after empty L1/L2.
  */
-export function matchesUnregisteredShape(compact: string): boolean {
+export function unregisteredShapePlateTypes(
+  compact: string,
+): PlateTypes | undefined {
+  const found: PlateTypes[] = [];
   for (const suffixLen of [1, 2] as const) {
     const codeLen = 1 + suffixLen;
     const suffix = compact.slice(1, codeLen);
@@ -163,12 +171,18 @@ export function matchesUnregisteredShape(compact: string): boolean {
     if (![...suffix].every((char) => /[A-Z]/.test(char))) {
       continue;
     }
-    if (
-      matchesTemplate(COLUMN_4_5_PATTERNS[suffixLen], compact.slice(codeLen))
-    ) {
-      return true;
+    const plateTypes = plateTypesOf(
+      COLUMN_4_5_GROUPS[suffixLen],
+      compact.slice(codeLen),
+    );
+    if (plateTypes !== undefined) {
+      found.push(plateTypes);
     }
   }
 
-  return false;
+  if (found.length === 0) {
+    return undefined;
+  }
+  const [first, ...rest] = found;
+  return mergePlateTypes(first, ...rest);
 }

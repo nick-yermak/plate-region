@@ -1,37 +1,78 @@
 import { PLATE_ALPHABET } from './alphabet';
+import { mergePlateTypes, type PlateTypes } from './plate-type';
 
 /**
- * Vehicle-part (serial) templates from § 30 ust. 2 Dz.U. 2024 poz. 1709.
+ * Vehicle-part (serial) templates from § 30 ust. 2 Dz.U. 2024 poz. 1709 (R-24–R-33).
  * Layout notation: D = digit, L = letter.
- * Plate type / family is internal (#38 decides the public type).
  */
 
-export type PlateFamily =
-  | 'ordinary'
-  | 'motorcycle-moped'
-  | 'vintage'
-  | 'reduced'
-  | 'diplomatic'
-  | 'temporary'
-  | 'individual';
+/** Row ID in docs/pl-plate-rules.md (D-33). */
+export type RuleRowId = `R-${string}`;
 
 export interface VehiclePartTemplate {
-  readonly family: PlateFamily;
   /** D = digit, L = letter. */
   readonly layout: string;
+  /** § 25 types a plate with this layout can be (D-34). */
+  readonly plateTypes: PlateTypes;
   readonly source: string;
+  readonly rows: readonly [RuleRowId, ...RuleRowId[]];
+}
+
+export interface CompiledTemplate {
+  readonly template: VehiclePartTemplate;
+  readonly pattern: RegExp;
 }
 
 /** After a column-4 letter only (reduced, diplomatic). */
 export const COLUMN_4_TEMPLATES: readonly VehiclePartTemplate[] = [
-  { family: 'reduced', layout: 'DDD', source: '§ 30 ust. 2 pkt 2 lit. a' },
-  { family: 'reduced', layout: 'DDL', source: '§ 30 ust. 2 pkt 2 lit. b' },
-  { family: 'reduced', layout: 'DLD', source: '§ 30 ust. 2 pkt 2 lit. c' },
-  { family: 'reduced', layout: 'LDD', source: '§ 30 ust. 2 pkt 2 lit. d' },
-  { family: 'reduced', layout: 'DLL', source: '§ 30 ust. 2 pkt 2 lit. e' },
-  { family: 'reduced', layout: 'LLD', source: '§ 30 ust. 2 pkt 2 lit. f' },
-  { family: 'reduced', layout: 'LDL', source: '§ 30 ust. 2 pkt 2 lit. g' },
-  { family: 'diplomatic', layout: 'DDDDDD', source: '§ 30 ust. 2 pkt 7' },
+  {
+    layout: 'DDD',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. a',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'DDL',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. b',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'DLD',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. c',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'LDD',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. d',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'DLL',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. e',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'LLD',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. f',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'LDL',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+    source: '§ 30 ust. 2 pkt 2 lit. g',
+    rows: ['R-26', 'R-43'],
+  },
+  {
+    layout: 'DDDDDD',
+    plateTypes: ['diplomatic'],
+    source: '§ 30 ust. 2 pkt 7',
+    rows: ['R-33'],
+  },
 ];
 
 /**
@@ -44,257 +85,309 @@ export const COLUMN_4_5_TEMPLATES: {
 } = {
   1: [
     {
-      family: 'ordinary',
       layout: 'DDDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. a tiret 1',
+      rows: ['R-24'],
     },
     {
-      family: 'ordinary',
       layout: 'DDDDL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. a tiret 2',
+      rows: ['R-24'],
     },
     {
-      family: 'ordinary',
       layout: 'DDDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. a tiret 3',
+      rows: ['R-24'],
     },
     {
-      family: 'ordinary',
       layout: 'DLDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. a tiret 4',
+      rows: ['R-24'],
     },
     {
-      family: 'ordinary',
       layout: 'DLLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. a tiret 5',
+      rows: ['R-24'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 1',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDDL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 2',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 3',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 4',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 5',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 6',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DLLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 7',
+      rows: ['R-27'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. a tiret 8',
+      rows: ['R-27'],
     },
     {
-      family: 'vintage',
       layout: 'DDL',
+      plateTypes: ['vintage'],
       source: '§ 30 ust. 2 pkt 5 lit. a tiret 1',
+      rows: ['R-30', 'R-45'],
     },
     {
-      family: 'vintage',
       layout: 'DDD',
+      plateTypes: ['vintage'],
       source: '§ 30 ust. 2 pkt 5 lit. a tiret 2',
+      rows: ['R-30', 'R-45'],
     },
   ],
   2: [
     {
-      family: 'ordinary',
       layout: 'LDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 1',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 2',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 3',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DDLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 4',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DLLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 5',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'LLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 6',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DDDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 7',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DDDDL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 8',
+      rows: ['R-25'],
     },
     {
-      family: 'ordinary',
       layout: 'DDDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 1 lit. b tiret 9',
+      rows: ['R-25'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LDDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 1',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 2',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 3',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DDLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 4',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'DLLD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 5',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LLDD',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 6',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LDDL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 7',
+      rows: ['R-28'],
     },
     {
-      family: 'motorcycle-moped',
       layout: 'LDLL',
+      plateTypes: ['ordinary'],
       source: '§ 30 ust. 2 pkt 3 lit. b tiret 8',
+      rows: ['R-28'],
     },
     {
-      family: 'vintage',
       layout: 'DL',
+      plateTypes: ['vintage'],
       source: '§ 30 ust. 2 pkt 5 lit. b tiret 1',
+      rows: ['R-31', 'R-45'],
     },
     {
-      family: 'vintage',
       layout: 'DD',
+      plateTypes: ['vintage'],
       source: '§ 30 ust. 2 pkt 5 lit. b tiret 2',
+      rows: ['R-31', 'R-45'],
     },
     {
-      family: 'vintage',
       layout: 'LD',
+      plateTypes: ['vintage'],
       source: '§ 30 ust. 2 pkt 5 lit. b tiret 3',
+      rows: ['R-31', 'R-45'],
     },
   ],
 };
 
 /** After a column-6 letter+digit code (temporary, individual). */
 export const COLUMN_6_TEMPLATES: readonly VehiclePartTemplate[] = [
-  { family: 'temporary', layout: 'DDDD', source: '§ 30 ust. 2 pkt 6' },
   {
-    family: 'temporary',
+    layout: 'DDDD',
+    plateTypes: ['temporary'],
+    source: '§ 30 ust. 2 pkt 6',
+    rows: ['R-32', 'R-46'],
+  },
+  {
     layout: 'DDDL',
+    plateTypes: ['temporary'],
     source: '§ 30 ust. 2 pkt 6 — po wyczerpaniu',
+    rows: ['R-32', 'R-46'],
   },
   {
-    family: 'individual',
     layout: 'LLLLL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 1',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLLLD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 2',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLLDL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 3',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLLDD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 4',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLLL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 5',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLLD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 6',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLDL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 7',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLDD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 8',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 9',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LLD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 10',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LDL',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 11',
+    rows: ['R-29', 'R-44'],
   },
   {
-    family: 'individual',
     layout: 'LDD',
+    plateTypes: ['individual'],
     source: '§ 30 ust. 2 pkt 4; zał. 12 rys. 12 poz. 12',
+    rows: ['R-29', 'R-44'],
   },
 ];
 
-// § 31 ust. 1 excludes B, D, I, O, Z from the vehicle part; § 32 ust. 2
-// (as amended by Dz.U. 2025 poz. 939 § 1 pkt 3) lifts that for individual plates.
+// § 31 ust. 1 (R-36) excludes B, D, I, O, Z from the vehicle part «z zastrzeżeniem § 32 ust. 2» (R-39): individual plates are exempt.
 const EXCLUDED_VEHICLE_LETTERS = new Set(['B', 'D', 'I', 'O', 'Z']);
 const ALL_LETTERS = [...PLATE_ALPHABET].filter((c) => /[A-Z]/.test(c));
 const STANDARD_LETTERS = ALL_LETTERS.filter(
@@ -309,7 +402,7 @@ function compileLayout(layout: string, individual: boolean): RegExp {
   for (const run of runs) {
     const length = run.length;
     if (run.startsWith('D')) {
-      // Ranges «od 0…01» — a digit group may not be all zeros (except individuals).
+      // Ranges «od 0…01» in § 30 ust. 2 (R-34) — a digit group may not be all zeros (except individuals).
       pattern += individual
         ? `\\d{${length}}`
         : `(?!0{${length}})\\d{${length}}`;
@@ -322,29 +415,41 @@ function compileLayout(layout: string, individual: boolean): RegExp {
 
 function compileGroup(
   templates: readonly VehiclePartTemplate[],
-): readonly RegExp[] {
-  return templates.map((template) =>
-    compileLayout(template.layout, template.family === 'individual'),
-  );
+): readonly CompiledTemplate[] {
+  return templates.map((template) => ({
+    template,
+    pattern: compileLayout(
+      template.layout,
+      template.plateTypes.includes('individual'),
+    ),
+  }));
 }
 
-export const COLUMN_4_PATTERNS: readonly RegExp[] =
+export const COLUMN_4_GROUP: readonly CompiledTemplate[] =
   compileGroup(COLUMN_4_TEMPLATES);
 
-export const COLUMN_4_5_PATTERNS: {
-  readonly 1: readonly RegExp[];
-  readonly 2: readonly RegExp[];
+export const COLUMN_4_5_GROUPS: {
+  readonly 1: readonly CompiledTemplate[];
+  readonly 2: readonly CompiledTemplate[];
 } = {
   1: compileGroup(COLUMN_4_5_TEMPLATES[1]),
   2: compileGroup(COLUMN_4_5_TEMPLATES[2]),
 };
 
-export const COLUMN_6_PATTERNS: readonly RegExp[] =
+export const COLUMN_6_GROUP: readonly CompiledTemplate[] =
   compileGroup(COLUMN_6_TEMPLATES);
 
-export function matchesTemplate(
-  patterns: readonly RegExp[],
+/** Plate types of every template in `group` matching `vehiclePart`, or undefined when none matches. */
+export function plateTypesOf(
+  group: readonly CompiledTemplate[],
   vehiclePart: string,
-): boolean {
-  return patterns.some((pattern) => pattern.test(vehiclePart));
+): PlateTypes | undefined {
+  const matched = group
+    .filter(({ pattern }) => pattern.test(vehiclePart))
+    .map(({ template }) => template.plateTypes);
+  if (matched.length === 0) {
+    return undefined;
+  }
+  const [first, ...rest] = matched;
+  return mergePlateTypes(first, ...rest);
 }

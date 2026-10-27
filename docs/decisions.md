@@ -278,20 +278,20 @@ Import (#34): committed, re-runnable and deterministic — re-running on the sam
 
 `parsePlate` (#37) returns a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings. plate-domain uses the plate-data registry directly and builds its lookup indexes once at module level; tests run against the full real registry. Partial-input candidates (#39) get a separate function and type. The type was written in #37 rather than #36 because a type written in #36 would have had variants real data cannot reach (D-18).
 
-Variants of `ParseResult`:
+Variants of `ParseResult` (plate types added in #38, D-34):
 
-- `resolved` — every reading names the same region2;
-- `region1-only` — no reading carries a region2: reduced (§ 27 ust. 3, § 30 ust. 2 pkt 2), diplomatic (pkt 7), temporary (pkt 6) or individual (pkt 4) plates. Reduced formats in pkt 2 lit. d, f and g put a letter immediately after the voivodeship letter, and those are the layouts that coincide with full codes (`WA12` is mazowieckie reduced, not a powiat). A column-6 code at the start is a registry fact, not a plate type; the plate type is decided in #38;
-- `ambiguous` — only after look-alike substitution (L2): one reading names a region2 and another carries none; region1 is the same in every reading. A list of region2 would describe states real data never reaches (D-18);
-- `region2-not-in-registry` — valid column-4+5 shape whose distinguisher is not in the current registry (D-26);
-- `not-in-registry` — first character is a letter outside column 4 (currently H and U; provisional until #38);
+- `resolved` — every reading names the same region2; carries `plateTypes`;
+- `region1-only` — no reading carries a region2: reduced (§ 27 ust. 3, § 30 ust. 2 pkt 2), diplomatic (pkt 7), temporary (pkt 6) or individual (pkt 4) plates; carries `plateTypes`. Reduced formats in pkt 2 lit. d, f and g put a letter immediately after the voivodeship letter, and those are the layouts that coincide with full codes (`WA12` is mazowieckie reduced, not a powiat). A column-6 code at the start is a registry fact; the plate type comes from the matched templates (D-34);
+- `ambiguous` — only after look-alike substitution (L2): one reading names a region2 and another carries none; region1 is the same in every reading. It carries `withRegion2: { region2, plateTypes }` and `withoutRegion2: { plateTypes }`. A list of region2 would describe states real data never reaches (D-18);
+- `region2-not-in-registry` — valid column-4+5 shape whose distinguisher is not in the current registry (D-26); carries the `plateTypes` of the matched shape templates;
+- `not-in-registry` — the first character is a letter outside Annex 13 column 4 (H and U). Final within the scope of Dz.U. 2024 poz. 1709: no format in the act starts with a letter outside column 4 (D-35); #60 may revisit it;
 - `invalid-input` — `invalid-characters` (from normalisation) or `no-matching-format` (including a leading digit: no § 30 ust. 2 template starts with one);
 - `empty` — empty or separator-only input.
 
-The earlier design variant «region undeterminable (valid special plate)» moves to #38 (D-18): #37 has no reachable special-plate path that leaves the region unknown once formats are checked.
+A separate «region undeterminable (valid special plate)» variant was planned for #38 and is dropped. Every § 30 ust. 2 format starts with an Annex 13 distinguisher, so a valid plate always yields region1, and plates outside the act are out of scope (D-35). With real data the variant is unreachable (D-18). This deviates from the backlog item «an honest "region can't be determined" answer»; the honest answers are `region1-only` (the plate encodes no region2) and a `plateTypes` with more than one element (the characters do not determine the type).
 
 - **Why:** A discriminated union lets consumers narrow exhaustively (`@switch` in the app, `switch` in TypeScript), and each honest answer is its own state instead of a combination of nullable fields. With 100% branch coverage (D-18) there are no branches real data cannot reach and no default-parameter branches.
-- **Rejected:** a single result with nullable fields (invalid combinations become representable); the registry as a parameter defaulting to plate-data; an `ambiguous` with a list of region2 (unreachable under the L1/L2 invariants). A `createParser(registry)` factory stays an additive option.
+- **Rejected:** a single result with nullable fields (invalid combinations become representable); the registry as a parameter defaulting to plate-data; an `ambiguous` with a list of region2 (unreachable under the L1/L2 invariants); a «region undeterminable» variant (unreachable, D-18). A `createParser(registry)` factory stays an additive option.
 
 ### D-31 Normalised plate input keeps group boundaries; invalid input is its own variant — Accepted
 
@@ -310,7 +310,7 @@ Replaces the backlog item «powiat by longest matching prefix (3 characters, the
 
 otherwise `invalid-input` / `no-matching-format`. A leading digit is `no-matching-format`: no § 30 ust. 2 pkt 1–7 template starts with one (digits 0 and 1 in the first position are already mapped to O and I by normalisation). Incomplete input such as `D`, `DW` or `WA1` is also `no-matching-format` by design; candidates while typing are #39.
 
-Vehicle-part character rules are applied in #37: letters exclude B, D, I, O and Z (§ 31 ust. 1), except on individual plates (§ 32 ust. 2 as amended by Dz.U. 2025 poz. 939 § 1 pkt 3), and every digit group is non-zero (the «od 0…01» ranges in each tiret). They belong here because the parser now answers «no valid reading»; a partial rule set would change answers later when the rest landed. The templates are internal data, each with one citation, and are meant to be reused by #51.
+Vehicle-part character rules are applied in #37: letters exclude B, D, I, O and Z (§ 31 ust. 1), except on individual plates (the reservation «z zastrzeżeniem § 32 ust. 2» in § 31 ust. 1; R-36, R-39), and every digit group is non-zero (the «od 0…01» ranges in each tiret). They belong here because the parser now answers «no valid reading»; a partial rule set would change answers later when the rest landed. The templates are internal data, each with one citation, and are meant to be reused by #51.
 
 Classification of the readings at the winning level: none carry region2 → `region1-only`; all carry region2 → `resolved`; otherwise → `ambiguous` (only observed on L2, as one region2 plus a region1-only reading).
 
@@ -318,3 +318,45 @@ Enumeration counts below are strings of a representative domain (digit runs fill
 
 - **Why:** Format checks make motorcycle/moped and reduced plates resolve to the right distinguisher where a longest prefix would not, and levels prefer the typed input as evidence: fewer look-alike changes stay closer to what was typed (the same reason L1 precedes L2). L2 precedes L3 because a look-alike that hits the registry is stronger evidence than guessing a new code; 7 650 strings depend on that order. Ranking on L2 cuts mixed outcomes from 312 to 168 and keeps cases such as `SOI234` as Sosnowiec (one substitution) instead of ambiguous with the two-substitution temporary reading. Classification relies on the invariant enforced by the readings spec (0 multi-region2 on L1 and L2, 0 mixed on L1), which is why `resolved` may take region2 from any reading.
 - **Rejected:** longest matching prefix (wrong for 212 motorcycle/moped pairs and for 119 two-character and 316 three-character full codes that a reduced plate can imitate); a candidate list without format checks (274 codes would always yield two candidates, and «no valid reading» would be unreachable); L2 without ranking by substitution count (312 mixed strings instead of 168; `SOI234` would be ambiguous).
+
+### D-33 Plate rules source table — Accepted
+
+`docs/pl-plate-rules.md` lists every rule plate-domain relies on, one row per rule. Each row has a stable ID (R-01 …), the provision (act + § + ust. + pkt + lit.), the verbatim Polish text in its current wording, the amending provision, and whether the rule is visible in the typed characters. Code and specs cite the row ID next to the provision (e.g. `§ 31 ust. 1 (R-36)`); vehicle-part templates carry their row IDs as data (D-34).
+
+- IDs are never renumbered or reused. A new rule gets the next free ID. A rule removed by an amendment keeps its row, marked withdrawn, with the amending provision.
+- Every new amending act (D-26 update policy) is checked against every row; changed rows quote the amending text.
+
+- **Why:** every rule in code becomes traceable to one reviewed row of the act, and a citation can be checked against a single source.
+- **Rejected:** citations only in code comments (no single place to review against the act); the table inside this file (mixes legal facts with project decisions).
+
+### D-34 Plate types in parse results — Accepted
+
+The plate type follows § 25 of Dz.U. 2024 poz. 1709 (R-01): `PlateType = 'ordinary' | 'individual' | 'vintage' | 'temporary' | 'diplomatic'` (zwyczajne, indywidualne, zabytkowe, tymczasowe, dyplomatyczne). It is exported from `@plate-region/plate-domain`.
+
+- `resolved`, `region1-only` and `region2-not-in-registry` carry `plateTypes: readonly [PlateType, ...PlateType[]]`. It is the union of the plate types of every template matched at the winning level, in § 25 order, without duplicates. `ambiguous` carries `withRegion2: { region2, plateTypes }` and `withoutRegion2: { plateTypes }`. `not-in-registry`, `invalid-input` and `empty` have no type.
+- More than one element means the characters alone do not determine the type; there is no separate flag. Under the current act this happens only for reduced plates (pkt 2 serves ordinary, temporary and vintage reduced plates, which differ only in colour; R-26, R-35).
+- Each vehicle-part template carries `plateTypes` and `rows` (row IDs, D-33) in place of the internal `family`.
+- Not exposed: plate size (car, motorcycle, moped, reduced; R-02–R-05) and the electric/hydrogen colour variant (R-07, R-09, R-11, R-13). Neither is part of the § 25 type, and car and motorcycle templates after a two-letter powiat share six layouts.
+- Counts per `plateTypes` set and per `ambiguous` pair over the representative domains are asserted as literals (`readings.spec.ts`).
+
+- **Why:** § 25 is the act's own classification; a list keeps "cannot be determined from the characters" honest without a sentinel, and the fixed § 25 order keeps results deterministic.
+- **Rejected:** a single `plateType` plus an `undeterminable` flag (two fields that can contradict each other); exposing template families (size is not a type and often cannot be determined); a «region undeterminable» variant (D-27).
+
+### D-35 Plates outside Dz.U. 2024 poz. 1709 — Accepted
+
+The base act and its amendments neither describe military, service (police and others) or trade/test plates nor name an act that does. The three acts were searched for "Policj", "Sił Zbrojnych", "wojsk", "służb", "Straż", "Agencj", "Obrony Narodowej", "Żandarm", "Wywiad", "Kontrwywiad", "próbn", "badawcz", "specjaln", "salon" and for H and U in Annex 13 column 4; no hit regulates plates, and the only military reference is § 1 ust. 3 (art. 73 ust. 2a ustawy). These plates are out of scope; follow-up #60 tracks finding the governing acts. A leading H or U stays `not-in-registry` until #60 decides otherwise: in this act H and U are only column-5 suffixes (m.st. Warszawa, Chorzów), never Annex 13 distinguishers (R-37, R-48).
+
+- Deviates from the backlog item «special plates — custom, service, military, diplomatic, temporary, vintage»: custom (individual), diplomatic, temporary and vintage plates are covered; service and military plates are not.
+
+- **Why:** formats are never invented (D-26); without a source, any special-plate answer would be a guess.
+- **Rejected:** a provisional special-plate variant for H and U (no source; unreachable as a distinct legal state, D-18).
+
+### D-36 Readings of the act recorded without code changes — Accepted
+
+- Individual plates: the digits «0» and «00» stay allowed. § 30 ust. 2 pkt 4 (R-29) lets at most the last two letters be replaced with digits but gives no range, unlike every other format (R-34).
+- Vintage plates: pkt 5 opens with «następne cyfry lub cyfry i litera», but lit. b tiret 3 starts with a letter («litera i cyfra»). The specific lit. b governs, and the `LD` template stays (R-31).
+- Two-row plates: the row split appears only in the Annex 12 drawings, which are images (R-42). It matters for partial and photographed input and belongs to #39.
+- Individual plates and region1: the owner chooses only between the two letters of the same voivodeship (§ 32 ust. 2 as amended, R-39), so region1 is determined. Docs and UI say the plate carries a voivodeship code, not where the vehicle is registered.
+- Temporary reduced plates use the voivodeship letter (pkt 2, R-26), not a column-6 code; region1 is the same either way.
+
+- **Why:** each point was checked against the act in #38 and changes no answer; recording it stops it from being argued again.

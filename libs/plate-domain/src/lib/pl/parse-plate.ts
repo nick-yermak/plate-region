@@ -1,11 +1,13 @@
 import type { Country, Region1, Region2 } from '@plate-region/plate-data';
 
 import { normalisePlateInput } from './normalise-plate-input';
+import type { PlateType } from './plate-type';
+import { mergePlateTypes } from './plate-type';
 import {
   lookAlikeVariants,
-  matchesUnregisteredShape,
   readingsOf,
   region1ForFirstLetter,
+  unregisteredShapePlateTypes,
   type Reading,
 } from './readings';
 
@@ -20,6 +22,8 @@ export type ParseResult =
       readonly country: Country;
       readonly region1: Region1;
       readonly region2: Region2;
+      /** § 25 types of the matched templates, in § 25 order (D-34); more than one: not determinable from the characters. */
+      readonly plateTypes: readonly [PlateType, ...PlateType[]];
     }
   | {
       /**
@@ -29,6 +33,7 @@ export type ParseResult =
       readonly status: 'region1-only';
       readonly country: Country;
       readonly region1: Region1;
+      readonly plateTypes: readonly [PlateType, ...PlateType[]];
     }
   | {
       /**
@@ -39,18 +44,25 @@ export type ParseResult =
       readonly status: 'ambiguous';
       readonly country: Country;
       readonly region1: Region1;
-      readonly region2: Region2;
+      readonly withRegion2: {
+        readonly region2: Region2;
+        readonly plateTypes: readonly [PlateType, ...PlateType[]];
+      };
+      readonly withoutRegion2: {
+        readonly plateTypes: readonly [PlateType, ...PlateType[]];
+      };
     }
   | {
       /** Valid column-4+5 shape whose distinguisher is not in the current registry (D-26). */
       readonly status: 'region2-not-in-registry';
       readonly country: Country;
       readonly region1: Region1;
+      readonly plateTypes: readonly [PlateType, ...PlateType[]];
     }
   | {
       /**
-       * First character is a letter outside column 4 (currently H and U).
-       * Expectations for these letters are provisional until #38.
+       * First character is a letter outside Annex 13 column 4 (H, U; R-37, R-48).
+       * Final within Dz.U. 2024 poz. 1709; #60 may revisit (D-35).
        */
       readonly status: 'not-in-registry';
       readonly country: Country;
@@ -72,31 +84,55 @@ export type ParseResult =
     };
 
 function classify(readings: readonly Reading[], region1: Region1): ParseResult {
+  // Caller passes only a non-empty winning level; noUncheckedIndexedAccess is off,
+  // so the head of the plateTypes map is a defined PlateTypes.
+  const [head, ...tail] = readings.map((reading) => reading.plateTypes);
+  const all = mergePlateTypes(head, ...tail);
+
   const withRegion2 = readings.filter(
     (reading): reading is Reading & { region2: Region2 } =>
       reading.region2 !== undefined,
   );
   const [first] = withRegion2;
   if (first === undefined) {
-    return { status: 'region1-only', country: 'PL', region1 };
+    return {
+      status: 'region1-only',
+      country: 'PL',
+      region1,
+      plateTypes: all,
+    };
   }
 
-  const hasRegion1Only = readings.some(
+  const withoutRegion2 = readings.filter(
     (reading) => reading.region2 === undefined,
   );
-  if (!hasRegion1Only) {
+  if (withoutRegion2.length === 0) {
     return {
       status: 'resolved',
       country: 'PL',
       region1,
       region2: first.region2,
+      plateTypes: all,
     };
   }
+
+  const [withHead, ...withTail] = withRegion2.map(
+    (reading) => reading.plateTypes,
+  );
+  const [withoutHead, ...withoutTail] = withoutRegion2.map(
+    (reading) => reading.plateTypes,
+  );
   return {
     status: 'ambiguous',
     country: 'PL',
     region1,
-    region2: first.region2,
+    withRegion2: {
+      region2: first.region2,
+      plateTypes: mergePlateTypes(withHead, ...withTail),
+    },
+    withoutRegion2: {
+      plateTypes: mergePlateTypes(withoutHead, ...withoutTail),
+    },
   };
 }
 
@@ -113,7 +149,7 @@ function classify(readings: readonly Reading[], region1: Region1): ParseResult {
  * no § 30 ust. 2 template starts with one.
  *
  * Incomplete input such as `D`, `DW` or `WA1` has no matching format; candidates while typing are #39.
- * The plate type is not reported (#38).
+ * Plate types follow D-34; rules cite docs/pl-plate-rules.md (D-33).
  */
 export function parsePlate(input: string): ParseResult {
   const normalised = normalisePlateInput(input);
@@ -162,8 +198,14 @@ export function parsePlate(input: string): ParseResult {
     return classify(twoReadings, region1);
   }
 
-  if (matchesUnregisteredShape(compact)) {
-    return { status: 'region2-not-in-registry', country: 'PL', region1 };
+  const shapeTypes = unregisteredShapePlateTypes(compact);
+  if (shapeTypes !== undefined) {
+    return {
+      status: 'region2-not-in-registry',
+      country: 'PL',
+      region1,
+      plateTypes: shapeTypes,
+    };
   }
 
   return {
