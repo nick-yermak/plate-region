@@ -2,6 +2,7 @@ import { fullCodes, registry } from '@plate-region/plate-data';
 
 import { PLATE_ALPHABET } from './alphabet';
 import { parsePlate } from './parse-plate';
+import type { ParseResult } from './parse-plate';
 import { lookAlikeVariants, readingsOf } from './readings';
 
 /**
@@ -119,8 +120,23 @@ function classify(readings: ReturnType<typeof readingsOf>): {
   };
 }
 
+function typeKey(result: ParseResult): string {
+  switch (result.status) {
+    case 'ambiguous':
+      return `ambiguous ${result.withRegion2.plateTypes.join('+')} | ${result.withoutRegion2.plateTypes.join('+')}`;
+    case 'resolved':
+    case 'region1-only':
+    case 'region2-not-in-registry':
+      return `${result.status} ${result.plateTypes.join('+')}`;
+    case 'invalid-input':
+      return `invalid-input ${result.reason}`;
+    default:
+      return result.status;
+  }
+}
+
 describe('readings invariant', () => {
-  it('enumerates the narrowed representative domain: 0 multi-region2 on L1 and L2, 0 mixed on L1, and the literal L1/ambiguous counts', () => {
+  it('enumerates the narrowed representative domain: 0 multi-region2 on L1 and L2, 0 mixed on L1, and the literal L1/ambiguous and typeCounts', () => {
     const fillList = fills();
     const prefixes = relevantPrefixes();
     let total = 0;
@@ -129,6 +145,7 @@ describe('readings invariant', () => {
     let l1Mixed = 0;
     let l2MultiRegion2 = 0;
     let ambiguousCount = 0;
+    const typeCounts: Record<string, number> = {};
 
     for (const prefix of prefixes) {
       for (const fill of fillList) {
@@ -153,10 +170,13 @@ describe('readings invariant', () => {
           }
         }
 
+        const result = parsePlate(compact);
         // Ambiguous arises only on L2; L1 mixed is asserted 0 above.
-        if (parsePlate(compact).status === 'ambiguous') {
+        if (result.status === 'ambiguous') {
           ambiguousCount += 1;
         }
+        const key = typeKey(result);
+        typeCounts[key] = (typeCounts[key] ?? 0) + 1;
       }
     }
 
@@ -168,5 +188,64 @@ describe('readings invariant', () => {
     expect(l2MultiRegion2).toBe(0);
     expect(l1WithReadings).toBe(43_096);
     expect(ambiguousCount).toBe(168);
+    expect(typeCounts).toEqual({
+      'resolved ordinary': 33_861,
+      'resolved vintage': 5_613,
+      'region1-only ordinary+vintage+temporary': 6_228,
+      'region1-only individual': 7_492,
+      'region1-only temporary': 288,
+      'region1-only diplomatic': 144,
+      'region2-not-in-registry ordinary': 40_264,
+      'region2-not-in-registry vintage': 9_661,
+      'invalid-input no-matching-format': 284_277,
+      'ambiguous vintage | individual': 96,
+      'ambiguous ordinary | individual': 72,
+    });
+  });
+
+  it('enumerates the complement for one column-4 letter: every region1-only key appears with a non-zero literal count', () => {
+    // Templates do not depend on the letter, so one letter is enough to pin
+    // Derived consequences 3 and 4; the registry only decides which prefixes
+    // fall into the complement.
+    const region1 = registry.region1.find((r) => r.letters[0] === 'C');
+    if (region1 === undefined) {
+      throw new Error('region1 with letters[0] === C not found');
+    }
+    expect(region1.letters).toEqual(['C']);
+
+    const fillList = fills();
+    const prefixes: string[] = [];
+    for (const letter of region1.letters) {
+      for (const c2 of PLATE_ALPHABET) {
+        for (const c3 of PLATE_ALPHABET) {
+          const prefix = letter + c2 + c3;
+          if (!prefixHasFullCode(prefix)) {
+            prefixes.push(prefix);
+          }
+        }
+      }
+    }
+
+    let total = 0;
+    const typeCounts: Record<string, number> = {};
+    for (const prefix of prefixes) {
+      for (const fill of fillList) {
+        total += 1;
+        const key = typeKey(parsePlate(prefix + fill));
+        typeCounts[key] = (typeCounts[key] ?? 0) + 1;
+      }
+    }
+
+    expect(prefixes).toHaveLength(1_070);
+    expect(total).toBe(66_340);
+    expect(typeCounts).toEqual({
+      'region1-only ordinary+vintage+temporary': 1_380,
+      'region1-only individual': 3_864,
+      'region1-only temporary': 288,
+      'region1-only diplomatic': 144,
+      'region2-not-in-registry ordinary': 8_509,
+      'region2-not-in-registry vintage': 1_799,
+      'invalid-input no-matching-format': 50_356,
+    });
   });
 });
