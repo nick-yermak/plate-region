@@ -136,6 +136,8 @@ function typeKey(result: ParseResult): string {
 }
 
 describe('readings invariant', () => {
+  // ~2 s locally / ~5.5 s on the CI runner under coverage with other affected
+  // tasks in parallel — Vitest's 5 s default is too tight.
   it('enumerates the narrowed representative domain: 0 multi-region2 on L1 and L2, 0 mixed on L1, and the literal L1/ambiguous and typeCounts', () => {
     const fillList = fills();
     const prefixes = relevantPrefixes();
@@ -201,7 +203,7 @@ describe('readings invariant', () => {
       'ambiguous vintage | individual': 96,
       'ambiguous ordinary | individual': 72,
     });
-  });
+  }, 20_000);
 
   it('enumerates the complement for one column-4 letter: every region1-only key appears with a non-zero literal count', () => {
     // Templates do not depend on the letter, so one letter is enough to pin

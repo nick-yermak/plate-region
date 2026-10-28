@@ -42,6 +42,14 @@ export default [
     },
   },
   {
+    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
+    ignores: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      // A wrong `!` in a spec fails the test; in production it hides a branch (D-37).
+      '@typescript-eslint/no-non-null-assertion': 'error',
+    },
+  },
+  {
     files: [
       '**/*.ts',
       '**/*.tsx',

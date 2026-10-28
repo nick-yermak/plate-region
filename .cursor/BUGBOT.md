@@ -7,6 +7,7 @@ Scope: changed lines only. Do not flag formatting, import order or naming — Pr
 - Logic matches the stated intent; edge cases and error paths are handled.
 - No invented plate codes or regions — `libs/plate-data` is the only source of truth.
 - No silent fallbacks after a failed tool or MCP call.
+- Flag: destructuring or indexing that assumes a non-empty array whose type does not guarantee it; `eslint-disable` of `@typescript-eslint/no-non-null-assertion` (D-37).
 
 ## Angular idioms
 
@@ -22,6 +23,7 @@ Scope: changed lines only. Do not flag formatting, import order or naming — Pr
 
 - See `.cursor/rules/testing.mdc` and D-12 / D-13 / D-14.
 - Flag: new behaviour without a test; weakened assertions; `fakeAsync`/`tick`; CSS selectors or `waitForTimeout` in e2e; missing `typecheck` after library/spec changes.
+- Flag: an operand of `||`, `&&`, `??` or an optional chain that cannot change the outcome with real data — see `.cursor/rules/testing.mdc`.
 
 ## Accessibility
 

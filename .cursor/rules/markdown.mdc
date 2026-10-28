@@ -1,0 +1,8 @@
+---
+globs: README.md, AGENTS.md, docs/**/*.md, .cursor/**/*.md, .cursor/**/*.mdc
+alwaysApply: false
+---
+
+# Markdown
+
+- Tables are indexes: short cells keyed by a row ID. Long content — verbatim quotes, code, multi-sentence text — goes into a section below the table, one entry per row ID, as the "Quotes" section of `docs/pl-plate-rules.md` does (D-38).
