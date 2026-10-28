@@ -4,10 +4,9 @@ import { normalisePlateInput } from './normalise-plate-input';
 import type { PlateType } from './plate-type';
 import { mergePlateTypes } from './plate-type';
 import {
-  lookAlikeVariants,
-  readingsOf,
   region1ForFirstLetter,
-  unregisteredShapePlateTypes,
+  rejectWithoutRegion1,
+  resolveCompact,
   type Reading,
 } from './readings';
 
@@ -141,14 +140,11 @@ function classify(readings: readonly Reading[], region1: Region1): ParseResult {
  * Pure and total: never throws. Reads only `compact` of {@link normalisePlateInput}; group boundaries are ignored (D-31).
  *
  * A reading is a registry distinguisher — a column-4 letter, a column-4 letter plus a column-5 suffix, or a column-6
- * code — followed by a vehicle part that matches a § 30 ust. 2 template. The first level that yields a reading wins:
- * 1. the input as typed;
- * 2. 0↔O and 1↔I swapped at positions 2–3, one substitution before two;
- * 3. the input as typed has a valid shape, but its column-4+5 distinguisher is not in the registry (`region2-not-in-registry`).
- * Otherwise the result is `invalid-input` with reason `no-matching-format`, which also covers a leading digit:
- * no § 30 ust. 2 template starts with one.
+ * code — followed by a vehicle part that matches a § 30 ust. 2 template. Level selection is shared with
+ * {@link candidatesFor} via {@link resolveCompact} (D-39): L1 as typed, L2 look-alikes at positions 2–3, then L3
+ * unregistered column-4+5 shape. Otherwise `invalid-input` / `no-matching-format`, including a leading digit.
  *
- * Incomplete input such as `D`, `DW` or `WA1` has no matching format; candidates while typing are #39.
+ * Incomplete input such as `D`, `DW` or `WA1` has no matching format; candidates while typing are #39 (D-39).
  * Plate types follow D-34; rules cite docs/pl-plate-rules.md (D-33).
  */
 export function parsePlate(input: string): ParseResult {
@@ -169,48 +165,33 @@ export function parsePlate(input: string): ParseResult {
 
   const region1 = region1ForFirstLetter(compact);
   if (region1 === undefined) {
-    // Digits 0/1 in the first position are already mapped to O/I by normalisation.
-    if (/\d/.test(compact.charAt(0))) {
+    const reject = rejectWithoutRegion1(compact);
+    if (reject.status === 'not-in-registry') {
+      return { status: 'not-in-registry', country: 'PL' };
+    }
+    return {
+      status: 'invalid-input',
+      country: 'PL',
+      reason: 'no-matching-format',
+    };
+  }
+
+  const resolution = resolveCompact(compact);
+  switch (resolution.kind) {
+    case 'registry':
+      return classify(resolution.readings, region1);
+    case 'unregistered-shape':
+      return {
+        status: 'region2-not-in-registry',
+        country: 'PL',
+        region1,
+        plateTypes: resolution.plateTypes,
+      };
+    case 'none':
       return {
         status: 'invalid-input',
         country: 'PL',
         reason: 'no-matching-format',
       };
-    }
-    return { status: 'not-in-registry', country: 'PL' };
   }
-
-  const asTyped = readingsOf(compact);
-  if (asTyped.length > 0) {
-    return classify(asTyped, region1);
-  }
-
-  const [oneSubstitution, twoSubstitutions] = lookAlikeVariants(compact);
-  const oneReadings = oneSubstitution.flatMap((variant) => readingsOf(variant));
-  if (oneReadings.length > 0) {
-    return classify(oneReadings, region1);
-  }
-
-  const twoReadings = twoSubstitutions.flatMap((variant) =>
-    readingsOf(variant),
-  );
-  if (twoReadings.length > 0) {
-    return classify(twoReadings, region1);
-  }
-
-  const shapeTypes = unregisteredShapePlateTypes(compact);
-  if (shapeTypes !== undefined) {
-    return {
-      status: 'region2-not-in-registry',
-      country: 'PL',
-      region1,
-      plateTypes: shapeTypes,
-    };
-  }
-
-  return {
-    status: 'invalid-input',
-    country: 'PL',
-    reason: 'no-matching-format',
-  };
 }

@@ -3,7 +3,7 @@ import { fullCodes, registry } from '@plate-region/plate-data';
 import { PLATE_ALPHABET } from './alphabet';
 import { parsePlate } from './parse-plate';
 import type { ParseResult } from './parse-plate';
-import { lookAlikeVariants, readingsOf } from './readings';
+import { groupForFullCode, lookAlikeVariants, readingsOf } from './readings';
 
 /**
  * Representative domain for the readings invariant (D-32 counts).
@@ -134,6 +134,17 @@ function typeKey(result: ParseResult): string {
       return result.status;
   }
 }
+
+describe('groupForFullCode', () => {
+  it('throws on a full-code length other than 2 or 3 (module-build guard)', () => {
+    expect(() => groupForFullCode('A')).toThrow(
+      /full code length must be 2 or 3/,
+    );
+    expect(() => groupForFullCode('ABCD')).toThrow(
+      /full code length must be 2 or 3/,
+    );
+  });
+});
 
 describe('readings invariant', () => {
   // ~2 s locally / ~5.5 s on the CI runner under coverage with other affected
