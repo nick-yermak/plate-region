@@ -12,22 +12,26 @@ import {
 
 /**
  * Result of {@link parsePlate}. Discriminated union on `status`; every variant
- * carries `country: 'PL'` (D-07). Region records are by reference from the registry.
+ * carries `country: 'PL'` (D-07). `region1` / `region2` are registry records by
+ * reference. `plateTypes` is non-empty and in § 25 order (D-34); more than one
+ * element means the type is not determined by the characters alone —
+ * § 30 ust. 2 pkt 2 (R-26), § 30 ust. 3 (R-35).
  */
 export type ParseResult =
   | {
-      /** Every reading names this region2. */
+      /** Every valid reading names this region2. */
       readonly status: 'resolved';
       readonly country: Country;
       readonly region1: Region1;
       readonly region2: Region2;
-      /** § 25 types of the matched templates, in § 25 order (D-34); more than one: not determinable from the characters. */
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
     }
   | {
       /**
        * No reading carries a region2: reduced, diplomatic, temporary or
-       * individual plates.
+       * individual plates — § 27 ust. 3 (R-08), § 27 ust. 10 (R-20),
+       * § 30 ust. 2 pkt 2 (R-26), § 30 ust. 2 pkt 4 (R-29), § 30 ust. 2 pkt 6 (R-32),
+       * § 30 ust. 2 pkt 7 (R-33).
        */
       readonly status: 'region1-only';
       readonly country: Country;
@@ -36,9 +40,9 @@ export type ParseResult =
     }
   | {
       /**
-       * Only after look-alike substitution: one reading names region2, another
-       * carries none; region1 is the same in every reading. Relies on the
-       * invariant that L1 never yields mixed readings.
+       * One reading names a region2 and another carries none; region1 is the same
+       * in every reading (e.g. `WOO1A`). Arises only from look-alike characters
+       * (0/O, 1/I) at positions 2–3.
        */
       readonly status: 'ambiguous';
       readonly country: Country;
@@ -60,24 +64,31 @@ export type ParseResult =
     }
   | {
       /**
-       * First character is a letter outside Annex 13 column 4 (H, U; R-37, R-48).
-       * Final within Dz.U. 2024 poz. 1709; #60 may revisit (D-35).
+       * First character is a letter outside Annex 13 column 4 (H, U) —
+       * § 31 ust. 2 (R-37), Annex 13 table header (R-48). Final within
+       * Dz.U. 2024 poz. 1709; #60 may revisit (D-35).
        */
       readonly status: 'not-in-registry';
       readonly country: Country;
     }
   | {
+      /** Characters outside § 30 ust. 1 (R-23), as typed. */
       readonly status: 'invalid-input';
       readonly country: Country;
       readonly reason: 'invalid-characters';
       readonly invalidCharacters: readonly string[];
     }
   | {
+      /**
+       * No matching format, including a leading digit or incomplete input
+       * (`D`, `DW`, `WA1`).
+       */
       readonly status: 'invalid-input';
       readonly country: Country;
       readonly reason: 'no-matching-format';
     }
   | {
+      /** Empty or separator-only input. */
       readonly status: 'empty';
       readonly country: Country;
     };
@@ -149,16 +160,16 @@ function classify(
 }
 
 /**
- * Parses typed or recognised plate text into the regions it encodes (Dz.U. 2024 poz. 1709 as amended, D-26).
- * Pure and total: never throws. Reads only `compact` of {@link normalisePlateInput}; group boundaries are ignored (D-31).
+ * Parses typed or recognised plate text into the regions and plate types it encodes.
  *
- * A reading is a registry distinguisher — a column-4 letter, a column-4 letter plus a column-5 suffix, or a column-6
- * code — followed by a vehicle part that matches a § 30 ust. 2 template. Level selection is shared with
- * {@link candidatesFor} via {@link resolveCompact} (D-39): L1 as typed, L2 look-alikes at positions 2–3, then L3
- * unregistered column-4+5 shape. Otherwise `invalid-input` / `no-matching-format`, including a leading digit.
+ * A leading `0` or `1` is read as `O` or `I` (`0P12345`, `1B12345`). Characters outside
+ * § 30 ust. 1 (R-23) yield `invalid-input` / `invalid-characters`. Separators do not
+ * change the result. Incomplete input such as `D`, `DW` or `WA1` is `no-matching-format`;
+ * candidates while typing are {@link candidatesFor}. All-zero digit groups where the act
+ * starts at 0…01 are `no-matching-format` — § 30 ust. 2 pkt 1–3, 5–7 (R-34). Vehicle-part
+ * letters B, D, I, O and Z are rejected except on individual plates — § 31 ust. 1 (R-36).
  *
- * Incomplete input such as `D`, `DW` or `WA1` has no matching format; candidates while typing are #39 (D-39).
- * Plate types follow D-34; rules cite docs/pl-plate-rules.md (D-33).
+ * Result variants: {@link ParseResult}.
  */
 export function parsePlate(input: string): ParseResult {
   const normalised = normalisePlateInput(input);

@@ -725,6 +725,12 @@ async function writeRegistry(registry: Registry): Promise<void> {
 
   const body =
     `import type { Registry } from './model';\n\n` +
+    `/**\n` +
+    ` * Current Annex 13 registration codes for Poland (Dz.U. 2024 poz. 1709 as amended).\n` +
+    ` * Generated; do not edit by hand. \`provenance.sources\` is the base act then amendments\n` +
+    ` * in apply order (D-26). Distinguishers: § 31 ust. 2 (R-37). Column roles:\n` +
+    ` * Annex 13 table header (R-48).\n` +
+    ` */\n` +
     `export const registry = ${serializeRegistry(registry)} as const satisfies Registry;\n`;
 
   const source = header + body;

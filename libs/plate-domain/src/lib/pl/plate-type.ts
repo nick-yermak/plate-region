@@ -1,5 +1,5 @@
 /**
- * Plate type (rodzaj tablicy), § 25 Dz.U. 2024 poz. 1709 (R-01), in § 25 order:
+ * Plate type (rodzaj tablicy) — § 25 pkt 1–5 (R-01), in § 25 order:
  * - `ordinary` — zwyczajne (§ 25 pkt 1)
  * - `individual` — indywidualne (§ 25 pkt 2)
  * - `vintage` — zabytkowe (§ 25 pkt 3)
