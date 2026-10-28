@@ -5,6 +5,12 @@
 //   node libs/plate-data/scripts/import-annex-13.mts tmp/D20241709.txt
 import type { Registry } from './model';
 
+/**
+ * Current Annex 13 registration codes for Poland (Dz.U. 2024 poz. 1709 as amended).
+ * Generated; do not edit by hand. `provenance.sources` is the base act then amendments
+ * in apply order (D-26). Distinguishers: § 31 ust. 2 (R-37). Column roles:
+ * Annex 13 table header (R-48).
+ */
 export const registry = {
   provenance: {
     legalStateDate: '2026-10-05',

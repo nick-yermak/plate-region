@@ -15,20 +15,19 @@ import {
 } from './readings';
 import { completablePlateTypesOf } from './vehicle-part-templates';
 
-/** One way the typed characters can continue, or already end, as a plate (D-39). */
+/**
+ * One way the typed characters can continue, or already end, as a plate (D-39).
+ * `plateTypes` are § 25 types still possible, in § 25 order — § 25 pkt 1–5 (R-01).
+ * `completeAs` lists types for which the input is already a complete plate; it is
+ * always present and empty while the input is not complete for that entry.
+ */
 export type Candidate =
   | {
       readonly kind: 'region2';
       readonly region2: Region2;
-      /**
-       * Full codes of the readings that give this entry its plate types: codes
-       * behind the winning completable level, plus codes of the complete
-       * readings (D-39). Codes reached only through a losing level are omitted.
-       */
+      /** Full codes of the readings that give this entry its plate types. */
       readonly codes: readonly [string, ...string[]];
-      /** § 25 types still possible, in § 25 order (D-34). */
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
-      /** Types for which the input is already a complete plate; empty while it is not. */
       readonly completeAs: readonly PlateType[];
     }
   | {
@@ -38,38 +37,48 @@ export type Candidate =
       readonly completeAs: readonly PlateType[];
     }
   | {
-      /** A valid column-4+5 shape whose code is not in the current registry (D-26; L3 of D-32). */
+      /** A valid column-4+5 shape whose code is not in the current registry (D-26). */
       readonly kind: 'region2-not-in-registry';
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
       readonly completeAs: readonly PlateType[];
     };
 
-/** Result of {@link candidatesFor}. Discriminated union on `status`; every variant carries `country: 'PL'` (D-07). */
+/**
+ * Result of {@link candidatesFor}. Discriminated union on `status`; every variant
+ * carries `country: 'PL'` (D-07). On `candidates`, `region1` is fixed by the first
+ * letter and `candidates` is non-empty: the region2 whose code equals the first
+ * typed group first, then Annex 13 order (D-39). Separators change only that order.
+ */
 export type CandidatesResult =
   | {
       readonly status: 'candidates';
       readonly country: Country;
       readonly region1: Region1;
-      /** Ordered: the region2 whose code equals the first typed group, then Annex 13 order (D-39). */
       readonly candidates: readonly [Candidate, ...Candidate[]];
     }
   | {
+      /** Characters outside § 30 ust. 1 (R-23), as typed. */
       readonly status: 'invalid-input';
       readonly country: Country;
       readonly reason: 'invalid-characters';
       readonly invalidCharacters: readonly string[];
     }
   | {
-      /** No continuation of the input is a valid plate. */
+      /** No continuation of the input is a valid plate (including a leading digit). */
       readonly status: 'invalid-input';
       readonly country: Country;
       readonly reason: 'no-matching-format';
     }
   | {
+      /**
+       * First character is a letter outside Annex 13 column 4 (H, U) —
+       * § 31 ust. 2 (R-37), Annex 13 table header (R-48) (D-35).
+       */
       readonly status: 'not-in-registry';
       readonly country: Country;
     }
   | {
+      /** Empty or separator-only input. */
       readonly status: 'empty';
       readonly country: Country;
     };
@@ -296,8 +305,14 @@ function buildCandidates(
 }
 
 /**
- * Candidates for partial plate input while typing (Dz.U. 2024 poz. 1709 as amended, D-26). Pure and total.
- * The complete part shares level selection with {@link parsePlate}; the completable part uses the levels of D-32 independently (D-39).
+ * Regions and plate types the typed characters can still become, or already are.
+ *
+ * Uses the same input normalisation as {@link parsePlate}. Separators change only
+ * candidate order, not the set. Every matching entry is returned. Where the input
+ * is already a complete plate, `completeAs` agrees with {@link parsePlate}.
+ * Fully typed all-zero digit groups are rejected — § 30 ust. 2 pkt 1–3, 5–7 (R-34).
+ *
+ * Result variants: {@link CandidatesResult}.
  */
 export function candidatesFor(input: string): CandidatesResult {
   const normalised = normalisePlateInput(input);

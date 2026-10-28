@@ -30,6 +30,8 @@ Polish plates carry registration codes from an official registry: a voivodeship 
 
 The rules come from the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. (Dz.U. 2024 poz. 1709, as amended); each one is listed with its provision in [docs/pl-plate-rules.md](docs/pl-plate-rules.md). The parser normalises the input and reads it against the official code registry and the formats the act sets for its five plate types: ordinary, individual (custom), vintage, temporary and diplomatic. Reduced, individual, temporary and diplomatic plates carry only a voivodeship code, so the answer stops at the voivodeship. When the characters fit more than one plate type — reduced ordinary, temporary and vintage plates differ only in colour — every possible type is listed. Military, service and trade plates are not covered by this act and are not recognised. The lookup UI is _(planned)_.
 
+The public API is `@plate-region/plate-domain` (`parsePlate`, `candidatesFor`) and `@plate-region/plate-data` (`registry`, `fullCodes`). `parsePlate` returns one of `resolved`, `region1-only`, `ambiguous`, `region2-not-in-registry`, `not-in-registry`, `invalid-input` or `empty`. `candidatesFor` (partial input while typing) returns one of `candidates`, `invalid-input`, `not-in-registry` or `empty`.
+
 ## Tech stack
 
 Versions for Angular, Nx and other packages are in [`package.json`](package.json). Node is pinned to 24 (see Getting started).

@@ -60,7 +60,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Every report after running code starts with test/typecheck/lint results: pass/fail counts and exit codes. Each failing test is listed with input, expected and actual, and classified as a code bug or a wrong expectation. Spec expectations change only with approval.
 - The Cursor sandbox blocks some IPC and network calls: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`. Report the exact error, then rerun the same command outside the sandbox.
 - Writes to external systems (`gh issue|pr create|edit|comment`, GitHub MCP writes, and similar) go through a checked file (D-22): for an edit, first fetch the current content to a file; write the new content to a file; check it with `test -s`; show it and its diff against the current content; wait for the user's confirmation; then write with `--body-file <file>` (or the MCP equivalent after the same show-and-confirm step). Chain every `gh` step with `&&` or run under `set -euo pipefail`; never pass content through a shell variable or `$(...)`.
-- When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22).
+- When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22). Write the diff to `tmp/<branch>-step-<N>.diff` and give that path in the report instead of referring to chat output.
 - At the end of a task, ask whether anything should go into `AGENTS.md`.
 
 ## Nx
