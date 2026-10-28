@@ -419,8 +419,7 @@ function compileLayout(
   // Always an array (unlike match); empty layout → one empty run → `^$`.
   const runs = layout.split(/(?<=D)(?=L)|(?<=L)(?=D)/);
   let pattern = '^';
-  for (let i = 0; i < runs.length; i++) {
-    const run = runs[i];
+  for (const [i, run] of runs.entries()) {
     // Empty layout yields one empty run from split; skip so the pattern is `^$`.
     if (run.length === 0) {
       continue;
@@ -484,10 +483,10 @@ export function plateTypesOf(
   const matched = group
     .filter(({ pattern }) => pattern.test(vehiclePart))
     .map(({ template }) => template.plateTypes);
-  if (matched.length === 0) {
+  const [first, ...rest] = matched;
+  if (first === undefined) {
     return undefined;
   }
-  const [first, ...rest] = matched;
   return mergePlateTypes(first, ...rest);
 }
 
@@ -500,17 +499,15 @@ export function completablePlateTypesOf(
   vehiclePartPrefix: string,
 ): PlateTypes | undefined {
   const matched = group
-    .filter(
-      ({ template, prefixPatterns }) =>
-        // Both sides matter: a full-length string is complete, not completable; the
-        // pattern at that index does not exist (prefixPatterns length = layout.length).
-        vehiclePartPrefix.length < template.layout.length &&
-        prefixPatterns[vehiclePartPrefix.length].test(vehiclePartPrefix),
-    )
+    .filter(({ prefixPatterns }) => {
+      // Undefined when the prefix length reaches or passes layout.length: complete or too long for this template, not completable.
+      const pattern = prefixPatterns[vehiclePartPrefix.length];
+      return pattern !== undefined && pattern.test(vehiclePartPrefix);
+    })
     .map(({ template }) => template.plateTypes);
-  if (matched.length === 0) {
+  const [first, ...rest] = matched;
+  if (first === undefined) {
     return undefined;
   }
-  const [first, ...rest] = matched;
   return mergePlateTypes(first, ...rest);
 }
