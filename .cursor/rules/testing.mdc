@@ -21,8 +21,10 @@ alwaysApply: false
 - After changing library code or specs, run `npx nx run <lib>:typecheck` (D-13). At the TDD checkpoint (specs plus a stub with the final types), it runs next to the red test run and must pass before the implementation is written.
 - TDD for `plate-domain`: see `AGENTS.md`.
 - `plate-domain` enforces 100% lines and branches (D-18): an uncovered branch fails `test`. Cover it with a test — never with an ignore hint or a coverage exclusion.
+- Every operand of `||`, `&&`, `??` and every optional chain must be able to change the outcome with real data; remove an operand that cannot change the outcome with real data instead of covering it with synthetic input (D-18).
 - Data invariant specs collect violations and assert `toEqual([])`; never `it.each` over data arrays (an empty array yields zero tests).
-- Property-style tests (idempotency, prefix compatibility, round-trips) also assert the literal expected result; a check that only compares two runs passes a constant stub.
+- Property-style tests (idempotency, prefix compatibility, round-trips) also assert the literal expected result (D-38).
+- Literal expectations for property and enumeration tests come from an independent oracle written from the source (the act text, the registry file), not from the code under test. Shared data is allowed — the registry through `@plate-region/plate-data`, and constants pinned by their own literal test (e.g. `PLATE_ALPHABET`). The oracle and the domain narrowing must not call the logic under test (e.g. `readingsOf`, `lookAlikeVariants`, `parsePlate`). The plan names the source the oracle reads (D-38).
 
 ## E2E (apps/web-e2e)
 

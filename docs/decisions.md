@@ -199,6 +199,17 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - In-progress runs are cancelled only for PRs — runs on `main` must complete, because `nx-set-shas` uses the last successful one as the base.
 - Minimal token permissions (`contents: read`, `actions: read`). No Nx Cloud.
 - `plate-domain` enforces 100% lines and branches in its own `vitest.config.mts` (`coverage.enabled`, `coverage.include: ['src/**/*.ts']`, `thresholds`); without `include`, Vitest 4 counts only files loaded by tests. **Why:** one place, so `test` behaves the same locally and in CI and `ci.yml` stays unchanged. **Rejected:** `nx affected -t test --coverage` (the flag also reaches `web`). The atomized `test-ci--*` targets run one spec file each, so they fail the threshold once plate-domain has more than one source file; use `test`.
+- 100% branches does not prove that every condition operand matters: Vitest v8 coverage counts an operand of `||`, `&&`, `??` or an optional chain as covered once it is evaluated, not once it changes the outcome. In #37 (PR #58), `!BY_LETTER.has(...)` and `PLATE_ALPHABET.has(char)` in `matchesUnregisteredShape` could never be satisfied by real data and still showed as covered. Such an operand is a branch real data cannot reach in disguise, so it is removed rather than covered with synthetic input (`testing.mdc`).
+
+### D-37 No non-null assertions in production code — Accepted
+
+`@typescript-eslint/no-non-null-assertion` is `error` for production TypeScript in the root `eslint.config.mjs`; `*.spec.ts` and `*.test.ts` are excluded. No `eslint-disable` for this rule. A `!` is removed by a type that guarantees the value (a non-empty tuple `readonly [T, ...T[]]`), by narrowing the code needs for real data anyway, or by restructuring — never by a `?.`, `??` or `if` fallback that real data cannot reach (D-18).
+
+- The rule was already on at `warn` through `nx.configs['flat/typescript']`. Warnings do not fail `lint`, so five `!` in plate-domain passed in #37 (PR #58), each a hidden "what if undefined" branch with no code to cover (D-18). The import script (#34) avoids them with `expectDefined`. When this was decided (#59), production and spec code had no `!`.
+- `files` uses `**/*.ts` (and `.tsx`, `.cts`, `.mts`), not `libs/**`: Nx runs `eslint .` from the project folder with the project's `eslint.config.mjs`, which spreads the root array, so patterns resolve relative to the project and `libs/**` would match nothing. Every lint target is a project under `libs/` or `apps/`.
+- Specs are excluded: a wrong `!` in a spec throws or fails an assertion, so the test fails loudly; in production it hides a branch. Specs keep the preset's `warn`.
+- `noUncheckedIndexedAccess` stays off. Measured in #59: plate-domain `tsconfig.lib.json` 6 errors (`tsconfig.spec.json` reports the same 6 through imports); plate-data lib, spec and scripts 0; web app and spec 0. All six read the head of an array whose type does not guarantee it is non-empty. Five could move their existing emptiness check onto the destructured head: `classify` in `parse-plate.ts` (by taking a non-empty tuple), the `withRegion2` / `withoutRegion2` assembly inside `classify`, `unregisteredShapePlateTypes` in `readings.ts`, and `plateTypesOf` in `vehicle-part-templates.ts`. `mergePlateTypes` cannot: a filter result cannot express non-emptiness inherited from its input. Fixes that are not type-level are either branches real data cannot reach (D-18) or assertions. Revisit after #39, for plate-domain `tsconfig.lib.json` only, and only if every error is fixable by types.
+- **Rejected:** a prose-only rule (#37 shows review misses it); `warn` (does not fail `lint`); including specs (see above); `@typescript-eslint/no-unnecessary-condition` (needs typed linting, and catches only conditions the type makes dead, not data-level ones such as `Set.has` on real data).
 
 ---
 
@@ -231,6 +242,7 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 - When Nx or Nx MCP returns stale results, run `npx nx reset` and restart the MCP server before changing configuration. (An "Nx bug" here turned out to be stale daemon state; a config change made for it was reverted.)
 - Comments explain _why_, never _what_.
 - A diff in a report includes new files, because `git diff` does not show untracked files. (The #36 report said new files were "in the diff above" when they were not.)
+- External writes are staged in a checked file, with every step chained (`AGENTS.md`). (Editing the #37 body: a Python guard exited 1 inside `$(...)`, the steps were not chained, and `printf '%s' "$NEW_BODY" | gh issue edit 37 --body-file -` wrote an empty body; it was restored by hand. A file can be checked and diffed before the write; a failed substitution silently yields an empty string.)
 
 ### D-23 One review checklist — Accepted
 
@@ -255,6 +267,14 @@ Project skills live in `.cursor/skills/<name>/SKILL.md`, next to `.cursor/rules/
 
 - **Why:** rules describe what code must look like and load by file globs; a workflow spans several files and commands and is needed before those files exist. Citing rules keeps one source per rule, as in D-24.
 - **Rejected:** `.agents/skills/` (cross-tool portability is not needed — the project uses one agent tool); restating rules inside skills (drift); installing Nx's official skills (`nx configure-ai-agents` writes a managed block into `AGENTS.md`; their broad descriptions would compete with project skills for the same requests).
+
+### D-38 Index tables and independent test oracles — Accepted
+
+Two lessons from the #38 review (PR #61):
+
+- Markdown tables are indexes (`markdown.mdc`). Prettier pads every cell in a column to its longest cell, so an edit that changes the longest cell re-pads the whole column and shows every row as changed. Long content in sections keyed by row ID changes one line per edit (`docs/pl-plate-rules.md`, D-33).
+- Property-style tests also assert a literal result, because a check that only compares two runs passes a constant stub. That literal comes from an independent oracle (`testing.mdc`): a literal produced by the code under test, or by an oracle that calls it, repeats the implementation's mistakes. The registry is the source itself (D-26), and a constant pinned by its own literal test has already been checked against the act; the logic under test is excluded because its result is what the test checks. An oracle written from the act text or the registry file is a second derivation, and naming its source in the plan makes it checkable.
+- **Rejected:** extending D-33 (one table, while the rule covers all Markdown); literals copied from a run of the implementation (they pin current behaviour, not the source).
 
 ---
 
