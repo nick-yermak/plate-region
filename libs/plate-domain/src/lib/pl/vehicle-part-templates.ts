@@ -21,7 +21,19 @@ export interface VehiclePartTemplate {
 export interface CompiledTemplate {
   readonly template: VehiclePartTemplate;
   readonly pattern: RegExp;
+  /**
+   * Prefix patterns for lengths 0 .. layout.length − 1. Index k matches the first
+   * k characters of a valid vehicle part; R-34 applies only to fully typed digit
+   * groups (D-39).
+   */
+  readonly prefixPatterns: readonly RegExp[];
 }
+
+/** Shared signature of {@link plateTypesOf} and {@link completablePlateTypesOf}. */
+export type VehiclePartMatcher = (
+  group: readonly CompiledTemplate[],
+  vehiclePart: string,
+) => PlateTypes | undefined;
 
 /** After a column-4 letter only (reduced, diplomatic). */
 export const COLUMN_4_TEMPLATES: readonly VehiclePartTemplate[] = [
@@ -394,18 +406,33 @@ const STANDARD_LETTERS = ALL_LETTERS.filter(
   (c) => !EXCLUDED_VEHICLE_LETTERS.has(c),
 );
 
-function compileLayout(layout: string, individual: boolean): RegExp {
+/**
+ * @param lastRunOpen — when true, the final digit run is still being typed, so
+ * R-34 (non-zero group) does not apply to it (D-39).
+ */
+function compileLayout(
+  layout: string,
+  individual: boolean,
+  lastRunOpen: boolean,
+): RegExp {
   const letterClass = `[${(individual ? ALL_LETTERS : STANDARD_LETTERS).join('')}]`;
-  // Always an array (unlike match); layouts are non-empty D/L runs.
+  // Always an array (unlike match); empty layout → one empty run → `^$`.
   const runs = layout.split(/(?<=D)(?=L)|(?<=L)(?=D)/);
   let pattern = '^';
-  for (const run of runs) {
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    // Empty layout yields one empty run from split; skip so the pattern is `^$`.
+    if (run.length === 0) {
+      continue;
+    }
     const length = run.length;
     if (run.startsWith('D')) {
-      // Ranges «od 0…01» in § 30 ust. 2 (R-34) — a digit group may not be all zeros (except individuals).
-      pattern += individual
-        ? `\\d{${length}}`
-        : `(?!0{${length}})\\d{${length}}`;
+      const openTail = lastRunOpen && i === runs.length - 1;
+      // Ranges «od 0…01» in § 30 ust. 2 (R-34) — a fully typed digit group may not be all zeros (except individuals).
+      pattern +=
+        individual || openTail
+          ? `\\d{${length}}`
+          : `(?!0{${length}})\\d{${length}}`;
     } else {
       pattern += `${letterClass}{${length}}`;
     }
@@ -416,13 +443,23 @@ function compileLayout(layout: string, individual: boolean): RegExp {
 function compileGroup(
   templates: readonly VehiclePartTemplate[],
 ): readonly CompiledTemplate[] {
-  return templates.map((template) => ({
-    template,
-    pattern: compileLayout(
-      template.layout,
-      template.plateTypes.includes('individual'),
-    ),
-  }));
+  return templates.map((template) => {
+    const individual = template.plateTypes.includes('individual');
+    const { layout } = template;
+    const prefixPatterns: RegExp[] = [];
+    for (let k = 0; k < layout.length; k++) {
+      // Open when k cuts inside a digit (or letter) run — the cut character equals the next.
+      const lastRunOpen = k > 0 && layout.charAt(k - 1) === layout.charAt(k);
+      prefixPatterns.push(
+        compileLayout(layout.slice(0, k), individual, lastRunOpen),
+      );
+    }
+    return {
+      template,
+      pattern: compileLayout(layout, individual, false),
+      prefixPatterns,
+    };
+  });
 }
 
 export const COLUMN_4_GROUP: readonly CompiledTemplate[] =
@@ -446,6 +483,30 @@ export function plateTypesOf(
 ): PlateTypes | undefined {
   const matched = group
     .filter(({ pattern }) => pattern.test(vehiclePart))
+    .map(({ template }) => template.plateTypes);
+  if (matched.length === 0) {
+    return undefined;
+  }
+  const [first, ...rest] = matched;
+  return mergePlateTypes(first, ...rest);
+}
+
+/**
+ * Plate types of templates that `vehiclePartPrefix` can still grow into
+ * (strict prefix of the layout), or undefined when none (D-39).
+ */
+export function completablePlateTypesOf(
+  group: readonly CompiledTemplate[],
+  vehiclePartPrefix: string,
+): PlateTypes | undefined {
+  const matched = group
+    .filter(
+      ({ template, prefixPatterns }) =>
+        // Both sides matter: a full-length string is complete, not completable; the
+        // pattern at that index does not exist (prefixPatterns length = layout.length).
+        vehiclePartPrefix.length < template.layout.length &&
+        prefixPatterns[vehiclePartPrefix.length].test(vehiclePartPrefix),
+    )
     .map(({ template }) => template.plateTypes);
   if (matched.length === 0) {
     return undefined;

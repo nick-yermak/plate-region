@@ -519,6 +519,14 @@ describe('candidatesFor', () => {
       );
     });
 
+    it('C47 AI0A → without-region2: complete reduced at L2.1 (A10A) + individual at completable L2.2 (A1OA; D-32, D-39, R-29)', () => {
+      expect(candidatesFor('AI0A')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(REDUCED_IND, REDUCED),
+        ]),
+      );
+    });
+
     it('C41 DW1O → no-matching-format; vehicle-part I/O→1/0 out of scope (#63, D-39)', () => {
       expect(candidatesFor('DW1O')).toEqual(noMatchingFormat);
     });

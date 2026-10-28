@@ -6,7 +6,10 @@ import {
   COLUMN_4_5_GROUPS,
   COLUMN_4_GROUP,
   COLUMN_6_GROUP,
+  completablePlateTypesOf,
   plateTypesOf,
+  type CompiledTemplate,
+  type VehiclePartMatcher,
 } from './vehicle-part-templates';
 
 /**
@@ -15,9 +18,47 @@ import {
  * column-6 readings (reduced, diplomatic, temporary, individual).
  */
 export type Reading = {
+  /** Distinguisher code: column-4 letter, full code, or column-6 code (D-39). */
+  readonly code: string;
+  /** Annex 13 order of the distinguisher; used to sort candidate codes (D-39). */
+  readonly ordinal: number;
   readonly region2: Region2 | undefined;
   readonly plateTypes: PlateTypes;
 };
+
+export interface Distinguisher {
+  readonly code: string;
+  /** undefined for column 4 and column 6: plates that carry no powiat. */
+  readonly region2: Region2 | undefined;
+  readonly group: readonly CompiledTemplate[];
+  /** Registry order: region1, then its region2 and their `fullCodes` (Annex 13 order). */
+  readonly ordinal: number;
+}
+
+export type Completion = {
+  readonly distinguisher: Distinguisher;
+  readonly plateTypes: PlateTypes;
+};
+
+/**
+ * Winning level of D-32 for a compact string, including L3 (D-39). Shared by
+ * {@link parsePlate} and {@link candidatesFor}.
+ */
+export type CompactResolution =
+  | {
+      readonly kind: 'registry';
+      readonly readings: readonly [Reading, ...Reading[]];
+    }
+  | {
+      readonly kind: 'unregistered-shape';
+      readonly plateTypes: PlateTypes;
+    }
+  | { readonly kind: 'none' };
+
+/** When the first character is not a column-4 letter (D-35). */
+export type FirstLetterReject =
+  | { readonly status: 'not-in-registry' }
+  | { readonly status: 'no-matching-format' };
 
 /** region2 rows that belong to this region1 (primary letter), for index builds. */
 function region2sOf(region1: Region1): readonly Region2[] {
@@ -35,23 +76,6 @@ const BY_LETTER: ReadonlyMap<string, Region1> = (() => {
   }
   return map;
 })();
-
-/** Built only via plate-data `fullCodes` (D-07); no letter/suffix concatenation here. */
-const FULL_CODES: ReadonlyMap<string, Region2> = (() => {
-  const map = new Map<string, Region2>();
-  for (const region1 of registry.region1) {
-    for (const region2 of region2sOf(region1)) {
-      for (const code of fullCodes(region1, region2)) {
-        map.set(code, region2);
-      }
-    }
-  }
-  return map;
-})();
-
-const COLUMN_6_CODES: ReadonlySet<string> = new Set(
-  registry.region1.flatMap((region1) => [...region1.letterDigitCodes]),
-);
 
 const LOOK_ALIKE: ReadonlyMap<string, string> = new Map([
   ['0', 'O'],
@@ -89,12 +113,152 @@ function withLookAlikeAt(
 }
 
 /**
+ * Template group for a column-4+5 full code. Exported so the unexpected-length
+ * pin in readings.spec.ts can cover the throw (module build rejects bad data).
+ */
+export function groupForFullCode(
+  code: string,
+): (typeof COLUMN_4_5_GROUPS)[1 | 2] {
+  if (code.length === 2) {
+    return COLUMN_4_5_GROUPS[1];
+  }
+  if (code.length === 3) {
+    return COLUMN_4_5_GROUPS[2];
+  }
+  throw new Error(
+    `full code length must be 2 or 3, got ${code.length} (${code})`,
+  );
+}
+
+const DISTINGUISHERS: readonly Distinguisher[] = (() => {
+  const list: Distinguisher[] = [];
+  let ordinal = 0;
+  for (const region1 of registry.region1) {
+    for (const letter of region1.letters) {
+      list.push({
+        code: letter,
+        region2: undefined,
+        group: COLUMN_4_GROUP,
+        ordinal: ordinal++,
+      });
+    }
+    for (const region2 of region2sOf(region1)) {
+      for (const code of fullCodes(region1, region2)) {
+        list.push({
+          code,
+          region2,
+          group: groupForFullCode(code),
+          ordinal: ordinal++,
+        });
+      }
+    }
+    for (const code of region1.letterDigitCodes) {
+      list.push({
+        code,
+        region2: undefined,
+        group: COLUMN_6_GROUP,
+        ordinal: ordinal++,
+      });
+    }
+  }
+  return list;
+})();
+
+const BY_CODE: ReadonlyMap<string, Distinguisher> = (() => {
+  const map = new Map<string, Distinguisher>();
+  for (const distinguisher of DISTINGUISHERS) {
+    map.set(distinguisher.code, distinguisher);
+  }
+  return map;
+})();
+
+const BY_PREFIX: ReadonlyMap<string, readonly Distinguisher[]> = (() => {
+  const map = new Map<string, Distinguisher[]>();
+  for (const distinguisher of DISTINGUISHERS) {
+    for (let len = 1; len <= distinguisher.code.length; len++) {
+      const prefix = distinguisher.code.slice(0, len);
+      const bucket = map.get(prefix);
+      if (bucket === undefined) {
+        map.set(prefix, [distinguisher]);
+      } else {
+        bucket.push(distinguisher);
+      }
+    }
+  }
+  return map;
+})();
+
+/**
  * Resolves region1 from the first character via Annex 13 column-4 letters
  * (including secondary letters such as I for śląskie; R-37, R-48).
  */
 export function region1ForFirstLetter(compact: string): Region1 | undefined {
   // Empty compact: charAt(0) is '', which is absent from BY_LETTER.
   return BY_LETTER.get(compact.charAt(0));
+}
+
+/**
+ * H/U → not-in-registry; a leading digit → no-matching-format (D-35, D-32).
+ * Shared by {@link parsePlate} and {@link candidatesFor} (D-39).
+ */
+export function rejectWithoutRegion1(compact: string): FirstLetterReject {
+  // Digits 0/1 in the first position are already mapped to O/I by normalisation.
+  if (/\d/.test(compact.charAt(0))) {
+    return { status: 'no-matching-format' };
+  }
+  return { status: 'not-in-registry' };
+}
+
+/**
+ * Distinguishers whose code is a strict prefix of `compact` (length 1..3).
+ * Shared by {@link readingsOf} and {@link distinguishersFor} (D-39).
+ */
+function shorterDistinguishers(compact: string): readonly Distinguisher[] {
+  const found: Distinguisher[] = [];
+  const maxShorter = Math.min(3, compact.length - 1);
+  for (let len = 1; len <= maxShorter; len++) {
+    const distinguisher = BY_CODE.get(compact.slice(0, len));
+    if (distinguisher !== undefined) {
+      found.push(distinguisher);
+    }
+  }
+  return found;
+}
+
+/**
+ * Distinguishers whose code is a strict prefix of `compact`, or that `compact`
+ * is a prefix of (when length ≤ 3), for completable search (D-39).
+ */
+export function distinguishersFor(compact: string): readonly Distinguisher[] {
+  const found: Distinguisher[] = [...shorterDistinguishers(compact)];
+  if (compact.length <= 3) {
+    const longer = BY_PREFIX.get(compact);
+    if (longer !== undefined) {
+      for (const distinguisher of longer) {
+        found.push(distinguisher);
+      }
+    }
+  }
+  return found;
+}
+
+/**
+ * Completable readings of `compact`: each distinguisher from
+ * {@link distinguishersFor} whose remaining characters are a strict prefix of
+ * at least one vehicle-part template (D-39).
+ */
+export function completionsOf(compact: string): readonly Completion[] {
+  const result: Completion[] = [];
+  for (const distinguisher of distinguishersFor(compact)) {
+    const plateTypes = completablePlateTypesOf(
+      distinguisher.group,
+      compact.slice(distinguisher.code.length),
+    );
+    if (plateTypes !== undefined) {
+      result.push({ distinguisher, plateTypes });
+    }
+  }
+  return result;
 }
 
 /**
@@ -105,34 +269,20 @@ export function region1ForFirstLetter(compact: string): Region1 | undefined {
  */
 export function readingsOf(compact: string): readonly Reading[] {
   const readings: Reading[] = [];
-
-  const column4Types = plateTypesOf(COLUMN_4_GROUP, compact.slice(1));
-  if (column4Types !== undefined) {
-    readings.push({ region2: undefined, plateTypes: column4Types });
-  }
-
-  for (const suffixLen of [1, 2] as const) {
-    const codeLen = 1 + suffixLen;
-    const region2 = FULL_CODES.get(compact.slice(0, codeLen));
-    if (region2 === undefined) {
-      continue;
-    }
+  for (const distinguisher of shorterDistinguishers(compact)) {
     const plateTypes = plateTypesOf(
-      COLUMN_4_5_GROUPS[suffixLen],
-      compact.slice(codeLen),
+      distinguisher.group,
+      compact.slice(distinguisher.code.length),
     );
     if (plateTypes !== undefined) {
-      readings.push({ region2, plateTypes });
+      readings.push({
+        code: distinguisher.code,
+        ordinal: distinguisher.ordinal,
+        region2: distinguisher.region2,
+        plateTypes,
+      });
     }
   }
-
-  if (COLUMN_6_CODES.has(compact.slice(0, 2))) {
-    const plateTypes = plateTypesOf(COLUMN_6_GROUP, compact.slice(2));
-    if (plateTypes !== undefined) {
-      readings.push({ region2: undefined, plateTypes });
-    }
-  }
-
   return readings;
 }
 
@@ -162,8 +312,9 @@ export function lookAlikeVariants(
  */
 export function unregisteredShapePlateTypes(
   compact: string,
+  match: VehiclePartMatcher,
 ): PlateTypes | undefined {
-  const found: PlateTypes[] = [];
+  let merged: PlateTypes | undefined;
   for (const suffixLen of [1, 2] as const) {
     const codeLen = 1 + suffixLen;
     const suffix = compact.slice(1, codeLen);
@@ -171,18 +322,57 @@ export function unregisteredShapePlateTypes(
     if (![...suffix].every((char) => /[A-Z]/.test(char))) {
       continue;
     }
-    const plateTypes = plateTypesOf(
+    const plateTypes = match(
       COLUMN_4_5_GROUPS[suffixLen],
       compact.slice(codeLen),
     );
     if (plateTypes !== undefined) {
-      found.push(plateTypes);
+      merged =
+        merged === undefined ? plateTypes : mergePlateTypes(merged, plateTypes);
     }
   }
+  return merged;
+}
 
-  if (found.length === 0) {
+function asNonEmptyReadings(
+  readings: readonly Reading[],
+): readonly [Reading, ...Reading[]] | undefined {
+  const [head, ...tail] = readings;
+  if (head === undefined) {
     return undefined;
   }
-  const [first, ...rest] = found;
-  return mergePlateTypes(first, ...rest);
+  return [head, ...tail];
+}
+
+/**
+ * D-32 levels for `compact`, including L3. One place so `parsePlate` and
+ * `candidatesFor` cannot disagree on the complete part (D-39).
+ */
+export function resolveCompact(compact: string): CompactResolution {
+  const asTyped = asNonEmptyReadings(readingsOf(compact));
+  if (asTyped !== undefined) {
+    return { kind: 'registry', readings: asTyped };
+  }
+
+  const [oneSubstitution, twoSubstitutions] = lookAlikeVariants(compact);
+  const oneReadings = asNonEmptyReadings(
+    oneSubstitution.flatMap((variant) => readingsOf(variant)),
+  );
+  if (oneReadings !== undefined) {
+    return { kind: 'registry', readings: oneReadings };
+  }
+
+  const twoReadings = asNonEmptyReadings(
+    twoSubstitutions.flatMap((variant) => readingsOf(variant)),
+  );
+  if (twoReadings !== undefined) {
+    return { kind: 'registry', readings: twoReadings };
+  }
+
+  const shapeTypes = unregisteredShapePlateTypes(compact, plateTypesOf);
+  if (shapeTypes !== undefined) {
+    return { kind: 'unregistered-shape', plateTypes: shapeTypes };
+  }
+
+  return { kind: 'none' };
 }
