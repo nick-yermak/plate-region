@@ -22,9 +22,11 @@ alwaysApply: false
 - TDD for `plate-domain`: see `AGENTS.md`.
 - `plate-domain` enforces 100% lines and branches (D-18): an uncovered branch fails `test`. Cover it with a test — never with an ignore hint or a coverage exclusion.
 - Every operand of `||`, `&&`, `??` and every optional chain must be able to change the outcome with real data; remove an operand that cannot change the outcome with real data instead of covering it with synthetic input (D-18).
+- No test that calls an internal function only to cover a branch; a branch the public API cannot reach with real data is removed (D-18). Exception: data-integrity guards that throw while a module builds its indexes.
 - Data invariant specs collect violations and assert `toEqual([])`; never `it.each` over data arrays (an empty array yields zero tests).
 - Property-style tests (idempotency, prefix compatibility, round-trips) also assert the literal expected result (D-38).
 - Literal expectations for property and enumeration tests come from an independent oracle written from the source (the act text, the registry file), not from the code under test. Shared data is allowed — the registry through `@plate-region/plate-data`, and constants pinned by their own literal test (e.g. `PLATE_ALPHABET`). The oracle and the domain narrowing must not call the logic under test (e.g. `readingsOf`, `lookAlikeVariants`, `parsePlate`). The plan names the source the oracle reads (D-38).
+- A count obtained by running the code under test is a measurement: record it in `docs/decisions.md`, do not assert it as a test literal (D-38).
 
 ## E2E (apps/web-e2e)
 

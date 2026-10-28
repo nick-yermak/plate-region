@@ -200,6 +200,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - Minimal token permissions (`contents: read`, `actions: read`). No Nx Cloud.
 - `plate-domain` enforces 100% lines and branches in its own `vitest.config.mts` (`coverage.enabled`, `coverage.include: ['src/**/*.ts']`, `thresholds`); without `include`, Vitest 4 counts only files loaded by tests. **Why:** one place, so `test` behaves the same locally and in CI and `ci.yml` stays unchanged. **Rejected:** `nx affected -t test --coverage` (the flag also reaches `web`). The atomized `test-ci--*` targets run one spec file each, so they fail the threshold once plate-domain has more than one source file; use `test`.
 - 100% branches does not prove that every condition operand matters: Vitest v8 coverage counts an operand of `||`, `&&`, `??` or an optional chain as covered once it is evaluated, not once it changes the outcome. In #37 (PR #58), `!BY_LETTER.has(...)` and `PLATE_ALPHABET.has(char)` in `matchesUnregisteredShape` could never be satisfied by real data and still showed as covered. Such an operand is a branch real data cannot reach in disguise, so it is removed rather than covered with synthetic input (`testing.mdc`).
+- A test that calls an internal function only to cover a branch is the same failure mode: the public API cannot reach it with real data, so the branch is removed rather than covered. Exception: data-integrity guards that throw while a module builds its indexes (`testing.mdc`). Caught by hand in #39.
 
 ### D-37 No non-null assertions in production code — Accepted
 
@@ -209,6 +210,7 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - `files` uses `**/*.ts` (and `.tsx`, `.cts`, `.mts`), not `libs/**`: Nx runs `eslint .` from the project folder with the project's `eslint.config.mjs`, which spreads the root array, so patterns resolve relative to the project and `libs/**` would match nothing. Every lint target is a project under `libs/` or `apps/`.
 - Specs are excluded: a wrong `!` in a spec throws or fails an assertion, so the test fails loudly; in production it hides a branch. Specs keep the preset's `warn`.
 - `noUncheckedIndexedAccess` stays off. Measured in #59: plate-domain `tsconfig.lib.json` 6 errors (`tsconfig.spec.json` reports the same 6 through imports); plate-data lib, spec and scripts 0; web app and spec 0. All six read the head of an array whose type does not guarantee it is non-empty. Five could move their existing emptiness check onto the destructured head: `classify` in `parse-plate.ts` (by taking a non-empty tuple), the `withRegion2` / `withoutRegion2` assembly inside `classify`, `unregisteredShapePlateTypes` in `readings.ts`, and `plateTypesOf` in `vehicle-part-templates.ts`. `mergePlateTypes` cannot: a filter result cannot express non-emptiness inherited from its input. Fixes that are not type-level are either branches real data cannot reach (D-18) or assertions. Revisit after #39, for plate-domain `tsconfig.lib.json` only, and only if every error is fixable by types.
+- Review flags index access and head destructuring whose non-emptiness is not in the type, including code that relies on `noUncheckedIndexedAccess` being off (`BUGBOT.md`). Several such sites were caught by hand in #39.
 - **Rejected:** a prose-only rule (#37 shows review misses it); `warn` (does not fail `lint`); including specs (see above); `@typescript-eslint/no-unnecessary-condition` (needs typed linting, and catches only conditions the type makes dead, not data-level ones such as `Set.has` on real data).
 
 ---
@@ -243,6 +245,9 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 - Comments explain _why_, never _what_.
 - A diff in a report includes new files, because `git diff` does not show untracked files. (The #36 report said new files were "in the diff above" when they were not.)
 - External writes are staged in a checked file, with every step chained (`AGENTS.md`). (Editing the #37 body: a Python guard exited 1 inside `$(...)`, the steps were not chained, and `printf '%s' "$NEW_BODY" | gh issue edit 37 --body-file -` wrote an empty body; it was restored by hand. A file can be checked and diffed before the write; a failed substitution silently yields an empty string.)
+- Branch from an up-to-date `origin/main` (`git fetch origin && git switch -c <branch> origin/main`) and confirm `git --no-pager log --oneline origin/main..HEAD` is empty before any edit. (“Branch first” did not say from where; a branch from a stale local `main` once carried unrelated commits.)
+- Every report after running code opens with test/typecheck/lint pass/fail counts and exit codes; each failing test lists input, expected, actual, and whether the bug is in code or the expectation. Spec expectations change only with approval. (Two #39 reports omitted results; 22 tests were failing behind the first.)
+- Plan mode creates no files anywhere, including `/tmp`. A fact that needs a command is given as the command and marked unverified. (In #39 Plan mode wrote under `/tmp` despite read-only.)
 
 ### D-23 One review checklist — Accepted
 
@@ -270,10 +275,11 @@ Project skills live in `.cursor/skills/<name>/SKILL.md`, next to `.cursor/rules/
 
 ### D-38 Index tables and independent test oracles — Accepted
 
-Two lessons from the #38 review (PR #61):
+Lessons from the #38 review (PR #61) and from #39:
 
 - Markdown tables are indexes (`markdown.mdc`). Prettier pads every cell in a column to its longest cell, so an edit that changes the longest cell re-pads the whole column and shows every row as changed. Long content in sections keyed by row ID changes one line per edit (`docs/pl-plate-rules.md`, D-33).
 - Property-style tests also assert a literal result, because a check that only compares two runs passes a constant stub. That literal comes from an independent oracle (`testing.mdc`): a literal produced by the code under test, or by an oracle that calls it, repeats the implementation's mistakes. The registry is the source itself (D-26), and a constant pinned by its own literal test has already been checked against the act; the logic under test is excluded because its result is what the test checks. An oracle written from the act text or the registry file is a second derivation, and naming its source in the plan makes it checkable.
+- A count obtained by running the code under test is a measurement for this log, not a literal in a test: asserting it pins the implementation the same way a SUT-derived oracle does (`testing.mdc`). Caught by hand in an enumeration test in #39.
 - **Rejected:** extending D-33 (one table, while the rule covers all Markdown); literals copied from a run of the implementation (they pin current behaviour, not the source).
 
 ---
