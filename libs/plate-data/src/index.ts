@@ -1,4 +1,11 @@
-export * from './lib/pl/plate-data';
-export * from './lib/pl/registry';
-export * from './lib/pl/full-codes';
-export type * from './lib/pl/model';
+export { fullCodes } from './lib/pl/full-codes';
+export { registry } from './lib/pl/registry';
+export type {
+  Country,
+  Provenance,
+  Region1,
+  Region2,
+  Registry,
+  Source,
+  UnofficialName,
+} from './lib/pl/model';
