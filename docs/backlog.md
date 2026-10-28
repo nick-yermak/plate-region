@@ -46,6 +46,8 @@ Outcome: a pure TypeScript library that turns a plate string into voivodeship, p
 - [ ] TDD: serial-number formats per § 30 (from the act, nothing invented — D-26) and variant counts per code and per region1
 - [ ] Example plate generator: pure function with an injected random source, deterministic in tests
 - [ ] TDD: partial input — return candidates while typing (for autocomplete)
+- [ ] Exhaustive specs for the `candidatesFor` contracts that rest on examples and construction (D-39): `completeAs` agrees with `parsePlate`; separators change only the order of candidates
+- [ ] Coverage `include` and a 100% threshold for plate-data, as in plate-domain (D-18)
 - [ ] Public library API and JSDoc; Cursor rule "domain logic is pure functions only, no dependencies"
 - [ ] Let an agent generate some of the tests, then review them: where did it get the domain wrong
 
