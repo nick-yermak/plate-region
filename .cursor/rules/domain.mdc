@@ -1,0 +1,12 @@
+---
+description: Purity and the public contract of the core libraries. Use when editing plate-domain or plate-data source.
+globs: libs/plate-domain/src/**, libs/plate-data/src/**
+alwaysApply: false
+---
+
+# Domain libraries
+
+- Pure functions. No I/O. No side effects while a module loads, other than building indexes and data-integrity guards (D-05, D-18).
+- `plate-domain` depends only on `plate-data`. No other runtime dependency (D-05).
+- Do not hardcode plate codes. Code tables are derived from `plate-data` (D-38). The § 30 ust. 1 alphabet and the five § 25 plate types stay in `plate-domain`; they are not registry fields (D-07).
+- JSDoc on a public export states the contract: inputs, result variants, invariants. A legal citation is the provision plus its row ID from `docs/pl-plate-rules.md` (D-33, D-41).
