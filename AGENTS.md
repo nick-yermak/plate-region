@@ -43,10 +43,11 @@ libs/plate-data     Registry of voivodeship and powiat codes
 ## Working rules
 
 - Do nothing without an explicit request. For anything larger than a small edit, propose a plan first and wait for approval.
+- Plan mode creates no files anywhere, including `/tmp`. A fact that needs a command is given as the command and marked unverified.
 - On the GitHub Projects board, only epics that have started have issues; later epics stay in `docs/backlog.md` (D-16). Do not create issues for them unless asked.
 - File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here. Multi-step workflows live in `.cursor/skills/` (D-25).
 - In rule frontmatter, a `globs` value must not start with `*` (YAML alias token — the rule silently fails to load). Start with a literal path segment, e.g. `apps/**/*.spec.ts`, not `**/*.spec.ts`.
-- Never commit or push unless asked. Branch first, then commit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.
+- Never commit or push unless asked. Branch from an up-to-date `origin/main` (`git fetch origin && git switch -c <branch> origin/main`) and confirm `git --no-pager log --oneline origin/main..HEAD` is empty before any edit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.
 - Never add `Co-authored-by` trailers or any mention of AI tools to commits or PRs.
 - npm only; Node version from `.nvmrc`; `engines.node` in `package.json` stays on the same major (D-15). Never `--legacy-peer-deps` or `npm audit fix --force` — fix the cause. New install scripts need approval in `allowScripts`. Never delete or regenerate `package-lock.json` without approval; on ERESOLVE, stop and report the exact error.
 - Domain logic in `libs/plate-domain` is written test-first (TDD) and stays framework-free.
@@ -56,6 +57,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
 - Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
 - If a tool or MCP call fails, report the exact error before using a fallback; never silently switch approaches.
+- Every report after running code starts with test/typecheck/lint results: pass/fail counts and exit codes. Each failing test is listed with input, expected and actual, and classified as a code bug or a wrong expectation. Spec expectations change only with approval.
 - The Cursor sandbox blocks some IPC and network calls: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`. Report the exact error, then rerun the same command outside the sandbox.
 - Writes to external systems (`gh issue|pr create|edit|comment`, GitHub MCP writes, and similar) go through a checked file (D-22): for an edit, first fetch the current content to a file; write the new content to a file; check it with `test -s`; show it and its diff against the current content; wait for the user's confirmation; then write with `--body-file <file>` (or the MCP equivalent after the same show-and-confirm step). Chain every `gh` step with `&&` or run under `set -euo pipefail`; never pass content through a shell variable or `$(...)`.
 - When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22).
