@@ -296,7 +296,7 @@ Import (#34): committed, re-runnable and deterministic — re-running on the sam
 
 ### D-27 Parse result and registry access in plate-domain — Accepted
 
-`parsePlate` (#37) returns a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings. plate-domain uses the plate-data registry directly and builds its lookup indexes once at module level; tests run against the full real registry. Partial-input candidates (#39) get a separate function and type. The type was written in #37 rather than #36 because a type written in #36 would have had variants real data cannot reach (D-18).
+`parsePlate` (#37) returns a discriminated union on `status`, with `country: 'PL'` on every variant (D-07); `region1`/`region2` reference registry records instead of copying strings. plate-domain uses the plate-data registry directly and builds its lookup indexes once at module level; tests run against the full real registry. Partial-input candidates (#39) get a separate function and type (D-39). The type was written in #37 rather than #36 because a type written in #36 would have had variants real data cannot reach (D-18).
 
 Variants of `ParseResult` (plate types added in #38, D-34):
 
@@ -317,7 +317,7 @@ A separate «region undeterminable (valid special plate)» variant was planned f
 
 `normalisePlateInput` (#35) returns a discriminated union on `status`. `ok` holds `groups` (the parts between separators, in input order) and `compact` (the groups joined, the form used for code lookup). `invalid` holds the characters outside the § 30 ust. 1 alphabet, as typed. Empty or separator-only input is `ok` with no groups, because partial input (#39) starts empty. The parser (#37) maps `invalid` to its own invalid-input variant (D-27) and reads only `compact`: group boundaries are not used in #37.
 
-- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so normalisation must keep the boundary for later use. Region1 resolution (#36) already reads only `compact`: no Annex 13 full code is a single letter, and no column-5 suffix contains a digit. In #37, reading as typed never yields two readings with different regions, so there is nothing for a boundary to break; on L2 a typed boundary would help only some look-alike cases and can itself be wrong (`DWL 123`). Boundaries are therefore kept for partial-input candidates (#39). Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
+- **Why:** a two-character code can be a prefix of a three-character code of another region2 (`DW` Wrocław, `DWW` powiat wrocławski), so normalisation must keep the boundary for later use. Region1 resolution (#36) already reads only `compact`: no Annex 13 full code is a single letter, and no column-5 suffix contains a digit. In #37, reading as typed never yields two readings with different regions, so there is nothing for a boundary to break; on L2 a typed boundary would help only some look-alike cases and can itself be wrong (`DWL 123`). Boundaries are therefore kept for partial-input candidates (#39); #39 uses them for order only (D-39). Rejecting characters outside the alphabet here means every later step sees only alphabet characters, and the UI can name the offending characters.
 - **Rejected:** deleting separators and returning only the compact string (the boundary would be lost before #39); using group boundaries in #37 to break L2 ties (incomplete and can follow a mistyped separator); passing characters outside the alphabet through for the parser to reject (every later step would have to handle them, and the parser would have to rediscover which characters were wrong).
 
 ### D-32 Format-aware readings in levels — Accepted
@@ -328,7 +328,7 @@ Replaces the backlog item «powiat by longest matching prefix (3 characters, the
 2. **L2.1** — 0↔O and 1↔I swapped at positions 2–3, one substitution; **L2.2** — both positions, only if L2.1 is empty;
 3. **L3** — as typed, a valid column-4+5 shape whose distinguisher is not in the registry (`region2-not-in-registry`), only if L2 is empty;
 
-otherwise `invalid-input` / `no-matching-format`. A leading digit is `no-matching-format`: no § 30 ust. 2 pkt 1–7 template starts with one (digits 0 and 1 in the first position are already mapped to O and I by normalisation). Incomplete input such as `D`, `DW` or `WA1` is also `no-matching-format` by design; candidates while typing are #39.
+otherwise `invalid-input` / `no-matching-format`. A leading digit is `no-matching-format`: no § 30 ust. 2 pkt 1–7 template starts with one (digits 0 and 1 in the first position are already mapped to O and I by normalisation). Incomplete input such as `D`, `DW` or `WA1` is also `no-matching-format` by design; candidates while typing are #39 (D-39).
 
 Vehicle-part character rules are applied in #37: letters exclude B, D, I, O and Z (§ 31 ust. 1), except on individual plates (the reservation «z zastrzeżeniem § 32 ust. 2» in § 31 ust. 1; R-36, R-39), and every digit group is non-zero (the «od 0…01» ranges in each tiret). They belong here because the parser now answers «no valid reading»; a partial rule set would change answers later when the rest landed. The templates are internal data, each with one citation, and are meant to be reused by #51.
 
@@ -358,6 +358,7 @@ The plate type follows § 25 of Dz.U. 2024 poz. 1709 (R-01): `PlateType = 'ordin
 - Each vehicle-part template carries `plateTypes` and `rows` (row IDs, D-33) in place of the internal `family`.
 - Not exposed: plate size (car, motorcycle, moped, reduced; R-02–R-05) and the electric/hydrogen colour variant (R-07, R-09, R-11, R-13). Neither is part of the § 25 type, and car and motorcycle templates after a two-letter powiat share six layouts.
 - Counts per `plateTypes` set and per `ambiguous` pair over the representative domains are asserted as literals (`readings.spec.ts`).
+- Candidates (D-39) carry `plateTypes` and `completeAs` in the same § 25 order.
 
 - **Why:** § 25 is the act's own classification; a list keeps "cannot be determined from the characters" honest without a sentinel, and the fixed § 25 order keeps results deterministic.
 - **Rejected:** a single `plateType` plus an `undeterminable` flag (two fields that can contradict each other); exposing template families (size is not a type and often cannot be determined); a «region undeterminable» variant (D-27).
@@ -375,8 +376,37 @@ The base act and its amendments neither describe military, service (police and o
 
 - Individual plates: the digits «0» and «00» stay allowed. § 30 ust. 2 pkt 4 (R-29) lets at most the last two letters be replaced with digits but gives no range, unlike every other format (R-34).
 - Vintage plates: pkt 5 opens with «następne cyfry lub cyfry i litera», but lit. b tiret 3 starts with a letter («litera i cyfra»). The specific lit. b governs, and the `LD` template stays (R-31).
-- Two-row plates: the row split appears only in the Annex 12 drawings, which are images (R-42). It matters for partial and photographed input and belongs to #39.
+- Two-row plates: the row split appears only in the Annex 12 drawings, which are images (R-42). It matters for partial and photographed input and belongs to #39. Closed by D-40: the split is the R-41 `+`, confirmed by the drawings.
 - Individual plates and region1: the owner chooses only between the two letters of the same voivodeship (§ 32 ust. 2 as amended, R-39), so region1 is determined. Docs and UI say the plate carries a voivodeship code, not where the vehicle is registered.
 - Temporary reduced plates use the voivodeship letter (pkt 2, R-26), not a column-6 code; region1 is the same either way.
 
 - **Why:** each point was checked against the act in #38 and changes no answer; recording it stops it from being argued again.
+
+### D-39 Candidates for partial input — Accepted
+
+`candidatesFor(input)` (#39) answers which regions and plate types the typed characters can still become or already are. It is the separate function and type reserved by D-27; `ParseResult` is unchanged.
+
+- **Statuses.** A discriminated union on `status`, with `country: 'PL'` on every variant: `candidates`, `invalid-input` (`invalid-characters` | `no-matching-format`), `not-in-registry` (H, U; D-35) and `empty`. `no-matching-format` means that no continuation of the input is a valid plate, including a leading digit.
+- **Shape.** `candidates` carries one region1 — the first letter determines it (#36) — and a non-empty list of entries: one per region2 (by reference, the full codes that agree with the input, `plateTypes`, `completeAs`); at most one without region2 (a column-4 letter or column-6 code); at most one `region2-not-in-registry` entry (a valid column-4+5 shape whose code is not in the current registry, D-26; L3 of D-32). `plateTypes` lists the § 25 types still possible for the entry, in § 25 order (D-34). `completeAs` lists the types for which the input is already a complete plate; it is always present and empty while the input is not complete for that entry. Layouts and sizes are not exposed (D-34).
+- **Codes.** A region2 entry's `codes` lists only the codes of the readings that give the entry its plate types: the codes behind the winning level of the completable part, plus the codes of the complete readings. Codes reached only through a losing level are not listed.
+- **Complete part.** Taken from the winning-level readings that `parsePlate` classifies; both functions call the same internal level selection, so agreement holds by construction and each reading carries its code. Mapping: `resolved` → its region2 entry; `region1-only` → the entry without region2; `ambiguous` → one region2 entry and the entry without region2; `region2-not-in-registry` → the L3 entry.
+- **Completable part.** The input is a proper prefix of a valid plate: a registry distinguisher (column 4, columns 4+5 via plate-data `fullCodes`, column 6) that is a prefix of the input or that the input is a prefix of, followed by a vehicle-part prefix that at least one template can still complete. The level is chosen as in D-32 and independently of the complete part: as typed, then one look-alike swap at positions 2–3, then two, then L3. `WI12` is a Warszawa prefix as typed and a complete reduced-size plate `W112` at L2.1; a shared level would lose one of them.
+- **Fully typed digit groups.** R-34 applies to a digit group only once the group is fully typed: `DW0000` can still become `DW00001`, while `DWR00` excludes every layout whose first group is the two digits `00`.
+- **L3 while typing** appears only when L1 and L2 give nothing to complete, so a letter right after the voivodeship letter is first read as the vehicle part of a reduced-size plate (R-26 lit. d, f, g): `DA` and `DA1` have no L3 entry; `DA12` has one, because the three-character reduced vehicle part `A12` is complete and cannot be extended.
+- **Order.** Deterministic: the region2 entry with a code equal to the first typed group comes first; then Annex 13 order — the entry without region2 (the voivodeship row precedes its powiats), region2 entries in registry order, the L3 entry last (it is not in Annex 13). Group boundaries affect the order only; the set of entries never depends on separators (D-31).
+- **No limit.** Every entry is returned; Epic 2 truncates. The number of region2 entries is at most the maximum, over first code characters, of region2 with a full code starting with that character, counted from plate-data codes; the spec pins it as a literal.
+- **Cost of a keystroke.** The distinguisher prefix index and the template prefix patterns are built once at module level (D-27). A call does map lookups plus one length check and at most one regex test per template of each matched distinguisher, and never enumerates continuations. Tests assert results and counts, not time; enumeration tests set explicit timeouts.
+- **Out of scope:** correcting I/O to 1/0 in the vehicle part (#63). The follow-up adds it to `parsePlate` and to candidates together, so the complete part keeps agreeing.
+
+- **Why:** One region1 with region2 entries mirrors what the characters encode (#36, D-27), and the entry without region2 keeps plates without a powiat honest (`S0`). Sharing the level selection with `parsePlate` leaves one source of truth for complete plates. Levels for the completable part keep D-32's preference for the typed input. Ordering by the first group lets a typed boundary help without hiding anything when it is mistyped.
+- **Rejected:** extending `ParseResult` (D-27); a flat region2 list (no place for plates without a powiat); one entry per full code (wrocławski would appear twice); a `complete: boolean` per entry (`S01234` is a complete temporary plate and an incomplete diplomatic one); an optional `completeAs` (an optional operand that real data cannot make undefined, D-18); deriving the complete part from the `ParseResult` alone (it carries no code); re-implementing level selection for the complete part (two sources of truth); one level for both parts (`WI12` loses one reading); group boundaries as a filter (`DWL 123` and `KRA 123` would drop the complete reading); a `limit` parameter (a default value is a default-parameter branch, D-27, and truncation is a UI decision); wall-clock assertions (the CI runner is about 2.5× slower and runs Nx tasks in parallel).
+
+### D-40 Two-row plates: the line break is an ordinary separator — Accepted
+
+Annex 12 Rys. 11, 13, 14, 15 and 16 of Dz.U. 2024 poz. 1709 (PDF pages 63–68) were rendered and read in #39. Row 1 always holds the distinguisher and row 2 the vehicle part, which is the `+` of the variant notation (`2L+5C`, `1L, 1C+3L`) already covered by R-41. A line break in typed or recognised text is whitespace, and therefore a group boundary like any other separator (D-31). Closes the two-row point of D-36.
+
+- Rys. 15 (motorcycle, individual) is two-row as well: motorcycle plates are two-row by R-04.
+- Rys. 18–26 were not rendered. The set of candidates does not depend on separators (D-39), so their split cannot change an answer.
+
+- **Why:** the drawings confirm R-41 instead of adding a rule, so no row, type or code path is needed.
+- **Rejected:** new rule rows for the row split (it is the R-41 `+`); a separate two-row input mode (a UI concern that would not change the set of candidates); encoding rows per template (no case it would decide).

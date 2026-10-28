@@ -262,7 +262,7 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 - **R-30, R-31.** pkt 5 opens with „następne cyfry lub cyfry i litera”, but lit. b tiret 3 starts with a letter. The specific lit. b governs (D-36).
 - **R-36, R-39.** The B/D/I/O/Z exception for individual plates comes from the base-text reservation „z zastrzeżeniem § 32 ust. 2” in § 31 ust. 1. 939 added only the choice of letter.
 - **R-39.** Wording: the plate carries a voivodeship code; it does not say where the vehicle is registered (D-36).
-- **R-41, R-42.** The extract does not define the Annex 12 notation (L = letter, C = digit, "+" = boundary); it is read from context. The two-row split is shown only in the drawings, which are images; it belongs to #39 (D-36).
+- **R-41, R-42.** The extract does not define the Annex 12 notation (L = letter, C = digit, "+" = boundary); it is read from context. The two-row split is the "+": row 1 distinguisher, row 2 vehicle part, confirmed by the drawings in #39 (D-40).
 - **R-37, R-48.** H and U are in the alphabet (R-23) but never in Annex 13 column 4; in the act they occur only as column-5 suffixes (m.st. Warszawa, Chorzów). A leading H or U is therefore `not-in-registry` (D-35).
 
 ## Read, not rows
@@ -282,4 +282,4 @@ Derived by hand in #38 and pinned by literal expectations in `parse-plate.spec.t
 
 ## Out of scope
 
-Military, service and trade/test plates: not regulated by 1709, 939 or 891 (D-35, follow-up #60). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); the Annex 12 drawings (images).
+Military, service and trade/test plates: not regulated by 1709, 939 or 891 (D-35, follow-up #60). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); Annex 12 Rys. 18–26 (images); Rys. 11, 13–16 were read in #39 (D-40).
