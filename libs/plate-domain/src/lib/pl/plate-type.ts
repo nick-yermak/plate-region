@@ -28,7 +28,19 @@ export function mergePlateTypes(
   first: PlateTypes,
   ...rest: readonly PlateTypes[]
 ): PlateTypes {
-  const present = new Set<PlateType>([first, ...rest].flat());
-  const [head, ...tail] = PLATE_TYPE_ORDER.filter((type) => present.has(type));
-  return [head, ...tail];
+  const ordered: [PlateType, ...PlateType[]] = [
+    first[0],
+    ...first.slice(1),
+    ...rest.flat(),
+  ];
+  ordered.sort(
+    (a, b) => PLATE_TYPE_ORDER.indexOf(a) - PLATE_TYPE_ORDER.indexOf(b),
+  );
+  let result: PlateTypes = [ordered[0]];
+  for (const type of ordered.slice(1)) {
+    if (!result.includes(type)) {
+      result = [...result, type];
+    }
+  }
+  return result;
 }

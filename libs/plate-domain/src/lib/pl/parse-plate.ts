@@ -82,17 +82,28 @@ export type ParseResult =
       readonly country: Country;
     };
 
-function classify(readings: readonly Reading[], region1: Region1): ParseResult {
-  // Caller passes only a non-empty winning level; noUncheckedIndexedAccess is off,
-  // so the head of the plateTypes map is a defined PlateTypes.
-  const [head, ...tail] = readings.map((reading) => reading.plateTypes);
+function mapNonEmpty<T, U>(
+  items: readonly [T, ...T[]],
+  mapFn: (item: T) => U,
+): [U, ...U[]] {
+  const [head, ...tail] = items;
+  return [mapFn(head), ...tail.map(mapFn)];
+}
+
+function classify(
+  readings: readonly [Reading, ...Reading[]],
+  region1: Region1,
+): ParseResult {
+  const [head, ...tail] = mapNonEmpty(
+    readings,
+    (reading) => reading.plateTypes,
+  );
   const all = mergePlateTypes(head, ...tail);
 
-  const withRegion2 = readings.filter(
+  const [first, ...withRest] = readings.filter(
     (reading): reading is Reading & { region2: Region2 } =>
       reading.region2 !== undefined,
   );
-  const [first] = withRegion2;
   if (first === undefined) {
     return {
       status: 'region1-only',
@@ -102,10 +113,10 @@ function classify(readings: readonly Reading[], region1: Region1): ParseResult {
     };
   }
 
-  const withoutRegion2 = readings.filter(
+  const [withoutFirst, ...withoutRest] = readings.filter(
     (reading) => reading.region2 === undefined,
   );
-  if (withoutRegion2.length === 0) {
+  if (withoutFirst === undefined) {
     return {
       status: 'resolved',
       country: 'PL',
@@ -115,10 +126,12 @@ function classify(readings: readonly Reading[], region1: Region1): ParseResult {
     };
   }
 
-  const [withHead, ...withTail] = withRegion2.map(
+  const [withHead, ...withTail] = mapNonEmpty(
+    [first, ...withRest],
     (reading) => reading.plateTypes,
   );
-  const [withoutHead, ...withoutTail] = withoutRegion2.map(
+  const [withoutHead, ...withoutTail] = mapNonEmpty(
+    [withoutFirst, ...withoutRest],
     (reading) => reading.plateTypes,
   );
   return {
