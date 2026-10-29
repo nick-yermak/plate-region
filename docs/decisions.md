@@ -234,7 +234,7 @@ Plan new tasks with the strongest model (Opus) in Plan mode; execute the approve
 
 - **GitHub MCP** (remote): user-level `~/.cursor/mcp.json` (holds a token — never committed), explicit toolsets `context,repos,issues,pull_requests,projects,labels`. `gh` CLI covers gaps such as milestones; both act as the user.
 - **Nx MCP**: project-level `.cursor/mcp.json` (no secrets, committed), `npx nx mcp --no-minimal` so workspace tools (`nx_workspace`, generators, schemas) are exposed. Nx's official skills were reviewed and not installed — see D-25.
-- Known issue: `nx_project_details` fails with nx-mcp 0.25.0 on Nx 22.7+ (fixed upstream, not released — nrwl/nx-console#3186).
+- Known issues with nx-mcp 0.25.0: `nx_project_details` fails on Nx 22.7+ (fixed upstream, not released — nrwl/nx-console#3186); `nx_workspace` fails on Nx 23.3.1 because `dependsOn` entries of the inferred `e2e-ci` target do not match the tool's output schema (#28; not checked on 23.2.1). The generator tools work.
 - Duplicate servers with overlapping tools are disabled (they confuse tool selection).
 
 ### D-22 Agent working rules — Accepted
