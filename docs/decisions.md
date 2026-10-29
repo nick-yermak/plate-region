@@ -313,7 +313,7 @@ Variants of `ParseResult` (plate types added in #38, D-34):
 - `region1-only` — no reading carries a region2: reduced (§ 27 ust. 3, § 30 ust. 2 pkt 2), diplomatic (pkt 7), temporary (pkt 6) or individual (pkt 4) plates; carries `plateTypes`. Reduced formats in pkt 2 lit. d, f and g put a letter immediately after the voivodeship letter, and those are the layouts that coincide with full codes (`WA12` is mazowieckie reduced, not a powiat). A column-6 code at the start is a registry fact; the plate type comes from the matched templates (D-34);
 - `ambiguous` — only after look-alike substitution (L2): one reading names a region2 and another carries none; region1 is the same in every reading. It carries `withRegion2: { region2, plateTypes }` and `withoutRegion2: { plateTypes }`. A list of region2 would describe states real data never reaches (D-18);
 - `region2-not-in-registry` — valid column-4+5 shape whose distinguisher is not in the current registry (D-26); carries the `plateTypes` of the matched shape templates;
-- `not-in-registry` — the first character is a letter outside Annex 13 column 4 (H and U). Final within the scope of Dz.U. 2024 poz. 1709: no format in the act starts with a letter outside column 4 (D-35); #60 may revisit it;
+- `not-in-registry` — the first character is a letter outside Annex 13 column 4 (H and U). Final within the scope of Dz.U. 2024 poz. 1709: no format in the act starts with a letter outside column 4 (D-35); confirmed by D-46 (#60);
 - `invalid-input` — `invalid-characters` (from normalisation) or `no-matching-format` (including a leading digit: no § 30 ust. 2 template starts with one);
 - `empty` — empty or separator-only input.
 
@@ -380,6 +380,8 @@ The base act and its amendments neither describe military, service (police and o
 
 - **Why:** formats are never invented (D-26); without a source, any special-plate answer would be a guess.
 - **Rejected:** a provisional special-plate variant for H and U (no source; unreachable as a distinct legal state, D-18).
+
+Update: #60 confirmed this scope; see D-46.
 
 ### D-36 Readings of the act recorded without code changes — Accepted
 
@@ -480,3 +482,22 @@ Variant counts (#51) are computed arithmetically from the § 30 ust. 2 templates
 
 - **Why:** The tests record what a reader of the contract alone expects; rewriting them would erase that. JSDoc is what callers and test writers read, not `docs/decisions.md`.
 - **Rejected:** an `eslint-disable` of `no-non-null-assertion` (`BUGBOT.md` flags it, D-37); keeping 16 lint warnings in `main`; deleting the blind tests after the review (they still check the contract).
+
+### D-46 Service, military and trade plates stay out of scope — Accepted
+
+#60 looked for the acts that govern plates outside Dz.U. 2024 poz. 1709. D-35 stays: `parsePlate` does not recognise plates of the Armed Forces, of state services, or trade/test plates; a leading `H` or `U` still returns `not-in-registry`.
+
+Sources (checked against the official text unless noted):
+
+| Act                                                                                                       | Legal basis     | Covers                                          | Plate format                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MON regulation of 30.08.2023, Dz.U. 2023 poz. 1776; consolidated text Dz.U. 2026 poz. 1300                | art. 76 ust. 2  | Armed Forces, foreign armed forces              | § 6 ust. 3: `U` + one letter of 23 (no O, Q, U) + 5 digits 00001–99999 (car plates); 4 digits 0001–9999 (motorcycle plates); 4 digits + `T` (tracked vehicles)                                                             |
+| MSWiA regulation of 30.09.2025, Dz.U. 2025 poz. 1326 (in force 2025-10-01; repealed Dz.U. 2023 poz. 1778) | art. 76 ust. 3  | SOP, Police, ABW and AW, CBA, Border Guard, KAS | service code `HB`, `HP`, `HK`, `HA`, `HW`, `HC` + one letter of 25 (no Q) + either one letter and 001–999 or 01–99 and two letters. Checked in Dz.U. 2023 poz. 1778 § 5 ust. 2–4; Dz.U. 2025 poz. 1326 not checked locally |
+| MON regulation of 31.08.2023, Dz.U. 2023 poz. 1777                                                        | art. 76 ust. 2a | SKW, SWW                                        | § 6: service code `HM` + same structure as the MSWiA row                                                                                                                                                                   |
+
+Known limitation: some service and military vehicles are registered under ordinary voivodeship/powiat numbers (Dz.U. 2023 poz. 1776 § 6 ust. 2; Dz.U. 2023 poz. 1777 § 6 ust. 1 pkt 2; the MSWiA regulation likewise, § 5 ust. 2 pkt 2 in the repealed Dz.U. 2023 poz. 1778). Such plates parse as civilian plates; the app cannot tell them apart.
+
+Trade and test plates (also named in #60) were not researched: their governing act was not looked up and is not cited here. They remain out of scope under D-35; how such plates parse is not determined.
+
+- **Why:** the project identifies the region of civilian plates. Service and military plates carry no region, and the acts do not define the meaning of the letter after the service code (for the Armed Forces the military registering authority assigns the numbers, Dz.U. 2023 poz. 1776 § 6 ust. 4). The prefixes do not collide with civilian codes: `H` and `U` never appear in column 4 of Annex 13 (R-37, R-48), so `not-in-registry` remains correct.
+- **Rejected:** a `service` variant of `ParseResult` naming the service from the prefix (a result without a region, outside the project's goal); full format validation of service and military plates (same reason; the MSWiA text was not checked locally).

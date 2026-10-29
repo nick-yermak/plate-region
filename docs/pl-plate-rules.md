@@ -288,4 +288,4 @@ Derived by hand in #38 and pinned by literal expectations in `parse-plate.spec.t
 
 ## Out of scope
 
-Military, service and trade/test plates: not regulated by 1709, 939 or 891 (D-35, follow-up #60). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); Annex 12 Rys. 18–26 (images); Rys. 11, 13–16 were read in #39 (D-40).
+Military, service and trade/test plates: not regulated by 1709, 939 or 891 (D-35, D-46). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); Annex 12 Rys. 18–26 (images); Rys. 11, 13–16 were read in #39 (D-40).
