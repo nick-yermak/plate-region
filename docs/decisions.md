@@ -425,7 +425,7 @@ Annex 12 Rys. 11, 13, 14, 15 and 16 of Dz.U. 2024 poz. 1709 (PDF pages 63–68) 
 
 `normalisePlateInput` is not re-exported. Both public entry points (`parsePlate`, `candidatesFor`) already normalise, and their results already carry the invalid-input variants. Re-exporting it later is additive.
 
-`variantCountsForCode` and `variantCountsForRegion1` (D-43) return variant counts per code and per region1. They take a full code string or a `Region1` record and do not parse plate text; `variantCountsForCode` returns `undefined` for a code not in the registry.
+`variantCountsForCode` and `variantCountsForRegion1` (D-43) return variant counts per code and per region1. They take a full code string or a `Region1` record and do not parse plate text; `variantCountsForCode` returns `undefined` for a code not in the registry. `examplePlateForCode` and `examplePlateForRegion1` (D-44) return an example plate for a full code or a region1; `examplePlateForCode` returns `undefined` when the code is not a full code in the registry.
 
 Each library has `src/index.spec.ts`. The spec imports `./index` by a relative path and asserts that `Object.keys(api).sort()` equals a literal list of the runtime exports. That list is the public runtime contract. It is not a list measured from the module (D-38).
 
@@ -461,3 +461,13 @@ Variant counts (#51) are computed arithmetically from the § 30 ust. 2 templates
 - **Per pattern** counts stay internal and are covered through the bucket counts (D-18).
 - Verified in #51 by a read-only script: for every compiled group, the arithmetic count per bucket equals enumeration through `plateTypesOf` over the full 35-character alphabet; no string matched templates from two buckets. The largest region1 total is 544 691 940, a safe integer. Measured values are not spec literals (D-38).
 - **Rejected:** per-template sums (double count); counting compact strings (not additive across codes); breakdown by `PlateType` (reduced counted three times); per region2 (a sum over codes; add in Epic 2 if the registry browser needs it); leaving out individual plates.
+
+### D-44 Example plate generator — Accepted
+
+`examplePlateForCode(code, random)` and `examplePlateForRegion1(region1, random)` return a plate `<full code> <vehicle part>` that is valid by construction (#52). `random` is an injected `() => number` returning a value in [0, 1); the core libraries may not call `Math.random` (D-41).
+
+- Domain: the column-4+5 templates of the code's group — ordinary and vintage plates; per region1, the union of its full codes. This is the set counted by `variantCountsForCode` (D-43), and the two cannot drift: both take the letters, the split into runs and the run capacity from `vehicle-part-templates.ts`.
+- Distribution: uniform over distinct plates. One call to `random`; the index `floor(r × T)` is decomposed in mixed radix over full codes, distinct layouts in source-table order, and runs. A digit run takes the values 1 … 10^k − 1 (R-34). A value outside [0, 1) throws `RangeError`.
+- Round-trip is checked through the public API: `parsePlate` returns `resolved` with the code's region2. Measured before TDD (`tmp/measure-52.cjs`): every valid plate of every full code, distinct layout and first vehicle-part character resolves to its own code; no `ambiguous`.
+- **Why:** examples for placeholders and the registry browser should look like real plates; weighting by capacity makes vintage plates as rare as they are, and one call keeps every expected output derivable by hand.
+- **Rejected:** column-4 and column-6 plates (individual plates are only an upper bound, § 32 ust. 3, R-49, and capacity weighting would let them dominate a region1; the others parse as `region1-only`, without a code); choosing a template first, then characters (vintage would come up in 2 of 15 picks for a 2-char code); one random call per character (longer hand derivations, nothing gained); re-drawing on an ambiguous parse (none exists, and a loop makes the number of calls unbounded); a seeded PRNG in the core libraries (the app passes `Math.random`, tests a scripted source).
