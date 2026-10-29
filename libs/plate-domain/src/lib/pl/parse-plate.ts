@@ -168,6 +168,8 @@ function classify(
  * candidates while typing are {@link candidatesFor}. All-zero digit groups where the act
  * starts at 0…01 are `no-matching-format` — § 30 ust. 2 pkt 1–3, 5–7 (R-34). Vehicle-part
  * letters B, D, I, O and Z are rejected except on individual plates — § 31 ust. 1 (R-36).
+ * From position 4, a typed I or O is read as 1 or 0 (D-42); on individual
+ * plates I and O remain letters — § 32 ust. 2 (R-39).
  *
  * Result variants: {@link ParseResult}.
  */

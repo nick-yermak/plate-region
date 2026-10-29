@@ -334,45 +334,96 @@ export function unregisteredShapePlateTypes(
   return merged;
 }
 
-function asNonEmptyReadings(
-  readings: readonly Reading[],
-): readonly [Reading, ...Reading[]] | undefined {
-  const [head, ...tail] = readings;
+const VEHICLE_PART_FIX: ReadonlyMap<string, string> = new Map([
+  ['I', '1'],
+  ['O', '0'],
+]);
+
+/** Index ≥ 3 is always the vehicle part (D-42); undefined when nothing changes, so the step is not a substitution. */
+function correctVehiclePart(compact: string): string | undefined {
+  const chars = [...compact];
+  let changed = false;
+  for (let index = 3; index < compact.length; index++) {
+    const replacement = VEHICLE_PART_FIX.get(compact.charAt(index));
+    if (replacement !== undefined) {
+      chars[index] = replacement;
+      changed = true;
+    }
+  }
+  return changed ? chars.join('') : undefined;
+}
+
+function asNonEmpty<T>(items: readonly T[]): readonly [T, ...T[]] | undefined {
+  const [head, ...tail] = items;
   if (head === undefined) {
     return undefined;
   }
   return [head, ...tail];
 }
 
+function readGroup<T>(
+  variants: readonly string[],
+  read: (variant: string) => readonly T[],
+): readonly T[] {
+  const asTyped = variants.flatMap(read);
+  if (asTyped.length > 0) {
+    return asTyped;
+  }
+  return variants.flatMap((variant) => {
+    const corrected = correctVehiclePart(variant);
+    return corrected === undefined ? [] : read(corrected);
+  });
+}
+
+type Ranked<T> =
+  | { readonly kind: 'matched'; readonly items: readonly [T, ...T[]] }
+  | { readonly kind: 'unregistered'; readonly plateTypes: PlateTypes }
+  | { readonly kind: 'none' };
+
 /**
- * D-32 levels for `compact`, including L3. One place so `parsePlate` and
- * `candidatesFor` cannot disagree on the complete part (D-39).
+ * Each D-32 group as typed, then corrected, then L3, then L3c (D-42).
+ * L2.2 stays a group: D-39 measured strings with empty L2.1.
+ */
+export function rankCompact<T>(
+  compact: string,
+  read: (variant: string) => readonly T[],
+  shapeOf: (variant: string) => PlateTypes | undefined,
+): Ranked<T> {
+  const [one, two] = lookAlikeVariants(compact);
+  const groups: readonly (readonly string[])[] = [[compact], one, two];
+  for (const variants of groups) {
+    const matched = asNonEmpty(readGroup(variants, read));
+    if (matched !== undefined) {
+      return { kind: 'matched', items: matched };
+    }
+  }
+  const corrected = correctVehiclePart(compact);
+  const shapeSources =
+    corrected === undefined ? [compact] : [compact, corrected];
+  for (const source of shapeSources) {
+    const plateTypes = shapeOf(source);
+    if (plateTypes !== undefined) {
+      return { kind: 'unregistered', plateTypes };
+    }
+  }
+  return { kind: 'none' };
+}
+
+/**
+ * D-32 levels for `compact`, including L3 and vehicle-part I/O correction (D-42).
+ * One place so `parsePlate` and `candidatesFor` cannot disagree on the complete
+ * part (D-39).
  */
 export function resolveCompact(compact: string): CompactResolution {
-  const asTyped = asNonEmptyReadings(readingsOf(compact));
-  if (asTyped !== undefined) {
-    return { kind: 'registry', readings: asTyped };
-  }
-
-  const [oneSubstitution, twoSubstitutions] = lookAlikeVariants(compact);
-  const oneReadings = asNonEmptyReadings(
-    oneSubstitution.flatMap((variant) => readingsOf(variant)),
+  const ranked = rankCompact(compact, readingsOf, (variant) =>
+    unregisteredShapePlateTypes(variant, plateTypesOf),
   );
-  if (oneReadings !== undefined) {
-    return { kind: 'registry', readings: oneReadings };
+  switch (ranked.kind) {
+    case 'matched':
+      return { kind: 'registry', readings: ranked.items };
+    case 'unregistered':
+      return { kind: 'unregistered-shape', plateTypes: ranked.plateTypes };
+    case 'none':
+      return { kind: 'none' };
   }
-
-  const twoReadings = asNonEmptyReadings(
-    twoSubstitutions.flatMap((variant) => readingsOf(variant)),
-  );
-  if (twoReadings !== undefined) {
-    return { kind: 'registry', readings: twoReadings };
-  }
-
-  const shapeTypes = unregisteredShapePlateTypes(compact, plateTypesOf);
-  if (shapeTypes !== undefined) {
-    return { kind: 'unregistered-shape', plateTypes: shapeTypes };
-  }
-
-  return { kind: 'none' };
 }
