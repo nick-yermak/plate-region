@@ -3,6 +3,7 @@ import type { Region1 } from '@plate-region/plate-data';
 
 import {
   COLUMN_4_5_TEMPLATES,
+  layoutCapacity,
   runCapacity,
   splitLayout,
   STANDARD_LETTERS,
@@ -31,18 +32,10 @@ function distinctLayouts(
   return layouts;
 }
 
-function layoutCapacity(layout: string): number {
-  let product = 1;
-  for (const run of splitLayout(layout)) {
-    product *= runCapacity(run, false);
-  }
-  return product;
-}
-
 function totalOf(layouts: readonly string[]): number {
   let total = 0;
   for (const layout of layouts) {
-    total += layoutCapacity(layout);
+    total += layoutCapacity(layout, false);
   }
   return total;
 }
@@ -59,21 +52,6 @@ function layoutsFor(code: string): readonly [string, ...string[]] {
 function totalFor(code: string): number {
   return code.length === 2 ? TOTAL_LEN2 : TOTAL_LEN3;
 }
-
-const FULL_CODES: ReadonlySet<string> = (() => {
-  const codes = new Set<string>();
-  for (const region1 of registry.region1) {
-    for (const region2 of registry.region2) {
-      if (region2.region1Letter !== region1.letters[0]) {
-        continue;
-      }
-      for (const code of fullCodes(region1, region2)) {
-        codes.add(code);
-      }
-    }
-  }
-  return codes;
-})();
 
 function codesForRegion1(region1: Region1): readonly [string, ...string[]] {
   const codes: string[] = [];
@@ -93,6 +71,16 @@ function codesForRegion1(region1: Region1): readonly [string, ...string[]] {
   }
   return [head, ...tail];
 }
+
+const FULL_CODES: ReadonlySet<string> = (() => {
+  const codes = new Set<string>();
+  for (const region1 of registry.region1) {
+    for (const code of codesForRegion1(region1)) {
+      codes.add(code);
+    }
+  }
+  return codes;
+})();
 
 function takeItem<T>(
   items: readonly [T, ...T[]],
@@ -115,11 +103,9 @@ function lettersFor(index: number, length: number): string {
   const base = STANDARD_LETTERS.length;
   let remaining = index;
   let text = '';
-  for (let place = length - 1; place >= 0; place -= 1) {
-    const weight = base ** place;
-    const digit = Math.floor(remaining / weight);
-    remaining -= digit * weight;
-    text += LETTER_CHARS.charAt(digit);
+  for (let n = 0; n < length; n += 1) {
+    text = LETTER_CHARS.charAt(remaining % base) + text;
+    remaining = Math.floor(remaining / base);
   }
   return text;
 }
@@ -132,22 +118,13 @@ function runText(run: LayoutRun, index: number): string {
 }
 
 function characters(layout: string, index: number): string {
-  const runs = splitLayout(layout);
-  const weighted: { readonly run: LayoutRun; readonly place: number }[] = [];
-  let place = 1;
-  for (const run of [...runs].reverse()) {
-    weighted.push({ run, place });
-    place *= runCapacity(run, false);
-  }
-  weighted.reverse();
-  let cursor = index;
-  let text = '';
-  for (const entry of weighted) {
-    const runIndex = Math.floor(cursor / entry.place);
-    cursor -= runIndex * entry.place;
-    text += runText(entry.run, runIndex);
-  }
-  return text;
+  let remaining = index;
+  return splitLayout(layout).reduceRight((text, run) => {
+    const capacity = runCapacity(run, false);
+    const chunk = runText(run, remaining % capacity);
+    remaining = Math.floor(remaining / capacity);
+    return chunk + text;
+  }, '');
 }
 
 function requireUnitInterval(r: number): void {
@@ -157,10 +134,8 @@ function requireUnitInterval(r: number): void {
 }
 
 function plateForCodeIndex(code: string, index: number): string {
-  const { item: layout, local } = takeItem(
-    layoutsFor(code),
-    index,
-    layoutCapacity,
+  const { item: layout, local } = takeItem(layoutsFor(code), index, (item) =>
+    layoutCapacity(item, false),
   );
   return `${code} ${characters(layout, local)}`;
 }

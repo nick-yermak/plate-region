@@ -434,6 +434,15 @@ export function runCapacity(run: LayoutRun, individual: boolean): number {
   return individual ? digits : digits - 1;
 }
 
+/** Product over letter/digit runs of one layout (D-43). */
+export function layoutCapacity(layout: string, individual: boolean): number {
+  let product = 1;
+  for (const run of splitLayout(layout)) {
+    product *= runCapacity(run, individual);
+  }
+  return product;
+}
+
 /**
  * @param lastRunOpen — when true, the final digit run is still being typed, so
  * R-34 (non-zero group) does not apply to it (D-39).
