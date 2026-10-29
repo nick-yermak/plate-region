@@ -172,7 +172,8 @@ Epic 6: Desktop Chrome + iPhone (WebKit) — every iOS browser runs on WebKit, a
 - **npm**, with install scripts explicitly approved (`allowScripts` in `package.json`). On npm 11 the field is advisory (unreviewed scripts still run; npm prints a notice); npm 12 blocks them by default. Vercel's npm 11.19.0 (with Node 24) reads `allowScripts`, and the allowlist covers every install script on Vercel's Linux build (no uncovered-scripts warning).
 - **Never** `--legacy-peer-deps` or `npm audit fix --force`: they hide or force past real incompatibilities. Fix the cause instead (e.g. a clean reinstall for a corrupted lockfile).
 - Dev-only advisories pinned inside a tool are accepted when the vulnerable code path is not used; re-check on every tool upgrade. No `overrides` without approval.
-- Upgrading an exact-pinned peer group (the Angular family; expected likewise for `@nx/*` during `nx migrate`) with an existing lockfile fails with `ERESOLVE` in npm 11, even when all packages are named in one install; regenerating `package-lock.json` is then allowed with explicit approval, and the PR lists the notable version changes.
+  - Accepted in #28: `undici@7.29.0`, pinned exactly by `nx` 23.3.x and 24.0.x (nrwl/nx#37331). `nx` loads it only when `HTTP(S)_PROXY` or `ALL_PROXY` is set, for Nx Cloud and `nx release` HTTP calls (`dist/src/utils/http-client.js`); this workspace sets no proxy and uses neither. Drop this entry once `nx` pins `undici` ≥ 7.30.1.
+- Upgrading an exact-pinned peer group with an existing lockfile fails with `ERESOLVE`, even when all packages are named in one install: seen for the Angular family on npm 11 and for `@nx/*` during `nx migrate` on npm 12.2 (#28). Regenerating `package-lock.json` is then allowed with explicit approval, and the PR lists the notable version changes.
 - **ESLint 10** with inferred lint targets (`@nx/eslint/plugin`); Prettier for formatting.
 
 ### D-16 Git and GitHub workflow — Accepted
