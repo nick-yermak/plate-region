@@ -31,13 +31,23 @@ export type Candidate =
       readonly completeAs: readonly PlateType[];
     }
   | {
-      /** A column-4 letter or a column-6 code: plates that carry no powiat. */
+      /**
+       * Plates that carry no powiat, read from the column-4 letter or a column-6 code.
+       * At most one such entry: the readings of both merge into one `plateTypes` and
+       * `completeAs` — after `W0`, reduced and diplomatic from `W`, individual and
+       * temporary from `W0` (D-39).
+       */
       readonly kind: 'without-region2';
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
       readonly completeAs: readonly PlateType[];
     }
   | {
-      /** A valid column-4+5 shape whose code is not in the current registry (D-26). */
+      /**
+       * A valid column-4+5 shape whose code is not in the current registry (D-26).
+       * At most one such entry. While typing, it appears only when no registry
+       * reading, as typed or after look-alike swaps, can still be completed: `DA`
+       * and `DA1` have none, `DA12` has one (D-39).
+       */
       readonly kind: 'region2-not-in-registry';
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
       readonly completeAs: readonly PlateType[];
@@ -300,7 +310,7 @@ function buildCandidates(
  * Regions and plate types the typed characters can still become, or already are.
  *
  * Uses the same input normalisation as {@link parsePlate}. Separators change only
- * candidate order, not the set. Every matching entry is returned. Where the input
+ * candidate order, not the set. The list is not truncated. Where the input
  * is already a complete plate, `completeAs` agrees with {@link parsePlate}.
  * Fully typed all-zero digit groups are rejected — § 30 ust. 2 pkt 1–3, 5–7 (R-34).
  * From position 4, I and O are also read as 1 and 0, as typed first within
