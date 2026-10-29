@@ -92,8 +92,8 @@ export const COLUMN_4_TEMPLATES: readonly VehiclePartTemplate[] = [
  * Index 1 = one-letter suffix (full code length 2); index 2 = two-letter suffix (full code length 3).
  */
 export const COLUMN_4_5_TEMPLATES: {
-  readonly 1: readonly VehiclePartTemplate[];
-  readonly 2: readonly VehiclePartTemplate[];
+  readonly 1: readonly [VehiclePartTemplate, ...VehiclePartTemplate[]];
+  readonly 2: readonly [VehiclePartTemplate, ...VehiclePartTemplate[]];
 } = {
   1: [
     {
@@ -402,9 +402,46 @@ export const COLUMN_6_TEMPLATES: readonly VehiclePartTemplate[] = [
 // § 31 ust. 1 (R-36) excludes B, D, I, O, Z from the vehicle part «z zastrzeżeniem § 32 ust. 2» (R-39): individual plates are exempt.
 const EXCLUDED_VEHICLE_LETTERS = new Set(['B', 'D', 'I', 'O', 'Z']);
 const ALL_LETTERS = [...PLATE_ALPHABET].filter((c) => /[A-Z]/.test(c));
-const STANDARD_LETTERS = ALL_LETTERS.filter(
+/** Vehicle-part letters after § 31 ust. 1 (R-36): 25 letters of § 30 ust. 1 (R-23) minus B, D, I, O, Z. */
+export const STANDARD_LETTERS: readonly string[] = ALL_LETTERS.filter(
   (c) => !EXCLUDED_VEHICLE_LETTERS.has(c),
 );
+
+export type LayoutRun = {
+  readonly kind: 'L' | 'D';
+  readonly length: number;
+};
+
+/** Contiguous L or D runs of a layout string. Empty layout → []. */
+export function splitLayout(layout: string): readonly LayoutRun[] {
+  const runs: LayoutRun[] = [];
+  for (const text of layout.match(/L+|D+/g) ?? []) {
+    runs.push({
+      kind: text.charAt(0) === 'L' ? 'L' : 'D',
+      length: text.length,
+    });
+  }
+  return runs;
+}
+
+/** Capacity of one run (D-43, D-44). */
+export function runCapacity(run: LayoutRun, individual: boolean): number {
+  if (run.kind === 'L') {
+    const alphabet = individual ? ALL_LETTERS.length : STANDARD_LETTERS.length;
+    return alphabet ** run.length;
+  }
+  const digits = 10 ** run.length;
+  return individual ? digits : digits - 1;
+}
+
+/** Product over letter/digit runs of one layout (D-43). */
+export function layoutCapacity(layout: string, individual: boolean): number {
+  let product = 1;
+  for (const run of splitLayout(layout)) {
+    product *= runCapacity(run, individual);
+  }
+  return product;
+}
 
 /**
  * @param lastRunOpen — when true, the final digit run is still being typed, so
@@ -416,24 +453,18 @@ function compileLayout(
   lastRunOpen: boolean,
 ): RegExp {
   const letterClass = `[${(individual ? ALL_LETTERS : STANDARD_LETTERS).join('')}]`;
-  // Always an array (unlike match); empty layout → one empty run → `^$`.
-  const runs = layout.split(/(?<=D)(?=L)|(?<=L)(?=D)/);
+  const runs = splitLayout(layout);
   let pattern = '^';
   for (const [i, run] of runs.entries()) {
-    // Empty layout yields one empty run from split; skip so the pattern is `^$`.
-    if (run.length === 0) {
-      continue;
-    }
-    const length = run.length;
-    if (run.startsWith('D')) {
+    if (run.kind === 'D') {
       const openTail = lastRunOpen && i === runs.length - 1;
       // Ranges «od 0…01» in § 30 ust. 2 (R-34) — a fully typed digit group may not be all zeros (except individuals).
       pattern +=
         individual || openTail
-          ? `\\d{${length}}`
-          : `(?!0{${length}})\\d{${length}}`;
+          ? `\\d{${run.length}}`
+          : `(?!0{${run.length}})\\d{${run.length}}`;
     } else {
-      pattern += `${letterClass}{${length}}`;
+      pattern += `${letterClass}{${run.length}}`;
     }
   }
   return new RegExp(`${pattern}$`);

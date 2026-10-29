@@ -6,6 +6,7 @@ import {
   COLUMN_4_TEMPLATES,
   COLUMN_4_5_TEMPLATES,
   COLUMN_6_TEMPLATES,
+  layoutCapacity,
   type VehiclePartTemplate,
 } from './vehicle-part-templates';
 
@@ -84,22 +85,6 @@ function plateTypesKey(plateTypes: readonly PlateType[]): string {
   return plateTypes.join(',');
 }
 
-/** Product over letter/digit runs of one layout (D-43). */
-function countLayout(layout: string, individual: boolean): number {
-  const letterBase = individual ? 25 : 20;
-  const runs = layout.split(/(?<=D)(?=L)|(?<=L)(?=D)/);
-  let product = 1;
-  for (const run of runs) {
-    const length = run.length;
-    product *= run.startsWith('D')
-      ? individual
-        ? 10 ** length
-        : 10 ** length - 1
-      : letterBase ** length;
-  }
-  return product;
-}
-
 /**
  * Sum of unique layouts per `plateTypes` set. Identical layouts within one set
  * count once (pkt 1 lit. b and pkt 3 lit. b share six layouts).
@@ -123,7 +108,7 @@ function countsForTemplates(
     const individual = template.plateTypes.includes('individual');
     totals.set(
       key,
-      (totals.get(key) ?? 0) + countLayout(template.layout, individual),
+      (totals.get(key) ?? 0) + layoutCapacity(template.layout, individual),
     );
   }
 
