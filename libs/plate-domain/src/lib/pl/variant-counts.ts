@@ -42,6 +42,44 @@ const BUCKET_PLATE_TYPES = [
   ['diplomatic'],
 ] as const satisfies readonly (readonly [PlateType, ...PlateType[]])[];
 
+type BucketIndex = 0 | 1 | 2 | 3 | 4 | 5;
+
+/** Counts in {@link BUCKET_PLATE_TYPES} order. */
+type BucketCounts = readonly [number, number, number, number, number, number];
+
+const ZERO_BUCKET_COUNTS: BucketCounts = [0, 0, 0, 0, 0, 0];
+
+function bucketCountsFrom(at: (index: BucketIndex) => number): BucketCounts {
+  return [at(0), at(1), at(2), at(3), at(4), at(5)];
+}
+
+function addBucketCounts(
+  left: BucketCounts,
+  right: BucketCounts,
+): BucketCounts {
+  return bucketCountsFrom((i) => left[i] + right[i]);
+}
+
+function scaleBucketCounts(counts: BucketCounts, factor: number): BucketCounts {
+  return bucketCountsFrom((i) => counts[i] * factor);
+}
+
+function toVariantCounts(counts: BucketCounts): VariantCounts {
+  const buckets = [
+    { plateTypes: BUCKET_PLATE_TYPES[0], count: counts[0] },
+    { plateTypes: BUCKET_PLATE_TYPES[1], count: counts[1] },
+    { plateTypes: BUCKET_PLATE_TYPES[2], count: counts[2] },
+    { plateTypes: BUCKET_PLATE_TYPES[3], count: counts[3] },
+    { plateTypes: BUCKET_PLATE_TYPES[4], count: counts[4] },
+    { plateTypes: BUCKET_PLATE_TYPES[5], count: counts[5] },
+  ] as const satisfies VariantCounts['buckets'];
+  return {
+    buckets,
+    total:
+      counts[0] + counts[1] + counts[2] + counts[3] + counts[4] + counts[5],
+  };
+}
+
 function plateTypesKey(plateTypes: readonly PlateType[]): string {
   return plateTypes.join(',');
 }
@@ -68,7 +106,7 @@ function countLayout(layout: string, individual: boolean): number {
  */
 function countsForTemplates(
   templates: readonly VehiclePartTemplate[],
-): VariantCounts {
+): BucketCounts {
   const totals = new Map<string, number>();
   const seenLayouts = new Map<string, Set<string>>();
   for (const template of templates) {
@@ -89,90 +127,18 @@ function countsForTemplates(
     );
   }
 
-  const ordinary = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[0])) ?? 0;
-  const reduced = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[1])) ?? 0;
-  const individual = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[2])) ?? 0;
-  const vintage = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[3])) ?? 0;
-  const temporary = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[4])) ?? 0;
-  const diplomatic = totals.get(plateTypesKey(BUCKET_PLATE_TYPES[5])) ?? 0;
-  const buckets = [
-    { plateTypes: BUCKET_PLATE_TYPES[0], count: ordinary },
-    { plateTypes: BUCKET_PLATE_TYPES[1], count: reduced },
-    { plateTypes: BUCKET_PLATE_TYPES[2], count: individual },
-    { plateTypes: BUCKET_PLATE_TYPES[3], count: vintage },
-    { plateTypes: BUCKET_PLATE_TYPES[4], count: temporary },
-    { plateTypes: BUCKET_PLATE_TYPES[5], count: diplomatic },
-  ] as const satisfies VariantCounts['buckets'];
-  return {
-    buckets,
-    total: ordinary + reduced + individual + vintage + temporary + diplomatic,
-  };
-}
-
-function scaleCounts(counts: VariantCounts, factor: number): VariantCounts {
-  const buckets = [
-    {
-      plateTypes: counts.buckets[0].plateTypes,
-      count: counts.buckets[0].count * factor,
-    },
-    {
-      plateTypes: counts.buckets[1].plateTypes,
-      count: counts.buckets[1].count * factor,
-    },
-    {
-      plateTypes: counts.buckets[2].plateTypes,
-      count: counts.buckets[2].count * factor,
-    },
-    {
-      plateTypes: counts.buckets[3].plateTypes,
-      count: counts.buckets[3].count * factor,
-    },
-    {
-      plateTypes: counts.buckets[4].plateTypes,
-      count: counts.buckets[4].count * factor,
-    },
-    {
-      plateTypes: counts.buckets[5].plateTypes,
-      count: counts.buckets[5].count * factor,
-    },
-  ] as const satisfies VariantCounts['buckets'];
-  return { buckets, total: counts.total * factor };
-}
-
-function addCounts(left: VariantCounts, right: VariantCounts): VariantCounts {
-  const buckets = [
-    {
-      plateTypes: left.buckets[0].plateTypes,
-      count: left.buckets[0].count + right.buckets[0].count,
-    },
-    {
-      plateTypes: left.buckets[1].plateTypes,
-      count: left.buckets[1].count + right.buckets[1].count,
-    },
-    {
-      plateTypes: left.buckets[2].plateTypes,
-      count: left.buckets[2].count + right.buckets[2].count,
-    },
-    {
-      plateTypes: left.buckets[3].plateTypes,
-      count: left.buckets[3].count + right.buckets[3].count,
-    },
-    {
-      plateTypes: left.buckets[4].plateTypes,
-      count: left.buckets[4].count + right.buckets[4].count,
-    },
-    {
-      plateTypes: left.buckets[5].plateTypes,
-      count: left.buckets[5].count + right.buckets[5].count,
-    },
-  ] as const satisfies VariantCounts['buckets'];
-  return { buckets, total: left.total + right.total };
+  return bucketCountsFrom(
+    (i) => totals.get(plateTypesKey(BUCKET_PLATE_TYPES[i])) ?? 0,
+  );
 }
 
 const COUNTS_LEN2 = countsForTemplates(COLUMN_4_5_TEMPLATES[1]);
 const COUNTS_LEN3 = countsForTemplates(COLUMN_4_5_TEMPLATES[2]);
 const COUNTS_COLUMN_4 = countsForTemplates(COLUMN_4_TEMPLATES);
 const COUNTS_COLUMN_6 = countsForTemplates(COLUMN_6_TEMPLATES);
+
+const VARIANT_COUNTS_LEN2 = toVariantCounts(COUNTS_LEN2);
+const VARIANT_COUNTS_LEN3 = toVariantCounts(COUNTS_LEN3);
 
 const BY_FULL_CODE: ReadonlyMap<string, VariantCounts> = (() => {
   const map = new Map<string, VariantCounts>();
@@ -182,7 +148,10 @@ const BY_FULL_CODE: ReadonlyMap<string, VariantCounts> = (() => {
         continue;
       }
       for (const code of fullCodes(region1, region2)) {
-        map.set(code, code.length === 2 ? COUNTS_LEN2 : COUNTS_LEN3);
+        map.set(
+          code,
+          code.length === 2 ? VARIANT_COUNTS_LEN2 : VARIANT_COUNTS_LEN3,
+        );
       }
     }
   }
@@ -229,17 +198,22 @@ export function variantCountsForCode(code: string): VariantCounts | undefined {
  * `region1` is a record from the plate-data registry.
  */
 export function variantCountsForRegion1(region1: Region1): VariantCounts {
-  let sum = scaleCounts(COUNTS_COLUMN_4, 0);
+  let sum: BucketCounts = ZERO_BUCKET_COUNTS;
   for (const region2 of registry.region2) {
     if (region2.region1Letter !== region1.letters[0]) {
       continue;
     }
     for (const code of fullCodes(region1, region2)) {
-      sum = addCounts(sum, code.length === 2 ? COUNTS_LEN2 : COUNTS_LEN3);
+      sum = addBucketCounts(sum, code.length === 2 ? COUNTS_LEN2 : COUNTS_LEN3);
     }
   }
-  return addCounts(
-    addCounts(sum, scaleCounts(COUNTS_COLUMN_4, region1.letters.length)),
-    scaleCounts(COUNTS_COLUMN_6, region1.letterDigitCodes.length),
+  return toVariantCounts(
+    addBucketCounts(
+      addBucketCounts(
+        sum,
+        scaleBucketCounts(COUNTS_COLUMN_4, region1.letters.length),
+      ),
+      scaleBucketCounts(COUNTS_COLUMN_6, region1.letterDigitCodes.length),
+    ),
   );
 }
