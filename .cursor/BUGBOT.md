@@ -6,6 +6,7 @@ Scope: changed lines only. Do not flag formatting, import order or naming — Pr
 
 - Logic matches the stated intent; edge cases and error paths are handled.
 - No invented plate codes or regions — `libs/plate-data` is the only source of truth.
+- Flag: a JSDoc change on a public export that leaves out a `docs/decisions.md` rule deciding the result — see `.cursor/rules/domain.mdc`.
 - No silent fallbacks after a failed tool or MCP call.
 - Flag: destructuring or indexing that assumes a non-empty array whose type does not guarantee it, including code that relies on `noUncheckedIndexedAccess` being off; `eslint-disable` of `@typescript-eslint/no-non-null-assertion` (D-37).
 
@@ -25,6 +26,7 @@ Scope: changed lines only. Do not flag formatting, import order or naming — Pr
 - Flag: new behaviour without a test; weakened assertions; `fakeAsync`/`tick`; CSS selectors or `waitForTimeout` in e2e; missing `typecheck` after library/spec changes.
 - Flag: an operand of `||`, `&&`, `??` or an optional chain that cannot change the outcome with real data — see `.cursor/rules/testing.mdc`.
 - Flag: tests that import an internal function only to reach a branch (D-18).
+- Flag: an equality between two results of the code under test with no literal expectation — see `.cursor/rules/testing.mdc`.
 
 ## Accessibility
 

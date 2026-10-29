@@ -27,6 +27,8 @@ alwaysApply: false
 - Property-style tests (idempotency, prefix compatibility, round-trips) also assert the literal expected result (D-38).
 - Literal expectations for property and enumeration tests come from an independent oracle written from the source (the act text, the registry file), not from the code under test. Shared data is allowed — the registry through `@plate-region/plate-data`, and constants pinned by their own literal test (e.g. `PLATE_ALPHABET`). The oracle and the domain narrowing must not call the logic under test (e.g. `readingsOf`, `lookAlikeVariants`, `parsePlate`). The plan names the source the oracle reads (D-38).
 - A count obtained by running the code under test is a measurement: record it in `docs/decisions.md`, do not assert it as a test literal (D-38).
+- An equality between two results of the code under test (`expect(f(a)).toEqual(f(b))`) also asserts the literal expected value of one side: two `undefined` results are equal (D-45).
+- Read an R- or D-ID in `docs/pl-plate-rules.md` or `docs/decisions.md` before citing it as the source of an expectation; a label copied from JSDoc is not a derivation (D-45).
 
 ## E2E (apps/web-e2e)
 
