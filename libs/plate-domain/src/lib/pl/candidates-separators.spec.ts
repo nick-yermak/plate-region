@@ -272,4 +272,80 @@ describe('C49 candidate composition does not depend on separators (D-31, D-39, D
       first: violations.slice(0, 20),
     }).toEqual({ total: 0, first: [] });
   }, 30_000);
+
+  // D-42: six bases with I or O after position 3 cover L1c, L2.1c, L2.2c and L3c
+  // of the completable part. No edge separators (bases are not the 919 full-length
+  // plates); no look-alike swaps at positions 2–3 (that is L2, not the correction).
+  it('C49 vehicle-part I/O correction bases: every single boundary and all characters separated (D-42)', () => {
+    const bases = [
+      'DW1O',
+      'DBA22I',
+      'WII2I',
+      'DBI22I',
+      'W0I2IA',
+      'DBB222I',
+    ] as const;
+
+    let cursor = 0;
+    const next = () => SEPARATORS[cursor++ % SEPARATORS.length] ?? ' ';
+
+    const violations: string[] = [];
+    let checks = 0;
+
+    for (const base of bases) {
+      const expected = candidatesFor(base);
+      for (const segmented of segmentations(base, next, false)) {
+        checks += 1;
+        const actual = candidatesFor(segmented);
+
+        if (expected.status === 'candidates') {
+          if (actual.status !== 'candidates') {
+            violations.push(
+              `${JSON.stringify(segmented)} (base ${JSON.stringify(base)}): expected candidates, got ${candidatesLabel(actual)} | base ${candidatesLabel(expected)}`,
+            );
+            continue;
+          }
+          if (actual.region1 !== expected.region1) {
+            violations.push(
+              `${JSON.stringify(segmented)} (base ${JSON.stringify(base)}): region1 differs | ${candidatesLabel(actual)} | base ${candidatesLabel(expected)}`,
+            );
+            continue;
+          }
+          const expectedCanon = canonical(expected.candidates);
+          const actualCanon = canonical(actual.candidates);
+          if (
+            actualCanon.map(fullKey).join('\n') !==
+            expectedCanon.map(fullKey).join('\n')
+          ) {
+            violations.push(
+              `${JSON.stringify(segmented)} (base ${JSON.stringify(base)}): entry set differs | ${candidatesLabel(actual)} | base ${candidatesLabel(expected)}`,
+            );
+          }
+        } else if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+          violations.push(
+            `${JSON.stringify(segmented)} (base ${JSON.stringify(base)}): non-candidates differs | ${candidatesLabel(actual)} | base ${candidatesLabel(expected)}`,
+          );
+        }
+      }
+    }
+
+    const expectedChecks = bases.reduce(
+      (sum, b) => sum + expectedChecksFor(b, false),
+      0,
+    );
+
+    console.log('C49 I/O correction counters', {
+      bases: bases.length,
+      checks,
+      expectedChecks,
+      violations: violations.length,
+    });
+
+    expect(checks).toBe(34);
+    expect(checks).toBe(expectedChecks);
+    expect({
+      total: violations.length,
+      first: violations.slice(0, 20),
+    }).toEqual({ total: 0, first: [] });
+  });
 });
