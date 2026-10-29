@@ -6,7 +6,7 @@ import { NxWelcome } from './nx-welcome';
   imports: [NxWelcome, RouterModule],
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrl: './app.less',
 })
 export class App {
   protected title = 'web';

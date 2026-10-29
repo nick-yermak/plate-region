@@ -14,13 +14,14 @@
         "outputPath": "dist/apps/web",
         "browser": "apps/web/src/main.ts",
         "tsConfig": "apps/web/tsconfig.app.json",
+        "inlineStyleLanguage": "less",
         "assets": [
           {
             "glob": "**/*",
             "input": "apps/web/public"
           }
         ],
-        "styles": ["apps/web/src/styles.css"]
+        "styles": ["apps/web/src/styles.less"]
       },
       "configurations": {
         "production": {
