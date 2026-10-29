@@ -53,22 +53,24 @@ Outcome: a pure TypeScript library that turns a plate string into voivodeship, p
 
 ## Epic 2 — Manual lookup UI
 
-Outcome: the first useful version — type a plate, see the region. Responsive layout, two languages, modern Angular. After this epic the product can be shown to people.
+Outcome: the first useful version — type or photograph a plate, see the region. Responsive layout, three languages, modern Angular. After this epic the product can be shown to people. Screens and behaviour: `docs/ui-spec.md`.
 
-- [ ] Add NG-ZORRO and Less: switch the nx.json component generator style to less, convert apps/web global styles, theme tokens, light and dark theme (D-28), and add a `.css` component-styles flag to `.cursor/BUGBOT.md`
-- [ ] Build the input styled as a Polish plate (blue PL strip, monospace font)
-- [ ] Input form with Signal Forms: format validation, error hints
-- [ ] State with signals and `computed`: the result recalculates on every keystroke
-- [ ] Result card: voivodeship, powiat, plate type, clear message for special plates
-- [ ] Autocomplete candidates for partial input
-- [ ] Registry browser: nz-table with filters and sorting by region1, region2, code, kind and serial pattern — rows are registry codes, serial parts are patterns derived from the act, no invented plates
-- [ ] Charts: pick the library (D-29), plate variants per region1
-- [ ] SVG map of Poland highlighting the voivodeship (and the powiat, if a lightweight geometry source exists)
-- [ ] Routing: home, region page `/:code`, about
-- [ ] i18n PL/EN: compare built-in Angular i18n and Transloco on a small prototype, pick one and adopt it
-- [ ] Responsiveness: check at 360 px, tablet and desktop
-- [ ] Make sure zoneless works without hacks: no `NgZone`, no dependencies that require zone.js
-- [ ] Component unit tests with Vitest
+- [ ] NG-ZORRO and Less: first check NG-ZORRO support for the project's Angular version and zoneless; switch the nx.json component generator style to less, convert apps/web global styles, light and dark theme with a toggle (D-28), and add a `.css` component-styles flag to `.cursor/BUGBOT.md`
+- [ ] App shell and routing: top bar with a burger menu, theme toggle, language switch slot, routes for all pages with placeholders, Playwright projects for mobile emulation
+- [ ] Plate component and plate input styled as a Polish plate
+- [ ] i18n PL/EN/RU: compare built-in Angular i18n and Transloco on a small prototype, pick one and adopt it; check plural forms
+- [ ] Search form with Signal Forms: submit on Enter or button, navigate to the result page, list candidates for incomplete input
+- [ ] Result page: result card for every `ParseResult` variant, SVG car with the plate
+- [ ] Photo: upload and camera, preview, passed to the result page; no recognition (Epic 4)
+- [ ] Voivodeship page: powiats with codes and example plates
+- [ ] SVG map of Poland: first compare powiat geometry sources (OpenStreetMap, GUGiK PRG) on licence, simplified size and offline use, and measure how registry region2 codes map onto them; then voivodeship click-through and powiat highlight
+- [ ] Registry table: nz-table with filter, search and sorting by variant count; example plate in every row
+- [ ] Charts: pick the library (D-29); powiat codes per voivodeship, two- vs three-character codes
+- [ ] About page: project and sources, how to read a plate, tech stack
+- [ ] Visual regression: baselines in the Playwright Docker image, locally and in CI
+- [ ] Responsiveness: final pass at 360 px, tablet and desktop
+
+Unit and end-to-end tests are acceptance criteria of every item above.
 
 ## Epic 3 — PWA and prerender
 
