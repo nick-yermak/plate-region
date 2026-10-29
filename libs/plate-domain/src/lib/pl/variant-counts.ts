@@ -6,6 +6,8 @@ import {
   COLUMN_4_TEMPLATES,
   COLUMN_4_5_TEMPLATES,
   COLUMN_6_TEMPLATES,
+  runCapacity,
+  splitLayout,
   type VehiclePartTemplate,
 } from './vehicle-part-templates';
 
@@ -86,16 +88,9 @@ function plateTypesKey(plateTypes: readonly PlateType[]): string {
 
 /** Product over letter/digit runs of one layout (D-43). */
 function countLayout(layout: string, individual: boolean): number {
-  const letterBase = individual ? 25 : 20;
-  const runs = layout.split(/(?<=D)(?=L)|(?<=L)(?=D)/);
   let product = 1;
-  for (const run of runs) {
-    const length = run.length;
-    product *= run.startsWith('D')
-      ? individual
-        ? 10 ** length
-        : 10 ** length - 1
-      : letterBase ** length;
+  for (const run of splitLayout(layout)) {
+    product *= runCapacity(run, individual);
   }
   return product;
 }
