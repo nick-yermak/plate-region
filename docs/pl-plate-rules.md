@@ -60,6 +60,7 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 | R-46 | Temporary car (one-row and two-row), motorcycle and moped plates use the pkt 6 layouts.                                                       | 1709 Annex 12 Rys. 21–24                                      | —                                        | yes                                                                                                                          | `vehicle-part-templates.ts`                               |
 | R-47 | Plate backgrounds are white, yellow, blue or green.                                                                                           | 1709 Annex 12 pkt 2.14 lit. b                                 | —                                        | no: colour                                                                                                                   | —                                                         |
 | R-48 | Annex 13 columns 4–5 serve ordinary, vintage and diplomatic plates; column 6 serves temporary and individual plates.                          | 1709 Annex 13 table header                                    | Table body: 939 § 1 pkt 4, 891 § 1 pkt 9 | yes                                                                                                                          | plate-data `registry.ts`; `readings.ts`; `parse-plate.ts` |
+| R-49 | An individual distinguisher must be a word, abbreviation or expression with no offensive meaning.                                             | 1709 § 32 ust. 3                                              | —                                        | no: other (meaning, not characters; individual variant counts are an upper bound, D-43)                                      | —                                                         |
 
 ## Quotes
 
@@ -255,6 +256,10 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 
 > „Wyróżnik na tablice rejestracyjne zwyczajne, zabytkowe i dyplomatyczne” (columns 4 „wyróżnik województwa” and 5 „wyróżnik powiatu”); „Wyróżnik na tablice rejestracyjne tymczasowe i indywidualne” (column 6)
 
+### R-49 — 1709 § 32 ust. 3
+
+> „Wyróżnik indywidualny powinien być wyrazem, skrótem lub określeniem, które nie zawierają w swoim znaczeniu w języku polskim albo obcym treści obraźliwych lub niezgodnych z zasadami współżycia społecznego.”
+
 ## Notes on rows
 
 - **R-24.** After a one-letter powiat, five vehicle-part layouts are allowed.
@@ -268,7 +273,7 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 
 ## Read, not rows
 
-§ 31 ust. 3 as amended by 939 § 1 pkt 2 (the second voivodeship letter is used only once the first is exhausted; „Wymóg ten nie dotyczy tablic (tablicy) rejestracyjnych indywidualnych.”), § 31 ust. 4–5 (merged and split powiats keep their codes, D-07) and § 32 ust. 3 (content of individual distinguishers). None of them changes what the characters encode.
+§ 31 ust. 3 as amended by 939 § 1 pkt 2 (the second voivodeship letter is used only once the first is exhausted; „Wymóg ten nie dotyczy tablic (tablicy) rejestracyjnych indywidualnych.”) and § 31 ust. 4–5 (merged and split powiats keep their codes, D-07). Neither changes what the characters encode.
 
 ## Derived consequences
 
