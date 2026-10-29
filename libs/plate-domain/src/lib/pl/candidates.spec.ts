@@ -527,8 +527,142 @@ describe('candidatesFor', () => {
       );
     });
 
-    it('C41 DW1O → no-matching-format; vehicle-part I/O→1/0 out of scope (#63, D-39)', () => {
-      expect(candidatesFor('DW1O')).toEqual(noMatchingFormat);
+    it('C41 DW1O → without-region2 complete reduced at L1c, Wrocław completable (D-42, R-26)', () => {
+      expect(candidatesFor('DW1O')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          withoutRegion2(REDUCED, REDUCED),
+          region2Entry(region2By('D', 'Wrocław'), ['DW'], ORDINARY_VINTAGE),
+        ]),
+      );
+    });
+
+    it('C50 DW1O2 → Wrocław complete vintage at L1c; ordinary still completable (D-42, R-30)', () => {
+      expect(candidatesFor('DW1O2')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          region2Entry(
+            region2By('D', 'Wrocław'),
+            ['DW'],
+            ORDINARY_VINTAGE,
+            VINTAGE,
+          ),
+        ]),
+      );
+    });
+
+    it('C51 DOA2I → oławski complete vintage at L1c; ordinary still completable (D-42, R-31)', () => {
+      expect(candidatesFor('DOA2I')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          region2Entry(
+            region2By('D', 'oławski'),
+            ['DOA'],
+            ORDINARY_VINTAGE,
+            VINTAGE,
+          ),
+        ]),
+      );
+    });
+
+    it('C52 W00I22 → without-region2 temporary complete at L1c, diplomatic completable (D-42, R-32, R-33)', () => {
+      expect(candidatesFor('W00I22')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(TEMP_DIP, TEMPORARY),
+        ]),
+      );
+    });
+
+    it('C53 WII2I → without-region2 individual complete at L2.1, Warszawa ordinary completable at L2.1c (D-42, R-29)', () => {
+      expect(candidatesFor('WII2I')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(INDIVIDUAL, INDIVIDUAL),
+          region2Entry(region2By('W', 'm.st. Warszawa'), ['WI'], ORDINARY),
+        ]),
+      );
+    });
+
+    it('C54 WI0OOOO → without-region2 diplomatic complete at L2.1c (D-42, R-33)', () => {
+      expect(candidatesFor('WI0OOOO')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(DIPLOMATIC, DIPLOMATIC),
+        ]),
+      );
+    });
+
+    it('C55 W1IOIO → without-region2 individual complete at L1 (D-42, R-29; as typed)', () => {
+      expect(candidatesFor('W1IOIO')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(INDIVIDUAL, INDIVIDUAL),
+        ]),
+      );
+    });
+
+    it('C56 DBB2222I → L3c complete ordinary (D-42, R-25)', () => {
+      expect(candidatesFor('DBB2222I')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          l3Entry(ORDINARY, ORDINARY),
+        ]),
+      );
+    });
+
+    it('C57 WIO000O → without-region2 diplomatic complete at L2.2c; L3c completable WIO + 0000 (D-42, R-33, R-25)', () => {
+      expect(candidatesFor('WIO000O')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(DIPLOMATIC, DIPLOMATIC),
+          l3Entry(ORDINARY),
+        ]),
+      );
+    });
+
+    it('C58 DBA22I → Wałbrzych complete ordinary at L1c, wałbrzyski completable (D-42, R-27, R-25)', () => {
+      expect(candidatesFor('DBA22I')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          region2Entry(region2By('D', 'Wałbrzych'), ['DB'], ORDINARY, ORDINARY),
+          region2Entry(region2By('D', 'wałbrzyski'), ['DBA'], ORDINARY),
+        ]),
+      );
+    });
+
+    it('C59 WIIAI → without-region2 individual only at L2.1; no WI (D-42, R-29)', () => {
+      expect(candidatesFor('WIIAI')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(INDIVIDUAL, INDIVIDUAL),
+        ]),
+      );
+    });
+
+    it('C60 DBI22I → Wałbrzych complete ordinary at L2.1c (D-42, R-27)', () => {
+      expect(candidatesFor('DBI22I')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [
+          region2Entry(region2By('D', 'Wałbrzych'), ['DB'], ORDINARY, ORDINARY),
+        ]),
+      );
+    });
+
+    it('C61 W0I2IA → without-region2 temporary complete at L2.1c, Ostrołęka ordinary completable at L2.2c (D-42, R-32, R-24)', () => {
+      expect(candidatesFor('W0I2IA')).toEqual(
+        candidates(region1ByName('mazowieckie'), [
+          withoutRegion2(TEMPORARY, TEMPORARY),
+          region2Entry(region2By('W', 'Ostrołęka'), ['WO'], ORDINARY),
+        ]),
+      );
+    });
+
+    it('C62 DBB222I → L3c completable ordinary only (D-42, R-25)', () => {
+      expect(candidatesFor('DBB222I')).toEqual(
+        candidates(region1ByName('dolnośląskie'), [l3Entry(ORDINARY)]),
+      );
+    });
+
+    it('C63 SO0I2 → Sosnowiec complete vintage at L1c; ordinary still completable (D-42, R-30)', () => {
+      expect(candidatesFor('SO0I2')).toEqual(
+        candidates(region1ByName('śląskie'), [
+          region2Entry(
+            region2By('S', 'Sosnowiec'),
+            ['SO'],
+            ORDINARY_VINTAGE,
+            VINTAGE,
+          ),
+        ]),
+      );
     });
   });
 

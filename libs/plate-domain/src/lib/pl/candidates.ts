@@ -5,7 +5,7 @@ import type { PlateType } from './plate-type';
 import { mergePlateTypes, type PlateTypes } from './plate-type';
 import {
   completionsOf,
-  lookAlikeVariants,
+  rankCompact,
   region1ForFirstLetter,
   rejectWithoutRegion1,
   resolveCompact,
@@ -118,25 +118,17 @@ function winningCompletions(compact: string): {
   readonly completions: readonly Completion[];
   readonly l3: PlateTypes | undefined;
 } {
-  const asTyped = completionsOf(compact);
-  if (asTyped.length > 0) {
-    return { completions: asTyped, l3: undefined };
+  const ranked = rankCompact(compact, completionsOf, (variant) =>
+    unregisteredShapePlateTypes(variant, completablePlateTypesOf),
+  );
+  switch (ranked.kind) {
+    case 'matched':
+      return { completions: ranked.items, l3: undefined };
+    case 'unregistered':
+      return { completions: [], l3: ranked.plateTypes };
+    case 'none':
+      return { completions: [], l3: undefined };
   }
-  // L2 as in D-32: L2.2 only after empty L2.1. Enumeration on the representative
-  // domain found strings where L2.1 is empty and L2.2 is not (D-39).
-  const [one, two] = lookAlikeVariants(compact);
-  const oneCompletions = one.flatMap((variant) => completionsOf(variant));
-  if (oneCompletions.length > 0) {
-    return { completions: oneCompletions, l3: undefined };
-  }
-  const twoCompletions = two.flatMap((variant) => completionsOf(variant));
-  if (twoCompletions.length > 0) {
-    return { completions: twoCompletions, l3: undefined };
-  }
-  return {
-    completions: [],
-    l3: unregisteredShapePlateTypes(compact, completablePlateTypesOf),
-  };
 }
 
 function addCode(
@@ -311,6 +303,8 @@ function buildCandidates(
  * candidate order, not the set. Every matching entry is returned. Where the input
  * is already a complete plate, `completeAs` agrees with {@link parsePlate}.
  * Fully typed all-zero digit groups are rejected — § 30 ust. 2 pkt 1–3, 5–7 (R-34).
+ * From position 4, I and O are also read as 1 and 0, as typed first within
+ * each level (D-42).
  *
  * Result variants: {@link CandidatesResult}.
  */

@@ -475,9 +475,116 @@ describe('parsePlate', () => {
       },
       {
         input: 'SO0I2',
+        expected: resolved(
+          region1ByName('śląskie'),
+          region2By('S', 'Sosnowiec'),
+          VINTAGE,
+        ),
+        citation:
+          'L1c resolved: SO012 § 30 ust. 2 pkt 5 lit. a tiret 2 (R-30) (D-42)',
+      },
+      {
+        input: 'SO0AB',
         expected: region1Only(region1ByName('śląskie'), INDIVIDUAL),
         citation:
-          'L2.2 region1-only: S0OI2 § 30 ust. 2 pkt 4 LLD (R-29) (one-sub empty)',
+          'L2.2 region1-only: S0OAB § 30 ust. 2 pkt 4 LLL (R-29) (one-sub empty; no I/O at index ≥ 3)',
+      },
+      {
+        input: 'DW1O',
+        expected: region1Only(region1ByName('dolnośląskie'), REDUCED),
+        citation:
+          'L1c region1-only: D W10 § 30 ust. 2 pkt 2 lit. d (R-26) (D-42)',
+      },
+      {
+        input: 'DW1O2',
+        expected: resolved(
+          region1ByName('dolnośląskie'),
+          region2By('D', 'Wrocław'),
+          VINTAGE,
+        ),
+        citation:
+          'L1c resolved: DW102 § 30 ust. 2 pkt 5 lit. a tiret 2 (R-30) (D-42)',
+      },
+      {
+        input: 'DOA2I',
+        expected: resolved(
+          region1ByName('dolnośląskie'),
+          region2By('D', 'oławski'),
+          VINTAGE,
+        ),
+        citation:
+          'L1c resolved: DOA21 § 30 ust. 2 pkt 5 lit. b tiret 2 (R-31) (D-42; beats L2.1 D0 individual)',
+      },
+      {
+        input: 'W00I22',
+        expected: region1Only(region1ByName('mazowieckie'), TEMPORARY),
+        citation:
+          'L1c region1-only: W00122 § 30 ust. 2 pkt 6 (R-32) (D-42; beats L2.1 individual)',
+      },
+      {
+        input: 'DBA22I',
+        expected: resolved(
+          region1ByName('dolnośląskie'),
+          region2By('D', 'Wałbrzych'),
+          ORDINARY,
+        ),
+        citation:
+          'L1c resolved: DB A221 § 30 ust. 2 pkt 3 lit. a tiret 5 (R-27) (D-42)',
+      },
+      {
+        input: 'WII2I',
+        expected: region1Only(region1ByName('mazowieckie'), INDIVIDUAL),
+        citation:
+          'L2.1 region1-only: W1 I2I § 30 ust. 2 pkt 4 LDL (R-29) (as typed beats L2.1c)',
+      },
+      {
+        input: 'WI0OOOO',
+        expected: region1Only(region1ByName('mazowieckie'), DIPLOMATIC),
+        citation:
+          'L2.1c region1-only: W100000 § 30 ust. 2 pkt 7 (R-33) (D-42; beats L2.2 individual)',
+      },
+      {
+        input: 'W1IOIO',
+        expected: region1Only(region1ByName('mazowieckie'), INDIVIDUAL),
+        citation:
+          'L1 region1-only: W1 IOIO § 30 ust. 2 pkt 4 LLLL (R-29) (as typed; I/O remain letters)',
+      },
+      {
+        input: 'DBB2222I',
+        expected: region2NotInRegistry(region1ByName('dolnośląskie'), ORDINARY),
+        citation:
+          'L3c: DBB22221 § 30 ust. 2 pkt 1 lit. b tiret 7 (R-25) (D-42)',
+      },
+      {
+        input: 'WIO000O',
+        expected: region1Only(region1ByName('mazowieckie'), DIPLOMATIC),
+        citation: 'L2.2c region1-only: W100000 § 30 ust. 2 pkt 7 (R-33) (D-42)',
+      },
+      {
+        input: 'WIIAI',
+        expected: region1Only(region1ByName('mazowieckie'), INDIVIDUAL),
+        citation: 'L2.1 region1-only: W1 IAI § 30 ust. 2 pkt 4 LLL (R-29)',
+      },
+      {
+        input: 'DBI22I',
+        expected: resolved(
+          region1ByName('dolnośląskie'),
+          region2By('D', 'Wałbrzych'),
+          ORDINARY,
+        ),
+        citation:
+          'L2.1c resolved: DB1221 § 30 ust. 2 pkt 3 lit. a tiret 1 (R-27) (D-42)',
+      },
+      {
+        input: 'W0I2IA',
+        expected: region1Only(region1ByName('mazowieckie'), TEMPORARY),
+        citation: 'L2.1c region1-only: W0121A § 30 ust. 2 pkt 6 (R-32) (D-42)',
+      },
+      {
+        input: 'DBB222I',
+        expected: noMatchingFormat,
+        citation:
+          'no complete L3c: DBB2221 length-4 vehicle part has no DDDD in group 2 (D-42)',
       },
       {
         input: 'IA12345',
