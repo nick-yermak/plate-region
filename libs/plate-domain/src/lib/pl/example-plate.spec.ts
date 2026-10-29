@@ -230,4 +230,13 @@ describe('examplePlateForRegion1', () => {
       'VW 00001',
     );
   });
+
+  it('B18 region1 without full codes throws RangeError and does not call random', () => {
+    // Q is in no region1.letters and no region2.region1Letter (registry.ts letters /
+    // region1Letter; registry.spec.ts § 30 ust. 1 alphabet excludes Q).
+    const region1 = { ...sw(), letters: ['Q'] as const };
+    const source = vi.fn(() => 0);
+    expect(() => examplePlateForRegion1(region1, source)).toThrow(RangeError);
+    expect(source).toHaveBeenCalledTimes(0);
+  });
 });

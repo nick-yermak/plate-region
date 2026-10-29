@@ -92,8 +92,8 @@ export const COLUMN_4_TEMPLATES: readonly VehiclePartTemplate[] = [
  * Index 1 = one-letter suffix (full code length 2); index 2 = two-letter suffix (full code length 3).
  */
 export const COLUMN_4_5_TEMPLATES: {
-  readonly 1: readonly VehiclePartTemplate[];
-  readonly 2: readonly VehiclePartTemplate[];
+  readonly 1: readonly [VehiclePartTemplate, ...VehiclePartTemplate[]];
+  readonly 2: readonly [VehiclePartTemplate, ...VehiclePartTemplate[]];
 } = {
   1: [
     {
