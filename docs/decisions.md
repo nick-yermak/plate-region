@@ -249,6 +249,7 @@ Recorded in `AGENTS.md`; the non-obvious ones:
 - Branch from an up-to-date `origin/main` (`git fetch origin && git switch -c <branch> origin/main`) and confirm `git --no-pager log --oneline origin/main..HEAD` is empty before any edit. (“Branch first” did not say from where; a branch from a stale local `main` once carried unrelated commits.)
 - Every report after running code opens with test/typecheck/lint pass/fail counts and exit codes; each failing test lists input, expected, actual, and whether the bug is in code or the expectation. Spec expectations change only with approval. (Two #39 reports omitted results; 22 tests were failing behind the first.)
 - Plan mode creates no files anywhere, including `/tmp`. A fact that needs a command is given as the command and marked unverified. (In #39 Plan mode wrote under `/tmp` despite read-only.)
+- Command output given as evidence is quoted in full; long output goes to a file under `tmp/`. (A #51 report shortened `awk` output over the Provision column with `…`, so the rows it cited could not be checked.)
 
 ### D-23 One review checklist — Accepted
 
