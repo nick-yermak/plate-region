@@ -131,6 +131,14 @@ describe('examplePlateForCode', () => {
     });
   });
 
+  it('B19 letters inside an LL run keep their order → TBU 01AC (DDLL, R-25)', () => {
+    // Start of DDLL = capacity of LDDD (§ 30 ust. 2 pkt 1 lit. b tiret 1, R-25), plus 1:
+    // LL index 1 → A (high place), C (low place); DD index 0 → 01.
+    expect(examplePlateForCode('TBU', () => rAt(20 * 999 + 1, T_LEN3))).toBe(
+      'TBU 01AC',
+    );
+  });
+
   it('B10 unknown code QQ → undefined', () => {
     expect(examplePlateForCode('QQ', () => rAt(0, T_LEN2))).toBeUndefined();
   });
