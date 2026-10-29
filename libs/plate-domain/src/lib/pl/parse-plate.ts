@@ -66,7 +66,8 @@ export type ParseResult =
       /**
        * First character is a letter outside Annex 13 column 4 (H, U) —
        * § 31 ust. 2 (R-37), Annex 13 table header (R-48). Final within
-       * Dz.U. 2024 poz. 1709; #60 may revisit (D-35).
+       * Dz.U. 2024 poz. 1709; out of scope: service, military and trade
+       * plates (D-35, D-46).
        */
       readonly status: 'not-in-registry';
       readonly country: Country;

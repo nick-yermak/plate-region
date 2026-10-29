@@ -682,7 +682,7 @@ describe('parsePlate', () => {
     });
 
     it.each([
-      // Final within Dz.U. 2024 poz. 1709; #60 may revisit (D-35, R-37, R-48).
+      // Final within Dz.U. 2024 poz. 1709; out of scope per D-35, D-46 (R-37, R-48).
       { input: 'HA12345' },
       { input: 'UA12345' },
       { input: 'H' },
