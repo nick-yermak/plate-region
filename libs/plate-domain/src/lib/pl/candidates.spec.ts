@@ -603,10 +603,11 @@ describe('candidatesFor', () => {
       );
     });
 
-    it('C57 WIO000O → without-region2 diplomatic complete at L2.2c (D-42, R-33)', () => {
+    it('C57 WIO000O → without-region2 diplomatic complete at L2.2c; L3c completable WIO + 0000 (D-42, R-33, R-25)', () => {
       expect(candidatesFor('WIO000O')).toEqual(
         candidates(region1ByName('mazowieckie'), [
           withoutRegion2(DIPLOMATIC, DIPLOMATIC),
+          l3Entry(ORDINARY),
         ]),
       );
     });
