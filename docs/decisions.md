@@ -130,7 +130,7 @@ Charts such as plate variants per region1 in the registry browser.
 
 - **Leaning:** Apache ECharts used directly behind a thin in-house wrapper component: rendered only in `afterNextRender`, loaded via `@defer`, kept in sync with `effect`.
 - **To evaluate:** AntV G2; ready-made Angular wrappers (check Angular 22 support); D3 (too low-level for bar charts); Highcharts (commercial licence).
-- Chart data is computed by pure functions in `plate-domain`, not in components.
+- Chart data is computed by pure functions in `plate-domain`, not in components. Variant counts per code and per region1: D-43.
 
 ---
 
@@ -425,6 +425,8 @@ Annex 12 Rys. 11, 13, 14, 15 and 16 of Dz.U. 2024 poz. 1709 (PDF pages 63–68) 
 
 `normalisePlateInput` is not re-exported. Both public entry points (`parsePlate`, `candidatesFor`) already normalise, and their results already carry the invalid-input variants. Re-exporting it later is additive.
 
+`variantCountsForCode` and `variantCountsForRegion1` (D-43) return variant counts per code and per region1. They take a full code string or a `Region1` record and do not parse plate text; `variantCountsForCode` returns `undefined` for a code not in the registry.
+
 Each library has `src/index.spec.ts`. The spec imports `./index` by a relative path and asserts that `Object.keys(api).sort()` equals a literal list of the runtime exports. That list is the public runtime contract. It is not a list measured from the module (D-38).
 
 Purity is an `error` in each library's own `eslint.config.mjs`. The block uses `files: ['src/**/*.ts']` and ignores `src/**/*.spec.ts` and `src/**/*.test.ts`. Patterns resolve relative to the project (D-37). `no-restricted-imports` forbids Node built-ins: `paths` built from `builtinModules` (`import { builtinModules } from 'node:module'`) for bare specifiers, and `patterns` only for `node:*` — no hand-maintained list of bare names. `no-restricted-properties` forbids `Math.random`, `Date.now` and any `console` property. `no-restricted-syntax` forbids any `new Date(…)` and `Date()`. No new package.
@@ -445,3 +447,17 @@ Extends D-32 and D-39 (#63). From position 4 on, a typed I or O is also read as 
 
 - **Why:** On non-individual plates I and O cannot be letters in the vehicle part (R-36), so a correction after position 3 keeps the typed distinguisher, which D-32 treats as the strongest evidence; a swap at positions 2–3 changes it. The ranking adds no ambiguity and never overrides a region2.
 - **Rejected:** correcting positions 2–3 as well (on the readings-invariant domain 336 outcomes change and 108 strings get two region2, e.g. `LBI22` as `LB` and `LBI`, breaking the D-32 invariant); merging the correction into each level without ranking (984 new ambiguous, e.g. `WII2I`); a separate correction level after L2 (3 444 outcomes differ from the adopted order, e.g. `DOA2I` read as an individual `D0` plate through a distinguisher swap instead of `DOA` as typed); ranking by the total number of changes (1 378 new ambiguous).
+
+### D-43 Vehicle-part variant counts — Accepted
+
+Variant counts (#51) are computed arithmetically from the § 30 ust. 2 templates (R-24–R-33) and feed the registry browser and the D-29 chart.
+
+- **Unit.** A variant is a distinct pair of distinguisher and vehicle part. Identical layouts within one distinguisher count once: pkt 1 lit. b and pkt 3 lit. b share six layouts (R-25, R-28), so per-template sums would count them twice. Compact strings are not the unit: one string can read through different codes (`ambiguous`), while the "+" gap tells pairs apart on the plate (R-41, R-42).
+- **Per code.** Only column-4+5 templates (ordinary car, motorcycle and moped; non-reduced vintage): group 1 for two-character codes, group 2 for three-character codes. The count depends only on the code length. The public function takes a full code string and returns `undefined` for a code not in the registry.
+- **Per region1.** The sum over its codes (from `fullCodes`), plus the column-4 templates (reduced, diplomatic) for each of its column-4 letters, plus the column-6 templates (temporary, individual) for each of its column-6 codes. Both column-4 letters count: § 31 ust. 3 orders issuance and does not limit capacity. Likewise "tworzony kolejno" (pkt 1–3) and "po wyczerpaniu" (pkt 6) order issuance; every layout counts.
+- **Breakdown.** By the template's `plateTypes` set: ordinary, vintage, reduced (ordinary+vintage+temporary as one bucket; the same number serves all three, R-26, R-35), diplomatic, temporary, individual. Within a distinguisher the buckets are disjoint, so they add up to the total. Not by `PlateType`: a reduced number would count in three buckets.
+- **Formula.** Product over the runs of a layout: a letter run of length k gives 20^k (25 letters, § 30 ust. 1, R-23, minus B, D, I, O, Z, § 31 ust. 1, R-36); a digit run gives 10^k − 1 (every range in pkt 1, 2, 3, 5, 6 and 7 starts at 0…01, R-34). Individual layouts give 25^k and 10^k (R-39, D-36).
+- **Individual counts are an upper bound.** § 32 ust. 3 (R-49) requires a word, abbreviation or expression without offensive meaning, which the characters cannot decide.
+- **Per pattern** counts stay internal and are covered through the bucket counts (D-18).
+- Verified in #51 by a read-only script: for every compiled group, the arithmetic count per bucket equals enumeration through `plateTypesOf` over the full 35-character alphabet; no string matched templates from two buckets. The largest region1 total is 544 691 940, a safe integer. Measured values are not spec literals (D-38).
+- **Rejected:** per-template sums (double count); counting compact strings (not additive across codes); breakdown by `PlateType` (reduced counted three times); per region2 (a sum over codes; add in Epic 2 if the registry browser needs it); leaving out individual plates.
