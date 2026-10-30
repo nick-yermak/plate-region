@@ -1,9 +1,10 @@
-import { fullCodes, registry } from '@plate-region/plate-data';
-import type { Region2 } from '@plate-region/plate-data';
 import { describe, expect, it } from 'vitest';
 
-import { examplePlateForCode } from './example-plate';
+import type { Region2 } from '@plate-region/plate-data';
+import { fullCodes, registry } from '@plate-region/plate-data';
+
 import { parsePlate } from './parse-plate';
+import { examplePlateForCode } from './example-plate';
 
 function plateOrThrow(plate: string | undefined): string {
   if (plate === undefined) {

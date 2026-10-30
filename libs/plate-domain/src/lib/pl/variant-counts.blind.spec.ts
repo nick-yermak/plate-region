@@ -2,7 +2,9 @@
 // plate-data registry and excerpts of Dz.U. 2024 poz. 1709 (#41). Kept as
 // written so they show what a reader of the contract alone expects: do not
 // rewrite them to testing.mdc conventions (D-45).
+
 import { describe, it, expect } from 'vitest';
+
 import { variantCountsForCode } from '../../index';
 
 /**

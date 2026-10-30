@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+
 import { App } from './app';
 import { NxWelcome } from './nx-welcome';
 

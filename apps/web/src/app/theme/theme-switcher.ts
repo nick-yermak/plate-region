@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+
 import { ThemeService } from './theme.service';
 import { ThemeToggleComponent } from './theme-toggle';
 

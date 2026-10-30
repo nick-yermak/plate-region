@@ -1,6 +1,6 @@
+import { registry } from './registry';
 import { fullCodes } from './full-codes';
 import type { Registry, Region1, Region2 } from './model';
-import { registry } from './registry';
 
 const { region1, region2 }: Registry = registry;
 

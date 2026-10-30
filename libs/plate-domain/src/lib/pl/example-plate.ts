@@ -1,5 +1,5 @@
-import { fullCodes, registry } from '@plate-region/plate-data';
 import type { Region1 } from '@plate-region/plate-data';
+import { fullCodes, registry } from '@plate-region/plate-data';
 
 import {
   COLUMN_4_5_TEMPLATES,

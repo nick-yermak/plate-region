@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { LocalStorageService } from './local-storage.service';
+
 import { LOCAL_STORAGE_KEYS } from './storage.constants';
+import { LocalStorageService } from './local-storage.service';
 
 describe('LocalStorageService', () => {
   let getItem: ReturnType<typeof vi.spyOn>;

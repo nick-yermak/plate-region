@@ -1,8 +1,8 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
 
+import { parsePlate } from './parse-plate';
 import { PLATE_ALPHABET } from './alphabet';
 import { candidatesFor } from './candidates';
-import { parsePlate } from './parse-plate';
 
 type CandidatesResult = ReturnType<typeof candidatesFor>;
 type Entry = Extract<
