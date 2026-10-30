@@ -1,176 +1,180 @@
 import { TestBed } from '@angular/core/testing';
-import { STORAGE_KEYS } from '../shared/storage-keys';
-import { THEME_LINK_ID } from './theme.constants';
+import { STORAGE_KEYS } from '../shared/storage/storage.constants';
+import { StorageService } from '../shared/storage/storage.service';
+import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
 import { ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
-  const addedLinks = new Set<HTMLLinkElement>();
+  type FakeMql = MediaQueryList & {
+    matches: boolean;
+    fire: (matches: boolean) => void;
+  };
 
-  function themeLinks(): HTMLLinkElement[] {
-    return Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'));
+  let mql: FakeMql;
+  let matchMediaMock: ReturnType<typeof vi.fn>;
+
+  function installThemeLinks(): void {
+    const light = document.createElement('link');
+    light.id = THEME_LINK_IDS.light;
+    light.rel = 'stylesheet';
+    light.href = 'light.css';
+    light.media = '(prefers-color-scheme: light)';
+    const dark = document.createElement('link');
+    dark.id = THEME_LINK_IDS.dark;
+    dark.rel = 'stylesheet';
+    dark.href = 'dark.css';
+    dark.media = '(prefers-color-scheme: dark)';
+    document.head.append(light, dark);
   }
 
-  function installPrThemeLink(href: string): HTMLLinkElement {
-    const link = document.createElement('link');
-    link.id = THEME_LINK_ID;
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.append(link);
-    addedLinks.add(link);
-    return link;
-  }
-
-  function appendedSince(before: HTMLLinkElement[]): HTMLLinkElement[] {
-    const beforeSet = new Set(before);
-    return themeLinks().filter((link) => !beforeSet.has(link));
+  function stubMatchMedia(matches: boolean): FakeMql {
+    const listeners = new Set<(event: MediaQueryListEvent) => void>();
+    const fake = {
+      matches,
+      media: DARK_SCHEME_QUERY,
+      onchange: null,
+      addEventListener: (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+      ) => {
+        if (type === 'change' && typeof listener === 'function') {
+          listeners.add(listener as (event: MediaQueryListEvent) => void);
+        }
+      },
+      removeEventListener: (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+      ) => {
+        if (type === 'change' && typeof listener === 'function') {
+          listeners.delete(listener as (event: MediaQueryListEvent) => void);
+        }
+      },
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => true,
+      fire: (next: boolean) => {
+        fake.matches = next;
+        const event = {
+          matches: next,
+          media: DARK_SCHEME_QUERY,
+        } as MediaQueryListEvent;
+        for (const listener of listeners) {
+          listener(event);
+        }
+      },
+    } as FakeMql;
+    matchMediaMock = vi.fn(() => fake);
+    vi.stubGlobal('matchMedia', matchMediaMock);
+    return fake;
   }
 
   beforeEach(() => {
     TestBed.resetTestingModule();
+    localStorage.clear();
+    installThemeLinks();
+    mql = stubMatchMedia(false);
+    TestBed.configureTestingModule({
+      providers: [StorageService],
+    });
   });
 
   afterEach(() => {
-    document.documentElement.classList.remove('light', 'dark');
-    for (const link of addedLinks) {
-      link.remove();
-    }
-    addedLinks.clear();
-    for (const link of themeLinks()) {
-      if (
-        link.id === THEME_LINK_ID ||
-        /(?:^|\/)(?:light|dark)\.css$/.test(link.href)
-      ) {
-        link.remove();
-      }
-    }
+    document.getElementById(THEME_LINK_IDS.light)?.remove();
+    document.getElementById(THEME_LINK_IDS.dark)?.remove();
     localStorage.clear();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     TestBed.resetTestingModule();
   });
 
-  it('reads dark from the html class at creation', () => {
-    document.documentElement.classList.add('dark');
-    TestBed.configureTestingModule({});
-    const service = TestBed.inject(ThemeService);
-    expect(service.theme()).toBe('dark');
-  });
-
-  it('defaults to light when html has no theme class', () => {
-    TestBed.configureTestingModule({});
+  it('defaults to light when there is no stored choice and the system is light', () => {
+    mql.matches = false;
     const service = TestBed.inject(ThemeService);
     expect(service.theme()).toBe('light');
   });
 
-  it('writes nothing to localStorage on creation', () => {
-    document.documentElement.classList.add('dark');
-    TestBed.configureTestingModule({});
+  it('uses dark when there is no stored choice and the system is dark', () => {
+    mql.matches = true;
+    const service = TestBed.inject(ThemeService);
+    expect(service.theme()).toBe('dark');
+  });
+
+  it('uses stored dark over a light system preference', () => {
+    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    mql.matches = false;
+    const service = TestBed.inject(ThemeService);
+    expect(service.theme()).toBe('dark');
+  });
+
+  it('ignores an invalid stored choice and follows the dark system preference', () => {
+    localStorage.setItem(STORAGE_KEYS.theme, 'blue');
+    mql.matches = true;
+    const service = TestBed.inject(ThemeService);
+    expect(service.theme()).toBe('dark');
+  });
+
+  it('writes nothing to storage on creation', () => {
+    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    mql.matches = false;
     TestBed.inject(ThemeService);
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBeNull();
-  });
-
-  it('stores dark under pr-theme after setTheme load', () => {
-    document.documentElement.classList.add('light');
-    installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
-    const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
-    service.setTheme('dark');
-    const [pending] = appendedSince(before);
-    expect(pending).toBeTruthy();
-    addedLinks.add(pending);
-    pending.dispatchEvent(new Event('load'));
     expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
   });
 
-  it('stores dark under pr-theme after toggle load from light', () => {
-    document.documentElement.classList.add('light');
-    installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
+  it('follows a system change from light to dark when there is no stored choice', () => {
+    mql.matches = false;
     const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
-    service.toggle();
-    const [pending] = appendedSince(before);
-    expect(pending).toBeTruthy();
-    addedLinks.add(pending);
-    pending.dispatchEvent(new Event('load'));
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
-  });
-
-  it('appends a dark.css link while keeping the old link, class and storage until load', () => {
-    document.documentElement.classList.add('light');
-    const oldLink = installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
-    const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
-    service.setTheme('dark');
-    const appended = appendedSince(before);
-    expect(appended).toHaveLength(1);
-    const pending = appended[0];
-    addedLinks.add(pending);
-    expect(pending.getAttribute('href')).toBe('dark.css');
-    expect(pending.rel).toBe('stylesheet');
-    expect(document.getElementById(THEME_LINK_ID)).toBe(oldLink);
-    expect(document.documentElement.classList.contains('light')).toBe(true);
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBeNull();
-  });
-
-  it('on load removes the old link, ids the new one, switches the class and updates the signal', () => {
-    document.documentElement.classList.add('light');
-    const oldLink = installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
-    const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
-    service.setTheme('dark');
-    const [pending] = appendedSince(before);
-    expect(pending).toBeTruthy();
-    addedLinks.add(pending);
-    pending.dispatchEvent(new Event('load'));
-    expect(document.contains(oldLink)).toBe(false);
-    expect(pending.id).toBe(THEME_LINK_ID);
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(document.documentElement.classList.contains('light')).toBe(false);
+    expect(service.theme()).toBe('light');
+    mql.fire(true);
     expect(service.theme()).toBe('dark');
   });
 
-  it('ignores toggle while a switch is pending', () => {
-    document.documentElement.classList.add('light');
-    installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
+  it('keeps a stored dark choice when the system changes to light', () => {
+    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    mql.matches = true;
     const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
-    service.setTheme('dark');
-    service.toggle();
-    const appended = appendedSince(before);
-    expect(appended).toHaveLength(1);
-    addedLinks.add(appended[0]);
+    expect(service.theme()).toBe('dark');
+    mql.fire(false);
+    expect(service.theme()).toBe('dark');
   });
 
-  it('on error removes the new link and leaves theme, class and storage unchanged', () => {
-    document.documentElement.classList.add('light');
-    installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
+  it('setTheme dark forces the dark link and stores the choice', () => {
+    mql.matches = false;
     const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
     service.setTheme('dark');
-    const appended = appendedSince(before);
-    expect(appended).toHaveLength(1);
-    const pending = appended[0];
-    addedLinks.add(pending);
-    pending.dispatchEvent(new Event('error'));
-    expect(document.contains(pending)).toBe(false);
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBeNull();
-    expect(service.theme()).toBe('light');
-    expect(document.documentElement.classList.contains('light')).toBe(true);
+    expect(
+      (document.getElementById(THEME_LINK_IDS.dark) as HTMLLinkElement | null)
+        ?.media,
+    ).toBe('all');
+    expect(
+      (document.getElementById(THEME_LINK_IDS.light) as HTMLLinkElement | null)
+        ?.media,
+    ).toBe('not all');
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
+    expect(service.theme()).toBe('dark');
   });
 
-  it('setTheme with the current theme appends no link and writes nothing', () => {
-    document.documentElement.classList.add('light');
-    installPrThemeLink('light.css');
-    TestBed.configureTestingModule({});
+  it('setTheme light forces the light link under a dark system preference', () => {
+    mql.matches = true;
     const service = TestBed.inject(ThemeService);
-    const before = themeLinks();
     service.setTheme('light');
-    expect(appendedSince(before)).toHaveLength(0);
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBeNull();
+    expect(
+      (document.getElementById(THEME_LINK_IDS.light) as HTMLLinkElement | null)
+        ?.media,
+    ).toBe('all');
+    expect(
+      (document.getElementById(THEME_LINK_IDS.dark) as HTMLLinkElement | null)
+        ?.media,
+    ).toBe('not all');
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('light');
     expect(service.theme()).toBe('light');
+  });
+
+  it('toggle from light stores and applies dark', () => {
+    mql.matches = false;
+    const service = TestBed.inject(ThemeService);
+    expect(service.theme()).toBe('light');
+    service.toggle();
+    expect(service.theme()).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
   });
 });
