@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { STORAGE_KEYS } from '../shared/storage/storage.constants';
-import { StorageService } from '../shared/storage/storage.service';
+import { LocalStorageService } from '../shared/storage/local-storage.service';
+import { LOCAL_STORAGE_KEYS } from '../shared/storage/storage.constants';
 import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
 import { ThemeService } from './theme.service';
 
@@ -11,7 +11,6 @@ describe('ThemeService', () => {
   };
 
   let mql: FakeMql;
-  let matchMediaMock: ReturnType<typeof vi.fn>;
 
   function installThemeLinks(): void {
     const light = document.createElement('link');
@@ -63,8 +62,10 @@ describe('ThemeService', () => {
         }
       },
     } as FakeMql;
-    matchMediaMock = vi.fn(() => fake);
-    vi.stubGlobal('matchMedia', matchMediaMock);
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => fake),
+    );
     return fake;
   }
 
@@ -74,7 +75,7 @@ describe('ThemeService', () => {
     installThemeLinks();
     mql = stubMatchMedia(false);
     TestBed.configureTestingModule({
-      providers: [StorageService],
+      providers: [LocalStorageService],
     });
   });
 
@@ -100,24 +101,24 @@ describe('ThemeService', () => {
   });
 
   it('uses stored dark over a light system preference', () => {
-    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    localStorage.setItem(LOCAL_STORAGE_KEYS.theme, 'dark');
     mql.matches = false;
     const service = TestBed.inject(ThemeService);
     expect(service.theme()).toBe('dark');
   });
 
   it('ignores an invalid stored choice and follows the dark system preference', () => {
-    localStorage.setItem(STORAGE_KEYS.theme, 'blue');
+    localStorage.setItem(LOCAL_STORAGE_KEYS.theme, 'blue');
     mql.matches = true;
     const service = TestBed.inject(ThemeService);
     expect(service.theme()).toBe('dark');
   });
 
   it('writes nothing to storage on creation', () => {
-    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    localStorage.setItem(LOCAL_STORAGE_KEYS.theme, 'dark');
     mql.matches = false;
     TestBed.inject(ThemeService);
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
+    expect(localStorage.getItem(LOCAL_STORAGE_KEYS.theme)).toBe('dark');
   });
 
   it('follows a system change from light to dark when there is no stored choice', () => {
@@ -129,7 +130,7 @@ describe('ThemeService', () => {
   });
 
   it('keeps a stored dark choice when the system changes to light', () => {
-    localStorage.setItem(STORAGE_KEYS.theme, 'dark');
+    localStorage.setItem(LOCAL_STORAGE_KEYS.theme, 'dark');
     mql.matches = true;
     const service = TestBed.inject(ThemeService);
     expect(service.theme()).toBe('dark');
@@ -149,7 +150,7 @@ describe('ThemeService', () => {
       (document.getElementById(THEME_LINK_IDS.light) as HTMLLinkElement | null)
         ?.media,
     ).toBe('not all');
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
+    expect(localStorage.getItem(LOCAL_STORAGE_KEYS.theme)).toBe('dark');
     expect(service.theme()).toBe('dark');
   });
 
@@ -165,16 +166,7 @@ describe('ThemeService', () => {
       (document.getElementById(THEME_LINK_IDS.dark) as HTMLLinkElement | null)
         ?.media,
     ).toBe('not all');
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('light');
+    expect(localStorage.getItem(LOCAL_STORAGE_KEYS.theme)).toBe('light');
     expect(service.theme()).toBe('light');
-  });
-
-  it('toggle from light stores and applies dark', () => {
-    mql.matches = false;
-    const service = TestBed.inject(ThemeService);
-    expect(service.theme()).toBe('light');
-    service.toggle();
-    expect(service.theme()).toBe('dark');
-    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark');
   });
 });

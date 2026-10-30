@@ -1,68 +1,78 @@
-import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
-import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { ThemeService } from './theme.service';
+import { NzIconDirective, provideNzIcons } from 'ng-zorro-antd/icon';
+import { Theme } from './theme.types';
 import { ThemeToggleComponent } from './theme-toggle';
 
 describe('ThemeToggleComponent', () => {
-  it('shows Switch to dark theme with the moon icon when the theme is light', async () => {
+  async function createToggle() {
     await TestBed.configureTestingModule({
       imports: [ThemeToggleComponent],
-      providers: [
-        {
-          provide: ThemeService,
-          useValue: {
-            theme: signal('light').asReadonly(),
-            toggle: vi.fn(),
-            setTheme: vi.fn(),
-          },
-        },
-        provideNzIcons([SunOutline, MoonOutline]),
-      ],
+      providers: [provideNzIcons([SunOutline, MoonOutline])],
     }).compileComponents();
+    return TestBed.createComponent(ThemeToggleComponent);
+  }
 
-    const fixture = TestBed.createComponent(ThemeToggleComponent);
+  it('shows Switch to dark theme with the moon icon when theme is light', async () => {
+    const fixture = await createToggle();
+    fixture.componentRef.setInput('theme', 'light');
     await fixture.whenStable();
 
     const button = fixture.debugElement.query(By.css('button'));
     expect(button).toBeTruthy();
     expect(button.attributes['aria-label']).toBe('Switch to dark theme');
-
-    const icon = fixture.debugElement.query(By.css('nz-icon, [nz-icon]'));
-    expect(icon).toBeTruthy();
-    const nzType =
-      icon.attributes['nzType'] ??
-      icon.attributes['nztype'] ??
-      icon.componentInstance?.nzType?.();
-    expect(nzType).toBe('moon');
+    expect(
+      fixture.debugElement
+        .query(By.directive(NzIconDirective))
+        .injector.get(NzIconDirective)
+        .nzType(),
+    ).toBe('moon');
   });
 
-  it('calls toggle on the theme service when clicked', async () => {
-    const toggle = vi.fn();
-    await TestBed.configureTestingModule({
-      imports: [ThemeToggleComponent],
-      providers: [
-        {
-          provide: ThemeService,
-          useValue: {
-            theme: signal('light').asReadonly(),
-            toggle,
-            setTheme: vi.fn(),
-          },
-        },
-        provideNzIcons([SunOutline, MoonOutline]),
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(ThemeToggleComponent);
+  it('shows Switch to light theme with the sun icon when theme is dark', async () => {
+    const fixture = await createToggle();
+    fixture.componentRef.setInput('theme', 'dark');
     await fixture.whenStable();
 
     const button = fixture.debugElement.query(By.css('button'));
     expect(button).toBeTruthy();
-    button.nativeElement.click();
+    expect(button.attributes['aria-label']).toBe('Switch to light theme');
+    expect(
+      fixture.debugElement
+        .query(By.directive(NzIconDirective))
+        .injector.get(NzIconDirective)
+        .nzType(),
+    ).toBe('sun');
+  });
+
+  it('emits dark once when clicked while theme is light', async () => {
+    const fixture = await createToggle();
+    fixture.componentRef.setInput('theme', 'light');
     await fixture.whenStable();
-    expect(toggle).toHaveBeenCalled();
+
+    const emissions: Theme[] = [];
+    fixture.componentInstance.themeChange.subscribe((theme) => {
+      emissions.push(theme);
+    });
+
+    fixture.debugElement.query(By.css('button')).nativeElement.click();
+    await fixture.whenStable();
+    expect(emissions).toEqual(['dark']);
+  });
+
+  it('emits light once when clicked while theme is dark', async () => {
+    const fixture = await createToggle();
+    fixture.componentRef.setInput('theme', 'dark');
+    await fixture.whenStable();
+
+    const emissions: Theme[] = [];
+    fixture.componentInstance.themeChange.subscribe((theme) => {
+      emissions.push(theme);
+    });
+
+    fixture.debugElement.query(By.css('button')).nativeElement.click();
+    await fixture.whenStable();
+    expect(emissions).toEqual(['light']);
   });
 });

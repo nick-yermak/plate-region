@@ -21,7 +21,19 @@
             "input": "apps/web/public"
           }
         ],
-        "styles": ["apps/web/src/styles.less"]
+        "styles": [
+          "apps/web/src/styles.less",
+          {
+            "input": "apps/web/src/theme/light.less",
+            "bundleName": "light",
+            "inject": false
+          },
+          {
+            "input": "apps/web/src/theme/dark.less",
+            "bundleName": "dark",
+            "inject": false
+          }
+        ]
       },
       "configurations": {
         "production": {
@@ -37,7 +49,15 @@
               "maximumError": "8kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "optimization": {
+            "scripts": true,
+            "styles": {
+              "minify": true,
+              "inlineCritical": false
+            },
+            "fonts": true
+          }
         },
         "development": {
           "optimization": false,
@@ -83,7 +103,7 @@
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "web:build",
-        "port": 4200,
+        "port": 4300,
         "staticFilePath": "dist/apps/web/browser",
         "spa": true
       }

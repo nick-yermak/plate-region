@@ -1,3 +1,4 @@
-import { STORAGE_KEYS } from './storage.constants';
+import { LOCAL_STORAGE_KEYS } from './storage.constants';
 
-export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
+export type LocalStorageKey =
+  (typeof LOCAL_STORAGE_KEYS)[keyof typeof LOCAL_STORAGE_KEYS];
