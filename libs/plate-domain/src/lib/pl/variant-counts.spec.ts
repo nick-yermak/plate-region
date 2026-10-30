@@ -2,11 +2,11 @@ import { fullCodes, registry } from '@plate-region/plate-data';
 import type { Region1, Region2 } from '@plate-region/plate-data';
 
 import type { PlateType } from './plate-type';
+import type { VariantCounts } from './variant-counts';
 import {
   variantCountsForCode,
   variantCountsForRegion1,
 } from './variant-counts';
-import type { VariantCounts } from './variant-counts';
 
 function region1ByName(name: string): Region1 {
   const found = registry.region1.find((r) => r.name === name);

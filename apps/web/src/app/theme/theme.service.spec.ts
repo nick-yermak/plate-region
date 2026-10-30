@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { LocalStorageService } from '../shared/storage/local-storage.service';
-import { LOCAL_STORAGE_KEYS } from '../shared/storage/storage.constants';
-import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
+
 import { ThemeService } from './theme.service';
+import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
+import { LOCAL_STORAGE_KEYS } from '../shared/storage/storage.constants';
+import { LocalStorageService } from '../shared/storage/local-storage.service';
 
 describe('ThemeService', () => {
   type FakeMql = MediaQueryList & {

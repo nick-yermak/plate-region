@@ -7,10 +7,11 @@ import {
   inject,
   signal,
 } from '@angular/core';
+
+import { Theme } from './theme.types';
+import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
 import { LOCAL_STORAGE_KEYS } from '../shared/storage/storage.constants';
 import { LocalStorageService } from '../shared/storage/local-storage.service';
-import { DARK_SCHEME_QUERY, THEME_LINK_IDS } from './theme.constants';
-import { Theme } from './theme.types';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {

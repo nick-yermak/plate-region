@@ -1,11 +1,12 @@
 import { signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { TestBed } from '@angular/core/testing';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+
 import { ThemeService } from './theme.service';
-import { ThemeSwitcherComponent } from './theme-switcher';
 import { ThemeToggleComponent } from './theme-toggle';
+import { ThemeSwitcherComponent } from './theme-switcher';
 
 describe('ThemeSwitcherComponent', () => {
   async function createSwitcher(setTheme = vi.fn()) {

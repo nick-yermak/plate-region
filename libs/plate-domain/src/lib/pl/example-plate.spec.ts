@@ -1,9 +1,10 @@
-import { registry } from '@plate-region/plate-data';
-import type { Region1, Region2 } from '@plate-region/plate-data';
 import { describe, expect, it, vi } from 'vitest';
 
-import { examplePlateForCode, examplePlateForRegion1 } from './example-plate';
+import { registry } from '@plate-region/plate-data';
+import type { Region1, Region2 } from '@plate-region/plate-data';
+
 import { parsePlate } from './parse-plate';
+import { examplePlateForCode, examplePlateForRegion1 } from './example-plate';
 
 function region1ByName(name: string): Region1 {
   const found = registry.region1.find((r) => r.name === name);

@@ -2,9 +2,12 @@
 // plate-data registry and excerpts of Dz.U. 2024 poz. 1709 (#41). Kept as
 // written so they show what a reader of the contract alone expects: do not
 // rewrite them to testing.mdc conventions (D-45).
+
 import { describe, it, expect } from 'vitest';
-import { parsePlate } from '../../index';
+
 import { registry } from '@plate-region/plate-data';
+
+import { parsePlate } from '../../index';
 
 function required<T>(value: T | undefined, what: string): T {
   if (value === undefined) {

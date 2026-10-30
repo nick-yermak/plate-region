@@ -1,8 +1,9 @@
 import type { Country, Region1, Region2 } from '@plate-region/plate-data';
 
-import { normalisePlateInput } from './normalise-plate-input';
 import type { PlateType } from './plate-type';
+import { normalisePlateInput } from './normalise-plate-input';
 import { mergePlateTypes, type PlateTypes } from './plate-type';
+import { completablePlateTypesOf } from './vehicle-part-templates';
 import {
   completionsOf,
   rankCompact,
@@ -13,7 +14,6 @@ import {
   type Completion,
   type Reading,
 } from './readings';
-import { completablePlateTypesOf } from './vehicle-part-templates';
 
 /**
  * One way the typed characters can continue, or already end, as a plate (D-39).

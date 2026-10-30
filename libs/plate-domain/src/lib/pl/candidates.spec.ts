@@ -3,8 +3,8 @@ import type { Region1, Region2 } from '@plate-region/plate-data';
 
 import { PLATE_ALPHABET } from './alphabet';
 import { candidatesFor } from './candidates';
-import type { Candidate, CandidatesResult } from './candidates';
 import type { PlateType } from './plate-type';
+import type { Candidate, CandidatesResult } from './candidates';
 
 function region1ByName(name: string): Region1 {
   const found = registry.region1.find((r) => r.name === name);

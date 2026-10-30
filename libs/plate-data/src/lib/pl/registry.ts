@@ -3,6 +3,7 @@
 // Regenerate:
 //   pdftotext -layout D20241709.pdf tmp/D20241709.txt
 //   node libs/plate-data/scripts/import-annex-13.mts tmp/D20241709.txt
+
 import type { Registry } from './model';
 
 /**

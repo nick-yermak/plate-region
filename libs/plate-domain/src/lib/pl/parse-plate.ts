@@ -1,8 +1,8 @@
 import type { Country, Region1, Region2 } from '@plate-region/plate-data';
 
-import { normalisePlateInput } from './normalise-plate-input';
 import type { PlateType } from './plate-type';
 import { mergePlateTypes } from './plate-type';
+import { normalisePlateInput } from './normalise-plate-input';
 import {
   region1ForFirstLetter,
   rejectWithoutRegion1,

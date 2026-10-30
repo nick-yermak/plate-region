@@ -1,7 +1,8 @@
-import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { TestBed } from '@angular/core/testing';
 import { NzIconDirective, provideNzIcons } from 'ng-zorro-antd/icon';
+import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+
 import { Theme } from './theme.types';
 import { ThemeToggleComponent } from './theme-toggle';
 

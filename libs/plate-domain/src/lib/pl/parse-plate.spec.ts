@@ -1,10 +1,10 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
 import type { Region1, Region2 } from '@plate-region/plate-data';
 
-import { PLATE_ALPHABET } from './alphabet';
 import { parsePlate } from './parse-plate';
-import type { ParseResult } from './parse-plate';
+import { PLATE_ALPHABET } from './alphabet';
 import type { PlateTypes } from './plate-type';
+import type { ParseResult } from './parse-plate';
 
 function region1ByName(name: string): Region1 {
   const found = registry.region1.find((r) => r.name === name);

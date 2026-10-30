@@ -1,7 +1,7 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
 
-import { PLATE_ALPHABET } from './alphabet';
 import { parsePlate } from './parse-plate';
+import { PLATE_ALPHABET } from './alphabet';
 import type { ParseResult } from './parse-plate';
 import { groupForFullCode, lookAlikeVariants, readingsOf } from './readings';
 

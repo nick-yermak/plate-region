@@ -1,6 +1,6 @@
+import { registry } from './registry';
 import { fullCodes } from './full-codes';
 import type { Registry, Region1, Region2 } from './model';
-import { registry } from './registry';
 
 // § 30 ust. 1 Dz.U. 2024 poz. 1709 — the 25 letters used to form registration numbers (no Q).
 const ALPHABET = 'ABCDEFGHIJKLMNOPRSTUVWXYZ';
