@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { App } from './app';
 import { NxWelcome } from './nx-welcome';
 
@@ -6,6 +8,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App, NxWelcome],
+      providers: [provideNzIcons([SunOutline, MoonOutline])],
     }).compileComponents();
   });
 
