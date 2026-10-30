@@ -2,14 +2,7 @@ import { workspaceRoot } from '@nx/devkit';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { defineConfig, devices } from '@playwright/test';
 
-// For CI, you may want to set BASE_URL to the deployed application.
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import 'dotenv/config';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -23,10 +16,8 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
   /* Production build via serve-static so e2e catches Beasties/media differences. */
@@ -39,28 +30,29 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    // Uncomment for mobile browsers support
-    /* {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      name: 'desktop',
+      grep: /@desktop/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+      },
     },
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    }, */
-
-    // Uncomment for branded browsers
-    /* {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      name: 'tablet',
+      grep: /@tablet/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+      },
     },
     {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    } */
+      name: 'mobile',
+      grep: /@mobile/,
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 360, height: 740 },
+        screen: { width: 360, height: 740 },
+      },
+    },
   ],
 });

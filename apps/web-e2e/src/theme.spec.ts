@@ -7,7 +7,7 @@ async function bodyBackground(page: Page): Promise<string> {
   return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 }
 
-test.describe('theme-follows-system', () => {
+test.describe('theme-follows-system', { tag: '@desktop' }, () => {
   test('light', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
@@ -29,7 +29,7 @@ test.describe('theme-follows-system', () => {
   });
 });
 
-test.describe('theme-stored-choice', () => {
+test.describe('theme-stored-choice', { tag: '@desktop' }, () => {
   test('stored dark overrides system light', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('pr-theme', 'dark');
@@ -49,7 +49,7 @@ test.describe('theme-stored-choice', () => {
   });
 });
 
-test('theme-toggle', async ({ page }) => {
+test('theme-toggle', { tag: '@desktop' }, async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/');
   await page.getByRole('button', { name: 'Switch to dark theme' }).click();

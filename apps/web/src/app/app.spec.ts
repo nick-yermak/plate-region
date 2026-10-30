@@ -1,22 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { provideRouter } from '@angular/router';
 
 import { App } from './app';
-import { NxWelcome } from './nx-welcome';
+import { appRoutes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App, NxWelcome],
-      providers: [provideNzIcons([SunOutline, MoonOutline])],
+      imports: [App],
+      providers: [provideRouter(appRoutes)],
     }).compileComponents();
   });
 
-  it('should render title', async () => {
+  it('renders the shell', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome web');
+    expect(compiled.querySelector('app-shell')).not.toBeNull();
   });
 });

@@ -1,0 +1,11 @@
+<nav aria-label="Main">
+  <ul nz-menu [nzMode]="mode()" [nzTheme]="theme()">
+    @for (link of links(); track link.path) {
+      <li nz-menu-item nzMatchRouter nzMatchRouterExact>
+        <a [routerLink]="link.path" (click)="linkSelect.emit(link)">{{
+          link.label
+        }}</a>
+      </li>
+    }
+  </ul>
+</nav>

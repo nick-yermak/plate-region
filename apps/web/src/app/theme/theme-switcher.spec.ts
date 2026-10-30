@@ -1,8 +1,6 @@
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
-import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
 
 import { ThemeService } from './theme.service';
 import { ThemeToggleComponent } from './theme-toggle';
@@ -20,7 +18,6 @@ describe('ThemeSwitcherComponent', () => {
             setTheme,
           },
         },
-        provideNzIcons([SunOutline, MoonOutline]),
       ],
     }).compileComponents();
     return {

@@ -1,7 +1,6 @@
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
-import { NzIconDirective, provideNzIcons } from 'ng-zorro-antd/icon';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { NzIconDirective } from 'ng-zorro-antd/icon';
 
 import { Theme } from './theme.types';
 import { ThemeToggleComponent } from './theme-toggle';
@@ -10,7 +9,6 @@ describe('ThemeToggleComponent', () => {
   async function createToggle() {
     await TestBed.configureTestingModule({
       imports: [ThemeToggleComponent],
-      providers: [provideNzIcons([SunOutline, MoonOutline])],
     }).compileComponents();
     return TestBed.createComponent(ThemeToggleComponent);
   }
