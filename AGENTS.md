@@ -55,7 +55,8 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Legal rules cite row IDs from `docs/pl-plate-rules.md` (D-33); a new rule gets a row there before code cites it.
 - Keep changes small and focused on the task at hand; mention unrelated issues instead of fixing them silently.
 - Communicate with the user in Russian; code, comments, commits and docs are in English.
-- Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code.
+- Comments explain _why_ — intent, constraints, non-obvious decisions — never _what_ the code already says. No comments that restate code, and no change notes like "added", "updated" or "fixed" inside code. JSDoc only on the public API of libraries (exports of `libs/*/src/index.ts`), as one or two lines of contract (D-47).
+- Organise application code by feature: `<feature>/` holds its components, services, `<feature>.types.ts` and `<feature>.constants.ts`; `app/shared/` only for code used by more than one feature (D-47).
 - If a tool or MCP call fails, report the exact error before using a fallback; never silently switch approaches.
 - Every report after running code starts with test/typecheck/lint results: pass/fail counts and exit codes. Each failing test is listed with input, expected and actual, and classified as a code bug or a wrong expectation. Spec expectations change only with approval.
 - Command output quoted as evidence (`grep`, `awk`, `sed`, test or coverage summaries, and similar) is quoted in full, exactly as printed — never shortened with `…`, elided rows or a summary. If it is too long for the report, write it to `tmp/<branch>-<name>.txt` together with the exact command that produced it, and give that path instead.

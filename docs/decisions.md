@@ -502,3 +502,12 @@ Trade and test plates (also named in #60) were not researched: their governing a
 
 - **Why:** the project identifies the region of civilian plates. Service and military plates carry no region, and the acts do not define the meaning of the letter after the service code (for the Armed Forces the military registering authority assigns the numbers, Dz.U. 2023 poz. 1776 § 6 ust. 4). The prefixes do not collide with civilian codes: `H` and `U` never appear in column 4 of Annex 13 (R-37, R-48), so `not-in-registry` remains correct.
 - **Rejected:** a `service` variant of `ParseResult` naming the service from the prefix (a result without a region, outside the project's goal); full format validation of service and military plates (same reason; the MSWiA text was not checked locally).
+
+### D-47 Code organisation and comments — Accepted
+
+Application code is grouped by feature: a feature folder (e.g. `apps/web/src/app/theme/`) holds its components, services, `<feature>.types.ts` and `<feature>.constants.ts`. `apps/web/src/app/shared/` holds only code used by more than one feature (e.g. `storage-keys.ts` with every `localStorage` key). Domain types stay in the libraries and are imported through their public API; they are never copied into an app.
+
+Comments explain why, not what: no comment or JSDoc restates what the code, names or types already say. A short comment is allowed for a non-obvious reason or constraint. JSDoc is written only for the public API of libraries (exports of `libs/*/src/index.ts`), as one or two lines of contract. Existing comments are cleaned up only when the surrounding code is changed.
+
+- **Why:** a feature stays in one place and can be moved or deleted as a unit; `shared/` stays small; comments that narrate the code go stale with the first change, while reasons cannot be recovered from the code.
+- **Rejected:** folders by kind of code (`shared/types/`, `shared/constants/`) — they scatter a feature across the tree, and Angular's style guide recommends organising by feature; JSDoc on application code — it duplicates the code it describes.
