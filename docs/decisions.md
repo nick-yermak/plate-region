@@ -34,6 +34,7 @@ Build settings live in root `vercel.json` (`installCommand`, `buildCommand`, `ou
 - **Why:** preview deploys per PR, serverless functions for D-04, static hosting for prerendered pages; build config reproducible from the repo (D-19).
 - **Rejected:** Netlify (initially chosen, switched by preference; technically equivalent for this project); deploy from Actions with a Vercel token (extra secret, duplicates Git integration); build settings only in the dashboard (invisible in review, drifts from `project.json`).
 - **Not set up:** SPA rewrites, prerender/SSR, Ignored Build Step based on `nx affected`, function region, Deployment Protection bypass for e2e, custom domain, Speed Insights.
+- **Update (#87):** SPA rewrites are set up — a catch-all rewrite to `index.html` in `vercel.json` (D-50).
 
 ### D-04 Hybrid photo recognition — Planned (Epic 4)
 
@@ -529,3 +530,12 @@ Import order and class member order are enforced by ESLint with `eslint-plugin-p
 
 - **Why:** ordering by hand drifts and costs review time; `sort-classes` auto-fixes and can tell `inject()` and signal inputs from other fields.
 - **Rejected:** `@typescript-eslint/member-ordering` (no autofix, feature-frozen, matches fields only by kind and accessibility); `simple-import-sort` and `import/order` (no namespace group, no line-length sort); `tsconfig.rootDir` for `@plate-region/*` (no root `tsconfig.json`, paths live in `tsconfig.base.json`); `maxLineLength` (over the limit it sorts by module name length, so long imports jump ahead of short ones).
+
+### D-50 App shell and responsive navigation — Accepted
+
+The shell is a container component in `app/layout/` (D-48): `nz-layout` with `nz-header` (`role="banner"`, since the host is not a `<header>`) holding the brand link, the navigation, the language switch and the theme toggle, and `nz-content` (`role="main"`) holding the router outlet. Navigation uses `nz-menu` — horizontal at 768px and wider, and inside an `nz-drawer` opened by a burger button below 768px. The switch is a CSS media query at Ant's `md` breakpoint, written as the literal `768px` because component styles never import NG-ZORRO Less (D-28): no JavaScript decides the layout, so the first paint is correct and prerendering (Epic 3) needs no change. Menu items match the router exactly (`nzMatchRouterExact`); otherwise Home is active on every route. The shell owns the drawer's open state: the drawer only reports close requests (`nzOnClose` for the mask, the close button and Escape; `nzVisibleChange` when navigation closes it), and a click on a drawer item closes it as well. Pages are lazy routes, one feature folder each (D-47); routes with a parameter are not navigation links.
+
+Playwright runs three Chromium projects (D-14): `desktop` 1280×800, `tablet` 768×1024 and `mobile` 360×740 (Pixel 7 profile with viewport and screen overridden: touch, mobile user agent). Each project selects tests by tag (`@desktop`, `@tablet`, `@mobile`), so a test declares the viewports where its assertions hold. Static hosting serves `index.html` for unknown paths: `spa: true` in `serve-static`, a catch-all rewrite in `vercel.json`.
+
+- **Why:** default Ant Design styling without custom CSS (docs/ui-spec.md § Global); the drawer closes on Escape, mask click and navigation without custom code beyond the open state; tags keep viewport-specific scenarios out of projects where they cannot pass, instead of skipping inside tests.
+- **Rejected:** `BreakpointObserver` (layout decided by JavaScript after bootstrap); `nz-dropdown` for navigation; plain links with custom styles; running every test in every project.
