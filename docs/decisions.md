@@ -512,3 +512,12 @@ Comments explain why, not what: no comment or JSDoc restates what the code, name
 
 - **Why:** a feature stays in one place and can be moved or deleted as a unit; `shared/` stays small; comments that narrate the code go stale with the first change, while reasons cannot be recovered from the code.
 - **Rejected:** folders by kind of code (`shared/types/`, `shared/constants/`) — they scatter a feature across the tree, and Angular's style guide recommends organising by feature; JSDoc on application code — it duplicates the code it describes.
+
+### D-48 Component roles and member order — Accepted
+
+Components are presentational by default: they take data through `input()`, report through `output()`, derive display state with `computed()`, and inject no feature services. A few container components — route pages, feature roots and the layout — inject services and wire them to presentational children; they hold little markup of their own. A service owns one concern (storage, theme, lookup, …); there are no catch-all services.
+
+Class members are ordered: `inject()` dependencies; `input`/`output`/`model`; public, then protected state and `computed`; private state; constructor; public, protected, then private methods. Dependencies come first because field initialisers run in declaration order and `computed` fields read them. Members used only by the template are `protected`.
+
+- **Why:** presentational components are reusable and testable through inputs and outputs alone; containers keep the data flow visible in one place; a fixed member order makes classes easy to scan, and the dependencies-first rule keeps it compatible with field initialisation.
+- **Rejected:** making every component presentational (something has to call the services); strict public-before-private for fields (an `inject()` field must precede the `computed` fields that read it, TS2729).
