@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 
-import { ThemeSwitcherComponent } from './theme/theme-switcher';
+import { ShellComponent } from './layout/shell';
 
 @Component({
-  imports: [RouterModule, ThemeSwitcherComponent],
+  imports: [ShellComponent],
   selector: 'app-root',
   templateUrl: './app.html',
 })

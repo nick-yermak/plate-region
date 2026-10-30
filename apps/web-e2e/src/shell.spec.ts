@@ -1,0 +1,90 @@
+import { test, expect, type Page } from '@playwright/test';
+
+const lightBg = 'rgb(255, 255, 255)';
+const darkBg = 'rgb(0, 0, 0)';
+
+async function bodyBackground(page: Page): Promise<string> {
+  return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+}
+
+test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
+  await page.goto('/');
+  const banner = page.getByRole('banner');
+
+  await banner.getByRole('link', { name: 'Registry' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Registry');
+
+  await banner.getByRole('link', { name: 'Charts' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Charts');
+
+  await banner.getByRole('link', { name: 'About' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
+
+  await banner.getByRole('link', { name: 'Home' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home');
+
+  const routes: { path: string; heading: string }[] = [
+    { path: '/', heading: 'Home' },
+    { path: '/plate/WA12345', heading: 'Plate' },
+    { path: '/voivodeship/mazowieckie', heading: 'Voivodeship' },
+    { path: '/registry', heading: 'Registry' },
+    { path: '/charts', heading: 'Charts' },
+    { path: '/about', heading: 'About' },
+  ];
+
+  for (const route of routes) {
+    await page.goto(route.path);
+    await page.reload();
+    await expect(page.getByRole('banner')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      route.heading,
+    );
+  }
+});
+
+test('shell-mobile-burger', { tag: '@mobile' }, async ({ page }) => {
+  await page.goto('/');
+  const banner = page.getByRole('banner');
+  const bannerLinks = banner.getByRole('link', {
+    name: /^(Home|Registry|Charts|About)$/,
+  });
+  await expect(bannerLinks).toHaveCount(4);
+  for (const link of await bannerLinks.all()) {
+    await expect(link).toBeHidden();
+  }
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+  const drawerLinks = page
+    .getByRole('link', { name: /^(Home|Registry|Charts|About)$/ })
+    .filter({ visible: true });
+  await expect(drawerLinks).toHaveCount(4);
+
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Close' })).toBeHidden();
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+  await page
+    .getByRole('link', { name: 'About' })
+    .filter({ visible: true })
+    .click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
+  await expect(page.getByRole('button', { name: 'Close' })).toBeHidden();
+});
+
+test(
+  'shell-theme-toggle',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const toggle = page
+      .getByRole('banner')
+      .getByRole('button', { name: 'Switch to light theme' });
+    await expect(toggle).toBeVisible();
+    await expect.poll(() => bodyBackground(page)).toBe(darkBg);
+    await toggle.click();
+    await expect.poll(() => bodyBackground(page)).toBe(lightBg);
+  },
+);
