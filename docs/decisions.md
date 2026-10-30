@@ -522,3 +522,10 @@ Class members are ordered: `inject()` dependencies; `input`/`output`/`model`; pu
 
 - **Why:** presentational components are reusable and testable through inputs and outputs alone; containers keep the data flow visible in one place; a fixed member order makes classes easy to scan, and the dependencies-first rule keeps it compatible with field initialisation.
 - **Rejected:** making every component presentational (something has to call the services); strict public-before-private for fields (an `inject()` field must precede the `computed` fields that read it, TS2729).
+
+### D-49 Import and class member order — Accepted
+
+Import order and class member order are enforced by ESLint with `eslint-plugin-perfectionist` (`sort-imports`, `sort-classes`), configured once in the root `eslint.config.mjs` and auto-fixed by `eslint --fix` in lint-staged. Imports form four groups separated by a blank line: built-in and external packages, namespace imports, `@plate-region/*` libraries, relative imports; within a group, shorter lines first. Class members follow D-48: groups are matched by accessibility and, for `inject()` and `input`/`output`/`model`, by initializer text; order inside a group is not enforced. Callbacks of `computed` and `linkedSignal` are not treated as dependencies, so a public `computed` may precede the private signals it reads.
+
+- **Why:** ordering by hand drifts and costs review time; `sort-classes` auto-fixes and can tell `inject()` and signal inputs from other fields.
+- **Rejected:** `@typescript-eslint/member-ordering` (no autofix, feature-frozen, matches fields only by kind and accessibility); `simple-import-sort` and `import/order` (no namespace group, no line-length sort); `tsconfig.rootDir` for `@plate-region/*` (no root `tsconfig.json`, paths live in `tsconfig.base.json`).
