@@ -1,4 +1,4 @@
 export interface NavLink {
-  label: string;
-  path: string;
+  readonly label: string;
+  readonly path: string;
 }

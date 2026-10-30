@@ -1,0 +1,23 @@
+<nz-header role="banner" nz-flex nzAlign="center" nzJustify="space-between">
+  <div nz-flex nzAlign="center" nzGap="small">
+    <a routerLink="/">PlateRegion</a>
+    <app-nav-menu
+      class="header-nav"
+      mode="horizontal"
+      theme="dark"
+      [links]="links()"
+    />
+  </div>
+  <div nz-flex nzAlign="center" nzGap="small" class="header-actions">
+    <ng-content />
+    <button
+      nz-button
+      type="button"
+      class="header-burger"
+      aria-label="Menu"
+      (click)="menuOpen.emit()"
+    >
+      <nz-icon nzType="menu" nzTheme="outline" />
+    </button>
+  </div>
+</nz-header>

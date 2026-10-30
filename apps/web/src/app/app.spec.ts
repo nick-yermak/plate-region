@@ -1,7 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
 
 import { App } from './app';
 import { appRoutes } from './app.routes';
@@ -10,10 +8,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [
-        provideRouter(appRoutes),
-        provideNzIcons([SunOutline, MoonOutline]),
-      ],
+      providers: [provideRouter(appRoutes)],
     }).compileComponents();
   });
 

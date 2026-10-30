@@ -1,3 +1,8 @@
 // Imports have no `.less` extension because the package `exports` map resolves only extensionless style paths.
 @import 'ng-zorro-antd/icon/style/entry';
 @import 'ng-zorro-antd/button/style/entry';
+@import 'ng-zorro-antd/layout/style/entry';
+@import 'ng-zorro-antd/menu/style/entry';
+@import 'ng-zorro-antd/drawer/style/entry';
+// ng-zorro-antd 22.1.2 omits ./flex/style/* from package.json exports (unlike other components)
+@import '../../../../node_modules/ng-zorro-antd/flex/style/entry';

@@ -1,123 +1,76 @@
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { NzMenuDirective } from 'ng-zorro-antd/menu';
 import { NzDrawerComponent } from 'ng-zorro-antd/drawer';
-import { DebugElement, getDebugNode } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  MenuOutline,
-  MoonOutline,
-  SunOutline,
-} from '@ant-design/icons-angular/icons';
 
 import { ShellComponent } from './shell';
 import { appRoutes } from '../app.routes';
+import { HeaderComponent } from './header';
+import { NavMenuComponent } from './nav-menu';
 import { NAV_LINKS } from './layout.constants';
 
 describe('ShellComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ShellComponent],
-      providers: [
-        provideRouter(appRoutes),
-        provideNzIcons([SunOutline, MoonOutline, MenuOutline]),
-      ],
+      providers: [provideRouter(appRoutes)],
     }).compileComponents();
   });
 
-  it('renders one horizontal menu item per NAV_LINKS entry', async () => {
+  it('passes NAV_LINKS to the header', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
     await fixture.whenStable();
 
-    const hostMenu = fixture.debugElement
-      .queryAll(By.directive(NzMenuDirective))
-      .find((el) => el.injector.get(NzMenuDirective).nzMode === 'horizontal');
-    if (!hostMenu) {
-      throw new Error('horizontal menu not found');
-    }
-
-    const links = hostMenu.queryAll(By.css('a'));
-    expect(links).toHaveLength(NAV_LINKS.length);
-    for (const [index, nav] of NAV_LINKS.entries()) {
-      expect(links[index].nativeElement.textContent.trim()).toBe(nav.label);
-      expect(links[index].nativeElement.getAttribute('href')).toBe(nav.path);
-    }
+    const header = fixture.debugElement
+      .query(By.directive(HeaderComponent))
+      .injector.get(HeaderComponent);
+    expect(header.links()).toEqual(NAV_LINKS);
   });
 
-  it('opens the drawer when the burger is clicked', async () => {
+  it('opens the drawer when header emits menuOpen', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
-    await fixture.whenStable();
-
-    const burger = fixture.debugElement.query(
-      By.css('button[aria-label="Menu"]'),
-    );
-    if (!burger) {
-      throw new Error('burger not found');
-    }
-    burger.nativeElement.click();
-    await fixture.whenStable();
+    await openDrawer(fixture);
 
     const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
     if (!drawer) {
       throw new Error('drawer not found');
     }
-    expect(drawer.componentInstance.nzVisible).toBe(true);
+    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(true);
   });
 
-  it('closes the drawer when its menu emits nzClick', async () => {
+  it('closes the drawer when drawer nav-menu emits linkSelect', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
-    await fixture.whenStable();
-
-    const burger = fixture.debugElement.query(
-      By.css('button[aria-label="Menu"]'),
-    );
-    if (!burger) {
-      throw new Error('burger not found');
-    }
-    burger.nativeElement.click();
-    await fixture.whenStable();
+    await openDrawer(fixture);
 
     const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
     if (!drawer) {
       throw new Error('drawer not found');
     }
-    expect(drawer.componentInstance.nzVisible).toBe(true);
+    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(true);
 
-    const menu = drawerMenuDirective(fixture);
-    const item = menu.listOfNzMenuItemDirective.get(0);
-    if (!item) {
-      throw new Error('drawer menu item not found');
+    const drawerMenu = drawer.query(By.directive(NavMenuComponent));
+    if (!drawerMenu) {
+      throw new Error('drawer nav-menu not found');
     }
-    menu.nzClick.emit(item);
+    const link = NAV_LINKS[0];
+    if (!link) {
+      throw new Error('NAV_LINKS entry not found');
+    }
+    drawerMenu.injector.get(NavMenuComponent).linkSelect.emit(link);
     await fixture.whenStable();
 
-    expect(drawer.componentInstance.nzVisible).toBe(false);
+    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(false);
   });
 });
 
-function drawerMenuDirective(
+async function openDrawer(
   fixture: ComponentFixture<ShellComponent>,
-): NzMenuDirective {
-  const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
-  const inDrawer = drawer?.query(By.directive(NzMenuDirective));
-  if (inDrawer) {
-    return inDrawer.injector.get(NzMenuDirective);
+): Promise<void> {
+  await fixture.whenStable();
+  const header = fixture.debugElement.query(By.directive(HeaderComponent));
+  if (!header) {
+    throw new Error('header not found');
   }
-
-  const inline = fixture.debugElement
-    .queryAll(By.directive(NzMenuDirective))
-    .map((el) => el.injector.get(NzMenuDirective))
-    .find((menu) => menu.nzMode === 'inline');
-  if (inline) {
-    return inline;
-  }
-
-  const host = document.querySelector('.ant-drawer [nz-menu]');
-  const node = host && getDebugNode(host);
-  if (node instanceof DebugElement) {
-    return node.injector.get(NzMenuDirective);
-  }
-
-  throw new Error('drawer menu not found');
+  header.injector.get(HeaderComponent).menuOpen.emit();
+  await fixture.whenStable();
 }

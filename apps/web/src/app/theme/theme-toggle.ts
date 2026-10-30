@@ -1,12 +1,14 @@
-import { NzIconDirective } from 'ng-zorro-antd/icon';
 import { NzButtonComponent } from 'ng-zorro-antd/button';
 import { Component, computed, input, output } from '@angular/core';
+import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
+import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
 
 import { Theme } from './theme.types';
 
 @Component({
   selector: 'app-theme-toggle',
   imports: [NzButtonComponent, NzIconDirective],
+  providers: [provideNzIconsPatch([SunOutline, MoonOutline])],
   templateUrl: './theme-toggle.html',
 })
 export class ThemeToggleComponent {

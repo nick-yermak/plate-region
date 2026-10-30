@@ -1,0 +1,23 @@
+<nz-layout>
+  <app-header [links]="navLinks" (menuOpen)="drawerOpen.set(true)">
+    <button nz-button disabled type="button">EN</button>
+    <app-theme-switcher />
+  </app-header>
+  <nz-content role="main">
+    <router-outlet />
+  </nz-content>
+</nz-layout>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  (nzOnClose)="drawerOpen.set(false)"
+  (nzVisibleChange)="drawerOpen.set($event)"
+>
+  <ng-container *nzDrawerContent>
+    <app-nav-menu
+      mode="inline"
+      [links]="navLinks"
+      (linkSelect)="drawerOpen.set(false)"
+    />
+  </ng-container>
+</nz-drawer>

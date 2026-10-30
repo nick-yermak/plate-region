@@ -47,6 +47,7 @@ test('shell-mobile-burger', { tag: '@mobile' }, async ({ page }) => {
   const banner = page.getByRole('banner');
   const bannerLinks = banner.getByRole('link', {
     name: /^(Home|Registry|Charts|About)$/,
+    includeHidden: true,
   });
   await expect(bannerLinks).toHaveCount(4);
   for (const link of await bannerLinks.all()) {
@@ -54,23 +55,20 @@ test('shell-mobile-burger', { tag: '@mobile' }, async ({ page }) => {
   }
 
   await page.getByRole('button', { name: 'Menu' }).click();
-  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
-  const drawerLinks = page
-    .getByRole('link', { name: /^(Home|Registry|Charts|About)$/ })
-    .filter({ visible: true });
-  await expect(drawerLinks).toHaveCount(4);
+  const closeButton = page.getByRole('button', { name: 'Close' });
+  // Closed drawers stay in the DOM off-screen (transform); viewport is the open signal.
+  await expect(closeButton).toBeInViewport();
+  const aboutInDrawer = page.getByRole('link', { name: 'About' });
+  await expect(aboutInDrawer).toBeInViewport();
 
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'Close' })).toBeHidden();
+  await expect(closeButton).not.toBeInViewport();
 
   await page.getByRole('button', { name: 'Menu' }).click();
-  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
-  await page
-    .getByRole('link', { name: 'About' })
-    .filter({ visible: true })
-    .click();
+  await expect(closeButton).toBeInViewport();
+  await aboutInDrawer.click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
-  await expect(page.getByRole('button', { name: 'Close' })).toBeHidden();
+  await expect(closeButton).not.toBeInViewport();
 });
 
 test(
