@@ -2,11 +2,11 @@
 name: create-web-feature
 description: >-
   Creates a new Angular component or feature in apps/web to project standards:
-  runs the Nx component generator into apps/web/src/app/<feature>/, checks the
-  output against the Angular rules, replaces the placeholder spec with a
-  behavioural Vitest spec, and verifies with lint, test and build. Use when the
-  user asks to add, create, scaffold or generate a component, page, view or
-  feature in the web app (apps/web).
+  runs the Nx component generator into apps/web/src/app/<feature>/<name>/,
+  checks the output against the Angular rules, replaces the placeholder spec
+  with a behavioural Vitest spec, and verifies with lint, test and build. Use
+  when the user asks to add, create, scaffold or generate a component, page,
+  view or feature in the web app (apps/web).
 ---
 
 # Create a feature in apps/web
@@ -33,9 +33,9 @@ Rules to apply (read them; do not restate them):
 - [ ] 8. Summary
 ```
 
-**1. Inputs.** Confirm the feature folder (kebab-case), the component name, and what the component shows and does — the spec tests that behaviour. If behaviour is unclear, ask instead of inventing it. Location: `apps/web/src/app/<feature>/`. No new projects, libraries or tags (D-06). Plate codes and regions come only from `@plate-region/plate-data`.
+**1. Inputs.** Confirm the feature folder (kebab-case), the component name, and what the component shows and does — the spec tests that behaviour. If behaviour is unclear, ask instead of inventing it. The feature root is `apps/web/src/app/<feature>/`. The component lives in its own folder `apps/web/src/app/<feature>/<name>/`, where the folder name equals the component file name. Services, functions, types, constants, pipes and `i18n/` stay at the feature root, not in a component folder. No new projects, libraries or tags (D-06). Plate codes and regions come only from `@plate-region/plate-data`.
 
-**2. Generator options.** Read the `@nx/angular:component` schema via `nx_generator_schema` (or `npx nx g @nx/angular:component --help`) and use only flags listed there. `path` is the full component path from the workspace root, e.g. `apps/web/src/app/<feature>/<name>`; its last segment becomes the file and symbol name. Do not pass options that override file naming, standalone or change detection — the generator defaults decide.
+**2. Generator options.** Read the `@nx/angular:component` schema via `nx_generator_schema` (or `npx nx g @nx/angular:component --help`) and use only flags listed there. `path` is the full component path from the workspace root: `apps/web/src/app/<feature>/<name>/<name>` — the last segment is the file and symbol name, and the segment before it is the component folder (same name). Do not pass options that override file naming, standalone or change detection — the generator defaults decide.
 
 **3. Dry run.**
 
@@ -43,13 +43,13 @@ Rules to apply (read them; do not restate them):
 npx nx g @nx/angular:component <path> --dry-run --no-interactive
 ```
 
-Created component files must land in `apps/web/src/app/<feature>/`. A generator-default write to `nx.json` is expected — report it. Any other change outside the feature folder → stop and ask. Note the defaults it applied (file names, symbol, selector) for the summary.
+Created component files must land in `apps/web/src/app/<feature>/<name>/` (for example `apps/web/src/app/home/home-page/home-page.ts`). A generator-default write to `nx.json` is expected — report it. Any other change outside the feature folder → stop and ask. Note the defaults it applied (file names, symbol, selector) for the summary.
 
 **4. Generate.** Same command without `--dry-run`.
 
 **5. Conformance check.** Read every generated file and fix deviations from `angular.mdc` — e.g. an explicit `changeDetection`, `standalone: true`, and anything else `angular.mdc` forbids.
 
-**6. Spec.** Replace a generated test that only asserts the instance exists. Write one test per behaviour from step 1, following `testing.mdc`: render, set inputs and assert through the DOM. Interactive elements need roles and accessible names.
+**6. Spec.** Replace a generated test that only asserts the instance exists. Write one test per behaviour from step 1, following `testing.mdc`: render, set inputs and assert through the DOM. Interactive elements need roles and accessible names. The spec lives next to the component, one folder below the feature root: imports of feature-root modules start with `../`, imports of `app/i18n/` with `../../` (for example `import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';`); a component under `app/shared/<area>/<name>/` needs one more `../` to reach `app/i18n/`.
 
 **7. Verify.**
 

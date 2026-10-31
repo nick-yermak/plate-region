@@ -521,6 +521,7 @@ Comments explain why, not what: no comment or JSDoc restates what the code, name
 
 - **Why:** a feature stays in one place and can be moved or deleted as a unit; `shared/` stays small; comments that narrate the code go stale with the first change, while reasons cannot be recovered from the code.
 - **Rejected:** folders by kind of code (`shared/types/`, `shared/constants/`) — they scatter a feature across the tree, and Angular's style guide recommends organising by feature; JSDoc on application code — it duplicates the code it describes.
+- **Update (#107):** inside a feature folder each component lives in its own folder named after its file — `<feature>/<component-file-name>/` holds its `.ts`, `.html`, `.less` and `.spec.ts`; services, functions, types, constants, pipes and `i18n/` stay at the feature root; the root component (`app.ts`) stays in `app/`. Why: a component's files are opened, reviewed and moved together, and a flat feature folder mixes them with services and dictionaries as features grow. Rejected: `components/`/`services/` subfolders inside a feature (grouping by technical kind instead of by component).
 
 ### D-48 Component roles and member order — Accepted
 
