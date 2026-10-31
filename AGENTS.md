@@ -13,7 +13,7 @@ Goals, in order of how decisions should be weighed:
 
 ## Current focus
 
-**Epic 1 — Core: plate registry and parsing** (pure TypeScript, test-first, no Angular).
+**Epic 2 — Manual lookup UI** (Angular app on NG-ZORRO and Less: shell, plate components, search, result and reference pages).
 Full backlog: `docs/backlog.md`. Do not start work from later epics unless asked.
 Architecture and workflow decisions with their reasons: `docs/decisions.md`. Read it before proposing changes to architecture, tooling or workflow; if a change contradicts a decision, say so explicitly.
 
@@ -66,6 +66,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Icons: register icons where they are rendered — `provideNzIconsPatch([...])` in the providers of that component or lazy route; no global icon list in `app.config.ts`; specs do not list icons of child components (D-28).
 - Layout: use NG-ZORRO layout primitives (`nz-flex`, `nz-space`, `nz-row`/`nz-col`) and `var(--pr-*)` tokens; own CSS only for what they cannot express (hide-only media queries, sizing), with no hard-coded spacing values; no utility-class frameworks (D-28, D-50).
 - A presentational component that hosts containers (theme switcher, language switch) receives them through content projection (`<ng-content />`), not by importing them (D-48).
+- One responsibility per component: a component renders one piece of UI or wires one feature. If describing it needs "and" (it shows a value and also edits it; it renders a control and also lays out the page around it), split it into sibling components, or into a container and presentational children. Signs to split: inputs or outputs that serve unrelated concerns, independent blocks in one template, a spec that needs unrelated setups for different tests (D-48).
 - Command output quoted as evidence (`grep`, `awk`, `sed`, test or coverage summaries, and similar) is quoted in full, exactly as printed — never shortened with `…`, elided rows or a summary. If it is too long for the report, write it to `tmp/<branch>-<name>.txt` together with the exact command that produced it, and give that path instead.
 - The Cursor sandbox blocks some IPC and network calls: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`. Report the exact error, then rerun the same command outside the sandbox.
 - Writes to external systems (`gh issue|pr create|edit|comment`, GitHub MCP writes, and similar) go through a checked file (D-22): for an edit, first fetch the current content to a file; write the new content to a file; check it with `test -s`; show it and its diff against the current content; wait for the user's confirmation; then write with `--body-file <file>` (or the MCP equivalent after the same show-and-confirm step). Chain every `gh` step with `&&` or run under `set -euo pipefail`; never pass content through a shell variable or `$(...)`.
