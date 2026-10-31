@@ -25,29 +25,26 @@
   box-sizing: border-box;
   width: calc(520 * var(--plate-mm));
   height: calc(114 * var(--plate-mm));
-  overflow: hidden;
   color: @plate-black;
-  background: @plate-white;
-  border-radius: calc(10 * var(--plate-mm));
 }
 
-// Rim: black line between 5 mm and 7 mm from the edge (2 mm stroke).
-:host::after {
+// One SVG so mm geometry scales without CSS border pixel-snapping or antialias seams between layers.
+.plate-art {
   position: absolute;
-  inset: calc(5 * var(--plate-mm));
-  pointer-events: none;
-  content: '';
-  border: calc(2 * var(--plate-mm)) solid @plate-black;
-  border-radius: calc(5 * var(--plate-mm));
-}
-
-.eu-band {
-  position: absolute;
-  top: calc(7 * var(--plate-mm));
-  left: calc(7 * var(--plate-mm));
+  inset: 0;
   display: block;
-  width: calc(40 * var(--plate-mm));
-  height: calc(100 * var(--plate-mm));
+  width: 100%;
+  height: 100%;
+}
+
+.plate-body {
+  fill: @plate-white;
+}
+
+.plate-rim {
+  fill: none;
+  stroke: @plate-black;
+  stroke-width: 3;
 }
 
 .eu-band-bg {
