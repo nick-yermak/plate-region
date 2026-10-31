@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslocoLoader, Translation } from '@jsverse/transloco';
 
-import { dictionaryUrl } from '../language/language';
+import { dictionaryUrl } from './dictionary-url';
 
 @Injectable({ providedIn: 'root' })
 export class TranslocoFetchLoader implements TranslocoLoader {

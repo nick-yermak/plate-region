@@ -2,17 +2,10 @@ import { DOCUMENT } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NzI18nService, en_US, pl_PL } from 'ng-zorro-antd/i18n';
-import {
-  DestroyRef,
-  Injectable,
-  Signal,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { DestroyRef, Injectable, Signal, inject, signal } from '@angular/core';
 
-import { Language } from './language.types';
 import { resolveLanguage } from './language';
+import { Language } from '../i18n/language.types';
 import { LOCAL_STORAGE_KEYS } from '../shared/storage/storage.constants';
 import { LocalStorageService } from '../shared/storage/local-storage.service';
 
@@ -24,12 +17,10 @@ export class LanguageService {
   private readonly nzI18n = inject(NzI18nService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly language: Signal<Language> = computed(() => this.languageState());
-  readonly dictionaryReady: Signal<boolean> = computed(() =>
-    this.dictionaryReadyState(),
-  );
-  readonly switching: Signal<boolean> = computed(() => this.switchingState());
-  readonly loadFailed: Signal<boolean> = computed(() => this.loadFailedState());
+  readonly language: Signal<Language>;
+  readonly dictionaryReady: Signal<boolean>;
+  readonly switching: Signal<boolean>;
+  readonly loadFailed: Signal<boolean>;
 
   private readonly languageState = signal<Language>(this.resolveInitial());
   private readonly dictionaryReadyState = signal(false);
@@ -37,6 +28,11 @@ export class LanguageService {
   private readonly loadFailedState = signal(false);
 
   constructor() {
+    this.language = this.languageState.asReadonly();
+    this.dictionaryReady = this.dictionaryReadyState.asReadonly();
+    this.switching = this.switchingState.asReadonly();
+    this.loadFailed = this.loadFailedState.asReadonly();
+
     const lang = this.languageState();
     this.document.documentElement.lang = lang;
     this.applyNzLocale(lang);

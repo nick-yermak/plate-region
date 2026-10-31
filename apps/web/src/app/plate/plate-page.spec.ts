@@ -8,6 +8,8 @@ import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
 
 describe('PlatePage', () => {
   beforeEach(() => {
+    // Route test boots appConfig (real TranslocoFetchLoader); without a stub,
+    // load('en') rejects and Vitest reports an unhandled TranslationLoadError.
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({

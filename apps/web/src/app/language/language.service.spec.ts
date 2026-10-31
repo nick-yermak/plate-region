@@ -152,4 +152,31 @@ describe('LanguageService', () => {
     expect(service.switching()).toBe(false);
     expect(service.dictionaryReady()).toBe(false);
   });
+
+  it('ignores the load result of a previous language', () => {
+    const plLoad$ = new Subject<Record<string, unknown>>();
+    const enLoad$ = new Subject<Record<string, unknown>>();
+    transloco.load
+      .mockReturnValueOnce(of({}))
+      .mockReturnValueOnce(plLoad$.asObservable())
+      .mockReturnValueOnce(enLoad$.asObservable());
+
+    const service = TestBed.inject(LanguageService);
+    expect(service.dictionaryReady()).toBe(true);
+
+    service.setLanguage('pl');
+    service.setLanguage('en');
+    expect(service.switching()).toBe(true);
+    const readyBeforeStale = service.dictionaryReady();
+
+    plLoad$.next({});
+    plLoad$.complete();
+    expect(service.switching()).toBe(true);
+    expect(service.dictionaryReady()).toBe(readyBeforeStale);
+
+    enLoad$.next({});
+    enLoad$.complete();
+    expect(service.switching()).toBe(false);
+    expect(service.dictionaryReady()).toBe(true);
+  });
 });

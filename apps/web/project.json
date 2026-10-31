@@ -10,7 +10,8 @@
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": [
-        "{projectRoot}/src/app/**/i18n/{en,pl}.json",
+        "{projectRoot}/src/app/**/i18n/en.json",
+        "{projectRoot}/src/app/**/i18n/pl.json",
         "{projectRoot}/scripts/merge-i18n.mts",
         "{projectRoot}/src/app/i18n/merge-dictionaries.ts"
       ],

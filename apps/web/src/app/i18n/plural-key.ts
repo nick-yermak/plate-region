@@ -1,4 +1,4 @@
-import { Language } from '../language/language.types';
+import { Language } from './language.types';
 
 export function pluralKey(
   base: string,

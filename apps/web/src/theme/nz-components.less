@@ -9,6 +9,7 @@
 @import '../../../../node_modules/ng-zorro-antd/flex/style/entry';
 
 // Namespaced overrides of NG-ZORRO skeleton/menu internals (no ::ng-deep in components).
+// Heading skeleton mirrors global h1 metrics (font-size 2em, margin-bottom 0.5em, line box 1lh).
 .pr-heading-skeleton.ant-skeleton-element {
   display: block;
   box-sizing: border-box;
@@ -20,13 +21,13 @@
   min-width: 0;
 }
 
-.pr-heading-skeleton .ant-skeleton-button {
-  display: block !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  height: 100% !important;
-  line-height: 1 !important;
+.pr-heading-skeleton.ant-skeleton-element .ant-skeleton-button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  line-height: 1;
 }
 
 // Pending horizontal nav only — do not affect the loaded menu.

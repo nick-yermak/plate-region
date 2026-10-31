@@ -1,4 +1,4 @@
-import { Language } from './language.types';
+import { Language } from '../i18n/language.types';
 
 export function resolveLanguage(
   stored: string | null,
@@ -8,8 +8,4 @@ export function resolveLanguage(
     return stored;
   }
   return navigatorLanguage.toLowerCase().startsWith('pl') ? 'pl' : 'en';
-}
-
-export function dictionaryUrl(lang: string): string {
-  return 'i18n/' + lang + '.json';
 }

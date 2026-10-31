@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 import { pluralKey } from './plural-key';
-import { Language } from '../language/language.types';
+import { Language } from './language.types';
 
 @Pipe({ name: 'pluralKey' })
 export class PluralKeyPipe implements PipeTransform {

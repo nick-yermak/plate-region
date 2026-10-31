@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 
-import { resolveLanguage } from '../language/language';
+import { resolveLanguage } from './language';
 
 const scriptPath = resolve(process.cwd(), 'apps/web/public/js/i18n-init.js');
 

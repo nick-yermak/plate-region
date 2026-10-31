@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { Language } from './language.types';
+import { Language } from '../i18n/language.types';
 import { LanguageService } from './language.service';
 import { LanguageToggleComponent } from './language-toggle';
 
