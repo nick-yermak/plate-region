@@ -1,0 +1,88 @@
+@font-face {
+  font-family: 'DINish Condensed';
+  src: url('/fonts/dinish/DINishCondensed-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@property --plate-mm {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@plate-white: #fff;
+@plate-black: #000;
+@plate-eu-blue: #003399;
+@plate-eu-yellow: #ffcc00;
+
+:host {
+  --plate-mm: calc(1em / 114);
+
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: calc(520 * var(--plate-mm));
+  height: calc(114 * var(--plate-mm));
+  overflow: hidden;
+  color: @plate-black;
+  background: @plate-white;
+  border-radius: calc(10 * var(--plate-mm));
+}
+
+// Rim: black line between 5 mm and 7 mm from the edge (2 mm stroke).
+:host::after {
+  position: absolute;
+  inset: calc(5 * var(--plate-mm));
+  pointer-events: none;
+  content: '';
+  border: calc(2 * var(--plate-mm)) solid @plate-black;
+  border-radius: calc(5 * var(--plate-mm));
+}
+
+.eu-band {
+  position: absolute;
+  top: calc(7 * var(--plate-mm));
+  left: calc(7 * var(--plate-mm));
+  display: block;
+  width: calc(40 * var(--plate-mm));
+  height: calc(100 * var(--plate-mm));
+}
+
+.eu-band-bg {
+  fill: @plate-eu-blue;
+}
+
+.eu-stars {
+  fill: @plate-eu-yellow;
+}
+
+.eu-pl {
+  stroke: @plate-white;
+}
+
+.plate-text {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(47 * var(--plate-mm));
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  box-sizing: border-box;
+  width: calc(458 * var(--plate-mm));
+  overflow: hidden;
+  // Lifts the line box by 5.38 mm so the cap height, not the em box, is centred: 2 × (1050 − 707 / 2 − 649) / 1024 × 115.87.
+  padding-bottom: calc(10.75 * var(--plate-mm));
+  font-family: 'DINish Condensed', sans-serif;
+  // Cap height 80 mm: 80 × 1024 / 707.
+  font-size: calc(115.87 * var(--plate-mm));
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: calc(4 * var(--plate-mm));
+  word-spacing: 0;
+  white-space: pre;
+  text-align: center;
+  text-transform: uppercase;
+}
