@@ -53,12 +53,12 @@ Outcome: a pure TypeScript library that turns a plate string into voivodeship, p
 
 ## Epic 2 — Manual lookup UI
 
-Outcome: the first useful version — type or photograph a plate, see the region. Responsive layout, three languages, modern Angular. After this epic the product can be shown to people. Screens and behaviour: `docs/ui-spec.md`.
+Outcome: the first useful version — type or photograph a plate, see the region. Responsive layout, two languages (Polish and English), modern Angular. After this epic the product can be shown to people. Screens and behaviour: `docs/ui-spec.md`.
 
 - [ ] NG-ZORRO and Less: first check NG-ZORRO support for the project's Angular version and zoneless; switch the nx.json component generator style to less, convert apps/web global styles, light and dark theme with a toggle (D-28), and add a `.css` component-styles flag to `.cursor/BUGBOT.md`
 - [ ] App shell and routing: top bar with a burger menu, theme toggle, language switch slot, routes for all pages with placeholders, Playwright projects for mobile emulation
 - [ ] Plate component and plate input styled as a Polish plate
-- [ ] i18n PL/EN/RU: compare built-in Angular i18n and Transloco on a small prototype, pick one and adopt it; check plural forms
+- [ ] i18n PL/EN with Transloco (D-09): runtime language switch, CLDR plural forms
 - [ ] Search form with Signal Forms: submit on Enter or button, navigate to the result page, list candidates for incomplete input
 - [ ] Result page: result card for every `ParseResult` variant, SVG car with the plate
 - [ ] Photo: upload and camera, preview, passed to the result page; no recognition (Epic 4)

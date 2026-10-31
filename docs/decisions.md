@@ -87,9 +87,11 @@ IndexedDB, no accounts; export/import as JSON to survive a phone change.
 - **Why:** privacy, no backend (D-01).
 - **Rejected:** accounts and sync (kept as a later idea).
 
-### D-09 Polish and English UI — Accepted; i18n library Open (Epic 2)
+### D-09 Polish and English UI — Accepted
 
 Built-in Angular i18n (per-locale builds, fits prerender) vs Transloco (runtime switching) — decide after a small prototype in Epic 2.
+
+- **Update (#89):** the i18n library is Transloco (`@jsverse/transloco` ~8.4.0) with runtime language switching, and the UI languages are Polish and English — Russian is dropped. Angular built-in i18n was rejected without a code prototype: `$localize` translates each message once, so a language change needs a reload and a separate build per locale (`packages/localize/src/translate.ts`), and the dev server serves a single locale. Components switch the language only through `LanguageService`; text is looked up with Transloco's pipe and `translateSignal` directly, without a wrapper. Plurals use `Intl.PluralRules` with one key per CLDR category instead of `@jsverse/transloco-messageformat` (it pulls `@messageformat/core`, about 300 kB unpacked). Dictionaries are static JSON loaded with `fetch` and preloaded by `public/js/i18n-init.js`; dynamic `import()` was rejected because a hashed chunk name cannot be preloaded.
 
 ### D-30 Node API as an additional consumer — Planned (Epic 9, after Epic 3)
 
@@ -129,6 +131,7 @@ Supersedes D-11. UI components come from NG-ZORRO (`ng-zorro-antd` 22.x). Less i
 - **Update (#86, build):** production builds set `optimization.styles.inlineCritical: false`. Beasties (critical-CSS inlining in `@angular/build`) inlined the rules of both theme bundles unconditionally and rewrote their `media` to `print` → `all`, which breaks media-based switching; `styles.css` is nearly empty, so nothing is lost. e2e runs against the production build (`serve-static`) so that differences between the dev server and production are caught by tests.
 - **Update (#87):** icons are registered where they are rendered — `provideNzIconsPatch([...])` in the providers of the component or lazy route that renders them; `app.config.ts` provides no icons (the root `NzIconService` is `providedIn: 'root'` and registers NG-ZORRO's own icons), and an icon's code ships in the chunk of whoever declares it. Layout uses NG-ZORRO primitives (`nz-flex`, `nz-space`, `nz-row`/`nz-col`) and `--pr-*` tokens; own CSS only for what they cannot express; no utility-class frameworks. `ng-zorro-antd` 22.1.2 omits `./flex/style/*` from `exports`, so `nz-components.less` imports it by relative path — switch back to the package path when an update adds the export.
 - **Update (#88):** our own form controls implement `FormValueControl` (`value = model()`) and bind with `[formField]`; ControlValueAccessor interop is only for library controls, as Angular documents it as reactive-forms compatibility. Own styling is limited to the plate components (ui-spec § Global, D-51); their physical colours are Less variables, not `--pr-*` tokens, because a real plate does not follow the theme.
+- **Update (#89):** the NG-ZORRO locale follows the UI language — `pl_PL` and `en_US` only. `en_US` stays static in `app.config.ts`; `pl_PL` loads lazily through a local re-export module, never via `import('ng-zorro-antd/i18n')`, because that one module holds every locale. Loading placeholders use `nz-skeleton-element`.
 
 ### D-29 Charts library — Open (Epic 2)
 
