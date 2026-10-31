@@ -1,0 +1,12 @@
+{
+  "layout": {
+    "nav": {
+      "home": "Home",
+      "registry": "Registry",
+      "charts": "Charts",
+      "about": "About",
+      "main": "Main"
+    },
+    "menu": "Menu"
+  }
+}

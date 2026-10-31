@@ -12,9 +12,9 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - UI library: NG-ZORRO with the default Ant Design theme. Custom styling only for the plate component and the plate input (see Components).
 - Theme: follows the system setting; a toggle in the top bar overrides it (D-28).
-- Languages: Polish, English, Russian. Plural forms must be handled: Polish and Russian use the CLDR categories one, few, many and other.
+- Languages: Polish and English. Plural forms must be handled: Polish uses the CLDR categories one, few, many and other; English uses one and other.
 - Navigation: a top bar on every page; on narrow screens its links collapse into a burger menu. The bar holds the theme toggle and the language switch.
-- No network: every lookup runs on-device against `plate-data` and `plate-domain`. No HTTP in Epic 2.
+- No network: every lookup runs on-device against `plate-data` and `plate-domain`. No HTTP APIs in Epic 2; the app requests only its own static assets (fonts, i18n dictionaries).
 - No search history: the collection is Epic 5.
 - Zoneless: no `NgZone`, no dependency that requires zone.js.
 

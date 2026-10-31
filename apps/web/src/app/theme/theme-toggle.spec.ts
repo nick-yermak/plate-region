@@ -1,14 +1,19 @@
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { NzIconDirective } from 'ng-zorro-antd/icon';
+import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
 import { Theme } from './theme.types';
 import { ThemeToggleComponent } from './theme-toggle';
+import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
 
 describe('ThemeToggleComponent', () => {
   async function createToggle() {
     await TestBed.configureTestingModule({
-      imports: [ThemeToggleComponent],
+      imports: [
+        ThemeToggleComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
     }).compileComponents();
     return TestBed.createComponent(ThemeToggleComponent);
   }
@@ -73,5 +78,15 @@ describe('ThemeToggleComponent', () => {
     fixture.debugElement.query(By.css('button')).nativeElement.click();
     await fixture.whenStable();
     expect(emissions).toEqual(['light']);
+  });
+
+  it('shows the Polish switch label when the active language is pl', async () => {
+    const fixture = await createToggle();
+    TestBed.inject(TranslocoService).setActiveLang('pl');
+    fixture.componentRef.setInput('theme', 'light');
+    await fixture.whenStable();
+
+    const button = fixture.debugElement.query(By.css('button'));
+    expect(button.attributes['aria-label']).toBe('Przełącz na ciemny motyw');
   });
 });

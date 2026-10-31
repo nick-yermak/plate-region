@@ -1,15 +1,20 @@
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 
 import { ThemeService } from './theme.service';
 import { ThemeToggleComponent } from './theme-toggle';
+import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
 import { ThemeSwitcherComponent } from './theme-switcher';
 
 describe('ThemeSwitcherComponent', () => {
   async function createSwitcher(setTheme = vi.fn()) {
     await TestBed.configureTestingModule({
-      imports: [ThemeSwitcherComponent],
+      imports: [
+        ThemeSwitcherComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
       providers: [
         {
           provide: ThemeService,

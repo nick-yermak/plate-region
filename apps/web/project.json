@@ -6,8 +6,23 @@
   "sourceRoot": "apps/web/src",
   "tags": ["type:app"],
   "targets": {
+    "i18n": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/app/**/i18n/en.json",
+        "{projectRoot}/src/app/**/i18n/pl.json",
+        "{projectRoot}/scripts/merge-i18n.mts",
+        "{projectRoot}/src/app/i18n/merge-dictionaries.ts"
+      ],
+      "outputs": ["{projectRoot}/generated/i18n"],
+      "options": {
+        "command": "node --experimental-strip-types apps/web/scripts/merge-i18n.mts"
+      }
+    },
     "build": {
       "executor": "@angular/build:application",
+      "dependsOn": ["i18n"],
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
@@ -19,6 +34,11 @@
           {
             "glob": "**/*",
             "input": "apps/web/public"
+          },
+          {
+            "glob": "*.json",
+            "input": "apps/web/generated/i18n",
+            "output": "i18n"
           }
         ],
         "styles": [
@@ -40,7 +60,7 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
+              "maximumWarning": "550kb",
               "maximumError": "1mb"
             },
             {
@@ -69,6 +89,7 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "dependsOn": ["i18n"],
       "defaultConfiguration": "development",
       "configurations": {
         "production": {
@@ -81,6 +102,7 @@
     },
     "test": {
       "executor": "@angular/build:unit-test",
+      "dependsOn": ["i18n"],
       "options": {
         "watch": false
       }

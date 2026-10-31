@@ -2,19 +2,26 @@ import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NzMenuDirective } from 'ng-zorro-antd/menu';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 
 import { NavLink } from './layout.types';
 import { NavMenuComponent } from './nav-menu';
+import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
 
 const LINKS: readonly NavLink[] = [
-  { label: 'Home', path: '/' },
-  { label: 'About', path: '/about' },
+  { labelKey: 'layout.nav.home', path: '/' },
+  { labelKey: 'layout.nav.about', path: '/about' },
 ];
+
+const VISIBLE_LABELS = ['Home', 'About'] as const;
 
 describe('NavMenuComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavMenuComponent],
+      imports: [
+        NavMenuComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
       providers: [provideRouter([{ path: '**', children: [] }])],
     }).compileComponents();
   });
@@ -29,7 +36,9 @@ describe('NavMenuComponent', () => {
     const anchors = menu.queryAll(By.css('a'));
     expect(anchors).toHaveLength(LINKS.length);
     for (const [index, link] of LINKS.entries()) {
-      expect(anchors[index].nativeElement.textContent.trim()).toBe(link.label);
+      expect(anchors[index].nativeElement.textContent.trim()).toBe(
+        VISIBLE_LABELS[index],
+      );
       expect(anchors[index].nativeElement.getAttribute('href')).toBe(link.path);
     }
   });
@@ -73,5 +82,39 @@ describe('NavMenuComponent', () => {
     await fixture.whenStable();
 
     expect(emissions).toEqual([target]);
+  });
+
+  it('renders skeleton placeholders instead of links and sets aria-busy on the nav while pending', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        NavMenuComponent,
+        TranslocoTestingModule.forRoot({
+          langs: { en: { layout: { nav: { main: '' } } } },
+          preloadLangs: true,
+          translocoConfig: {
+            availableLangs: ['en'],
+            defaultLang: 'en',
+            // Empty values are otherwise treated as missing and return the key.
+            missingHandler: { allowEmpty: true, logMissingKey: false },
+          },
+        }),
+      ],
+      providers: [provideRouter([{ path: '**', children: [] }])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NavMenuComponent);
+    fixture.componentRef.setInput('links', LINKS);
+    fixture.componentRef.setInput('mode', 'horizontal');
+    fixture.componentRef.setInput('pending', true);
+    await fixture.whenStable();
+
+    const nav = fixture.debugElement.query(By.css('nav'));
+    expect(nav.attributes['aria-busy']).toBe('true');
+    expect(nav.nativeElement.hasAttribute('aria-label')).toBe(false);
+    expect(fixture.debugElement.queryAll(By.css('a'))).toHaveLength(0);
+    expect(
+      fixture.debugElement.queryAll(By.css('[aria-hidden="true"]')).length,
+    ).toBeGreaterThan(0);
   });
 });

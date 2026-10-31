@@ -1,6 +1,8 @@
+import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { NzDrawerComponent } from 'ng-zorro-antd/drawer';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ShellComponent } from './shell';
@@ -8,12 +10,34 @@ import { appRoutes } from '../app.routes';
 import { HeaderComponent } from './header';
 import { NavMenuComponent } from './nav-menu';
 import { NAV_LINKS } from './layout.constants';
+import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { LanguageService } from '../language/language.service';
 
 describe('ShellComponent', () => {
+  function provideLanguage(overrides: {
+    dictionaryReady?: boolean;
+    switching?: boolean;
+    loadFailed?: boolean;
+  }) {
+    return {
+      provide: LanguageService,
+      useValue: {
+        language: signal('en').asReadonly(),
+        dictionaryReady: signal(overrides.dictionaryReady ?? true).asReadonly(),
+        switching: signal(overrides.switching ?? false).asReadonly(),
+        loadFailed: signal(overrides.loadFailed ?? false).asReadonly(),
+        setLanguage: vi.fn(),
+      },
+    };
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ShellComponent],
-      providers: [provideRouter(appRoutes)],
+      imports: [
+        ShellComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [provideRouter(appRoutes), provideLanguage({})],
     }).compileComponents();
   });
 
@@ -60,6 +84,54 @@ describe('ShellComponent', () => {
     await fixture.whenStable();
 
     expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(false);
+  });
+
+  it('renders a busy main without a page heading while the dictionary is not ready', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        ShellComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [
+        provideRouter(appRoutes),
+        provideLanguage({ dictionaryReady: false, loadFailed: false }),
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ShellComponent);
+    await TestBed.inject(Router).navigateByUrl('/');
+    await fixture.whenStable();
+
+    const main = fixture.debugElement.query(By.css('[role="main"]'));
+    expect(main.attributes['aria-busy']).toBe('true');
+    expect(fixture.debugElement.query(By.css('h1'))).toBeNull();
+  });
+
+  it('renders the page heading while switching', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        ShellComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [
+        provideRouter(appRoutes),
+        provideLanguage({
+          dictionaryReady: true,
+          switching: true,
+          loadFailed: false,
+        }),
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ShellComponent);
+    await TestBed.inject(Router).navigateByUrl('/');
+    await fixture.whenStable();
+
+    const heading = fixture.debugElement.query(By.css('h1'));
+    expect(heading).toBeTruthy();
+    expect(heading.nativeElement.textContent.trim()).toBe('Home');
   });
 });
 

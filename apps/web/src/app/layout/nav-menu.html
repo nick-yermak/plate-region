@@ -1,10 +1,23 @@
-<nav aria-label="Main">
+<nav
+  [attr.aria-label]="('layout.nav.main' | transloco) || null"
+  [attr.aria-busy]="pending() ? true : null"
+  [class.pr-nav-menu-pending]="pending()"
+>
   <ul nz-menu [nzMode]="mode()" [nzTheme]="theme()">
     @for (link of links(); track link.path) {
       <li nz-menu-item nzMatchRouter nzMatchRouterExact>
-        <a [routerLink]="link.path" (click)="linkSelect.emit(link)">{{
-          link.label
-        }}</a>
+        @if (pending()) {
+          <nz-skeleton-element
+            nzType="button"
+            nzSize="small"
+            nzActive
+            aria-hidden="true"
+          />
+        } @else {
+          <a [routerLink]="link.path" (click)="linkSelect.emit(link)">{{
+            link.labelKey | transloco
+          }}</a>
+        }
       </li>
     }
   </ul>

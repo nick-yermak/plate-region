@@ -18,6 +18,7 @@ export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
   use: {
     baseURL,
+    locale: 'en-US',
     trace: 'on-first-retry',
   },
   /* Production build via serve-static so e2e catches Beasties/media differences. */

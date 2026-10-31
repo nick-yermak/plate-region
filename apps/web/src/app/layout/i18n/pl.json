@@ -1,0 +1,12 @@
+{
+  "layout": {
+    "nav": {
+      "home": "Strona główna",
+      "registry": "Rejestr",
+      "charts": "Wykresy",
+      "about": "O aplikacji",
+      "main": "Menu główne"
+    },
+    "menu": "Menu"
+  }
+}

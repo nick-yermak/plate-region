@@ -1,4 +1,5 @@
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NzFlexDirective } from 'ng-zorro-antd/flex';
 import { Component, input, output } from '@angular/core';
 import { NzButtonComponent } from 'ng-zorro-antd/button';
@@ -13,6 +14,7 @@ import { NavMenuComponent } from './nav-menu';
   selector: 'app-header',
   imports: [
     RouterLink,
+    TranslocoPipe,
     NzFlexDirective,
     NzIconDirective,
     NzButtonComponent,
@@ -25,5 +27,6 @@ import { NavMenuComponent } from './nav-menu';
 })
 export class HeaderComponent {
   readonly links = input.required<readonly NavLink[]>();
+  readonly pending = input(false);
   readonly menuOpen = output<void>();
 }

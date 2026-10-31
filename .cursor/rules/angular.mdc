@@ -44,4 +44,4 @@ constructor() {
 ```
 
 - Styling (D-28): NG-ZORRO components imported per subpath (`ng-zorro-antd/button`). Less for global and component styles; no Tailwind, no SCSS. Mobile-first.
-- i18n library is still Open (D-09) — do not introduce one here.
+- i18n: Transloco (D-09) — text via the `transloco` pipe in templates and `translateSignal` in TS; switch the language only through `LanguageService`.
