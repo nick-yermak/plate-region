@@ -1,0 +1,12 @@
+<app-plate-frame>
+  <input
+    type="text"
+    [attr.aria-label]="label()"
+    [value]="value()"
+    (input)="onInput($event)"
+    autocomplete="off"
+    autocapitalize="characters"
+    spellcheck="false"
+    enterkeyhint="search"
+  />
+</app-plate-frame>
