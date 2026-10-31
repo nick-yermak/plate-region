@@ -1,7 +1,7 @@
 <button
   nz-button
   type="button"
-  [attr.aria-label]="label()"
+  [attr.aria-label]="labelKey() | transloco"
   (click)="requestOppositeTheme()"
 >
   <nz-icon [nzType]="icon()" nzTheme="outline" />

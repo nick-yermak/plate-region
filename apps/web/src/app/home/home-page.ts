@@ -1,14 +1,18 @@
 import { Component, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import { PlateInputComponent } from '../shared/plate/plate-input';
 
 @Component({
   selector: 'app-home-page',
-  imports: [PlateInputComponent],
+  imports: [PlateInputComponent, TranslocoPipe],
   template: `
-    <h1>Home</h1>
+    <h1>{{ 'home.title' | transloco }}</h1>
     <div class="plate-wrap">
-      <app-plate-input [(value)]="plate" label="Licence plate number" />
+      <app-plate-input
+        [(value)]="plate"
+        [label]="'home.plateNumber' | transloco"
+      />
     </div>
   `,
   styles: `

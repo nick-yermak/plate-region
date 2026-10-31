@@ -4,5 +4,45 @@
 @import 'ng-zorro-antd/layout/style/entry';
 @import 'ng-zorro-antd/menu/style/entry';
 @import 'ng-zorro-antd/drawer/style/entry';
+@import 'ng-zorro-antd/skeleton/style/entry';
 // ng-zorro-antd 22.1.2 omits ./flex/style/* from package.json exports (unlike other components)
 @import '../../../../node_modules/ng-zorro-antd/flex/style/entry';
+
+// Namespaced overrides of NG-ZORRO skeleton/menu internals (no ::ng-deep in components).
+.pr-heading-skeleton.ant-skeleton-element {
+  display: block;
+  box-sizing: border-box;
+  width: 8em;
+  font-size: 2em;
+  height: 1lh;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  min-width: 0;
+}
+
+.pr-heading-skeleton .ant-skeleton-button {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  line-height: 1 !important;
+}
+
+// Pending horizontal nav only — do not affect the loaded menu.
+.pr-nav-menu-pending .ant-menu-horizontal {
+  > .ant-menu-item {
+    display: inline-flex;
+    align-items: center;
+    height: var(--pr-layout-header-height);
+  }
+
+  .ant-menu-title-content {
+    display: contents;
+  }
+
+  .ant-skeleton-element {
+    line-height: normal;
+    height: auto;
+  }
+}

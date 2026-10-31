@@ -4,6 +4,7 @@
 dist
 tmp
 out-tsc
+apps/web/generated
 
 # dependencies
 node_modules

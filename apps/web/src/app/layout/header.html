@@ -6,6 +6,7 @@
       mode="horizontal"
       theme="dark"
       [links]="links()"
+      [pending]="pending()"
     />
   </div>
   <div nz-flex nzAlign="center" nzGap="small" class="header-actions">
@@ -14,7 +15,7 @@
       nz-button
       type="button"
       class="header-burger"
-      aria-label="Menu"
+      [attr.aria-label]="('layout.menu' | transloco) || null"
       (click)="menuOpen.emit()"
     >
       <nz-icon nzType="menu" nzTheme="outline" />

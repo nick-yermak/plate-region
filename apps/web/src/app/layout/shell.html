@@ -1,10 +1,23 @@
 <nz-layout>
-  <app-header [links]="navLinks" (menuOpen)="drawerOpen.set(true)">
-    <button nz-button disabled type="button">EN</button>
+  <app-header
+    [links]="navLinks"
+    [pending]="contentPending()"
+    (menuOpen)="drawerOpen.set(true)"
+  >
+    <app-language-switcher />
     <app-theme-switcher />
   </app-header>
-  <nz-content role="main">
-    <router-outlet />
+  <nz-content role="main" [attr.aria-busy]="contentPending() ? true : null">
+    @if (contentPending()) {
+      <nz-skeleton-element
+        class="pr-heading-skeleton"
+        nzType="button"
+        nzActive
+        aria-hidden="true"
+      />
+    } @else {
+      <router-outlet />
+    }
   </nz-content>
 </nz-layout>
 
@@ -17,6 +30,7 @@
     <app-nav-menu
       mode="inline"
       [links]="navLinks"
+      [pending]="contentPending()"
       (linkSelect)="drawerOpen.set(false)"
     />
   </ng-container>

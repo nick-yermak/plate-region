@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-charts-page',
-  template: `<h1>Charts</h1>`,
+  imports: [TranslocoPipe],
+  template: `<h1>{{ 'charts.title' | transloco }}</h1>`,
 })
 export class ChartsPage {}

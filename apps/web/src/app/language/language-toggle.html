@@ -1,0 +1,16 @@
+<button
+  nz-button
+  type="button"
+  [disabled]="busy()"
+  [attr.aria-busy]="busy() ? true : null"
+  (click)="emitTarget()"
+>
+  @switch (target()) {
+    @case ('pl') {
+      <span lang="pl">{{ endonyms.pl }}</span>
+    }
+    @case ('en') {
+      <span lang="en">{{ endonyms.en }}</span>
+    }
+  }
+</button>
