@@ -1,9 +1,12 @@
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { NzDrawerComponent } from 'ng-zorro-antd/drawer';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  DRAWER_ANIMATE_DURATION,
+  NzDrawerComponent,
+} from 'ng-zorro-antd/drawer';
 
 import { ShellComponent } from './shell';
 import { appRoutes } from '../../app.routes';
@@ -41,6 +44,10 @@ describe('ShellComponent', () => {
     }).compileComponents();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('passes NAV_LINKS to the header', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
     await fixture.whenStable();
@@ -51,39 +58,91 @@ describe('ShellComponent', () => {
     expect(header.links()).toEqual(NAV_LINKS);
   });
 
+  it('does not mount the drawer until the menu opens', async () => {
+    const fixture = TestBed.createComponent(ShellComponent);
+    await fixture.whenStable();
+
+    expect(
+      fixture.debugElement.query(By.directive(NzDrawerComponent)),
+    ).toBeNull();
+  });
+
   it('opens the drawer when header emits menuOpen', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
-    await openDrawer(fixture);
+    await fixture.whenStable();
 
-    const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
-    if (!drawer) {
-      throw new Error('drawer not found');
-    }
-    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(true);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await openDrawerUnderFakeTimers(fixture);
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    expect(queryDrawer(fixture).nzVisible).toBe(true);
   });
 
   it('closes the drawer when drawer nav-menu emits linkSelect', async () => {
     const fixture = TestBed.createComponent(ShellComponent);
-    await openDrawer(fixture);
-
-    const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
-    if (!drawer) {
-      throw new Error('drawer not found');
-    }
-    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(true);
-
-    const drawerMenu = drawer.query(By.directive(NavMenuComponent));
-    if (!drawerMenu) {
-      throw new Error('drawer nav-menu not found');
-    }
-    const link = NAV_LINKS[0];
-    if (!link) {
-      throw new Error('NAV_LINKS entry not found');
-    }
-    drawerMenu.injector.get(NavMenuComponent).linkSelect.emit(link);
     await fixture.whenStable();
 
-    expect(drawer.injector.get(NzDrawerComponent).nzVisible).toBe(false);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await openDrawerUnderFakeTimers(fixture);
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    const drawer = queryDrawer(fixture);
+    expect(drawer.nzVisible).toBe(true);
+
+    drawerNavMenu(fixture).linkSelect.emit(requireNavLink());
+    fixture.detectChanges();
+
+    expect(drawer.nzVisible).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+  });
+
+  it('unmounts the drawer after close animation completes', async () => {
+    const fixture = TestBed.createComponent(ShellComponent);
+    await fixture.whenStable();
+
+    // Fake only timer APIs so Promise/microtask-based TestBed work stays real.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await openDrawerUnderFakeTimers(fixture);
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    drawerNavMenu(fixture).linkSelect.emit(requireNavLink());
+    fixture.detectChanges();
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.directive(NzDrawerComponent)),
+    ).toBeNull();
+  });
+
+  it('remounts an open drawer when menu opens during close', async () => {
+    const fixture = TestBed.createComponent(ShellComponent);
+    await fixture.whenStable();
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await openDrawerUnderFakeTimers(fixture);
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    const previous = queryDrawer(fixture);
+
+    drawerNavMenu(fixture).linkSelect.emit(requireNavLink());
+    fixture.detectChanges();
+
+    emitMenuOpen(fixture);
+    fixture.detectChanges();
+
+    await vi.advanceTimersByTimeAsync(DRAWER_ANIMATE_DURATION);
+    fixture.detectChanges();
+
+    const next = queryDrawer(fixture);
+    expect(next).not.toBe(previous);
+    expect(next.nzVisible).toBe(true);
   });
 
   it('renders a busy main without a page heading while the dictionary is not ready', async () => {
@@ -135,14 +194,54 @@ describe('ShellComponent', () => {
   });
 });
 
-async function openDrawer(
+function queryDrawer(
   fixture: ComponentFixture<ShellComponent>,
-): Promise<void> {
-  await fixture.whenStable();
+): NzDrawerComponent {
+  const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
+  if (!drawer) {
+    throw new Error('drawer not found');
+  }
+  return drawer.injector.get(NzDrawerComponent);
+}
+
+function drawerNavMenu(
+  fixture: ComponentFixture<ShellComponent>,
+): NavMenuComponent {
+  const drawer = fixture.debugElement.query(By.directive(NzDrawerComponent));
+  if (!drawer) {
+    throw new Error('drawer not found');
+  }
+  const menu = drawer.query(By.directive(NavMenuComponent));
+  if (!menu) {
+    throw new Error('drawer nav-menu not found');
+  }
+  return menu.injector.get(NavMenuComponent);
+}
+
+function requireNavLink() {
+  const link = NAV_LINKS[0];
+  if (!link) {
+    throw new Error('NAV_LINKS entry not found');
+  }
+  return link;
+}
+
+function emitMenuOpen(fixture: ComponentFixture<ShellComponent>): void {
   const header = fixture.debugElement.query(By.directive(HeaderComponent));
   if (!header) {
     throw new Error('header not found');
   }
   header.injector.get(HeaderComponent).menuOpen.emit();
-  await fixture.whenStable();
+}
+
+/**
+ * Open under fake timers. Uses detectChanges instead of whenStable because
+ * whenStable can hang while setTimeout is faked (C12).
+ */
+async function openDrawerUnderFakeTimers(
+  fixture: ComponentFixture<ShellComponent>,
+): Promise<void> {
+  fixture.detectChanges();
+  emitMenuOpen(fixture);
+  fixture.detectChanges();
 }

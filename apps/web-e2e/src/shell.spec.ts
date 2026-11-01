@@ -3,8 +3,19 @@ import { test, expect, type Page } from '@playwright/test';
 const lightBg = 'rgb(255, 255, 255)';
 const darkBg = 'rgb(0, 0, 0)';
 
+const closedHiddenByProject = {
+  desktop: { navigation: 1, tabPresses: 10 },
+  mobile: { navigation: 0, tabPresses: 7 },
+} as const;
+
 async function bodyBackground(page: Page): Promise<string> {
   return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+}
+
+async function activeElementInOverlay(page: Page): Promise<boolean> {
+  return page.evaluate(
+    () => !!document.activeElement?.closest('.cdk-overlay-container'),
+  );
 }
 
 test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
@@ -56,19 +67,18 @@ test('shell-mobile-burger', { tag: '@mobile' }, async ({ page }) => {
 
   await page.getByRole('button', { name: 'Menu' }).click();
   const closeButton = page.getByRole('button', { name: 'Close' });
-  // Closed drawers stay in the DOM off-screen (transform); viewport is the open signal.
-  await expect(closeButton).toBeInViewport();
+  await expect(closeButton).toBeVisible();
   const aboutInDrawer = page.getByRole('link', { name: 'About' });
-  await expect(aboutInDrawer).toBeInViewport();
+  await expect(aboutInDrawer).toBeVisible();
 
   await page.keyboard.press('Escape');
-  await expect(closeButton).not.toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Menu' }).click();
-  await expect(closeButton).toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
   await aboutInDrawer.click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
-  await expect(closeButton).not.toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
 });
 
 test(
@@ -86,3 +96,87 @@ test(
     await expect.poll(() => bodyBackground(page)).toBe(lightBg);
   },
 );
+
+test(
+  'shell-drawer-closed-hidden',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }, testInfo) => {
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
+
+    const project = testInfo.project.name as keyof typeof closedHiddenByProject;
+    const expected = closedHiddenByProject[project];
+    if (!expected) {
+      throw new Error(`missing closed-hidden expectations for ${project}`);
+    }
+
+    await expect(page.getByRole('navigation')).toHaveCount(expected.navigation);
+
+    for (let i = 0; i < expected.tabPresses; i++) {
+      await page.keyboard.press('Tab');
+      expect(await activeElementInOverlay(page)).toBe(false);
+    }
+  },
+);
+
+test(
+  'shell-drawer-hidden-after-close',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
+    await expect(page.getByRole('navigation')).toHaveCount(0);
+
+    for (let i = 0; i < 7; i++) {
+      await page.keyboard.press('Tab');
+      expect(await activeElementInOverlay(page)).toBe(false);
+    }
+  },
+);
+
+test('shell-drawer-reopen-focus', { tag: '@mobile' }, async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeFocused();
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeFocused();
+  expect(await activeElementInOverlay(page)).toBe(true);
+
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Tab');
+    expect(await activeElementInOverlay(page)).toBe(true);
+  }
+});
+
+test('shell-drawer-back-navigation', { tag: '@mobile' }, async ({ page }) => {
+  await page.goto('/about');
+  await page
+    .getByRole('banner')
+    .getByRole('link', { name: 'PlateRegion' })
+    .click();
+  await expect(page).toHaveURL(/\/$/);
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
+  // Wait for the library close() timer (started on detachments) to restore focus.
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeFocused();
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('button', { name: 'Close' })).toBeFocused();
+  expect(await activeElementInOverlay(page)).toBe(true);
+
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Tab');
+    expect(await activeElementInOverlay(page)).toBe(true);
+  }
+});

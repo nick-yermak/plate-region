@@ -2,7 +2,7 @@
   <app-header
     [links]="navLinks"
     [pending]="contentPending()"
-    (menuOpen)="drawerOpen.set(true)"
+    (menuOpen)="openDrawer()"
   >
     <app-language-switcher />
     <app-theme-switcher />
@@ -21,17 +21,19 @@
   </nz-content>
 </nz-layout>
 
-<nz-drawer
-  [nzVisible]="drawerOpen()"
-  (nzOnClose)="drawerOpen.set(false)"
-  (nzVisibleChange)="drawerOpen.set($event)"
->
-  <ng-container *nzDrawerContent>
-    <app-nav-menu
-      mode="inline"
-      [links]="navLinks"
-      [pending]="contentPending()"
-      (linkSelect)="drawerOpen.set(false)"
-    />
-  </ng-container>
-</nz-drawer>
+@if (drawerPresent()) {
+  <nz-drawer
+    [nzVisible]="drawerVisible()"
+    (nzOnClose)="requestDrawerClose()"
+    (nzVisibleChange)="drawerVisible.set($event)"
+  >
+    <ng-container *nzDrawerContent>
+      <app-nav-menu
+        mode="inline"
+        [links]="navLinks"
+        [pending]="contentPending()"
+        (linkSelect)="requestDrawerClose()"
+      />
+    </ng-container>
+  </nz-drawer>
+}
