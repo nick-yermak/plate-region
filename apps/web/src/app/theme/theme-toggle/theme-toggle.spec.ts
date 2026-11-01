@@ -3,9 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { NzIconDirective } from 'ng-zorro-antd/icon';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
-import { Theme } from './theme.types';
+import { Theme } from '../theme.types';
 import { ThemeToggleComponent } from './theme-toggle';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 describe('ThemeToggleComponent', () => {
   async function createToggle() {

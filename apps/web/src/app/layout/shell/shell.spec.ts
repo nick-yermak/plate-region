@@ -6,12 +6,12 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ShellComponent } from './shell';
-import { appRoutes } from '../app.routes';
-import { HeaderComponent } from './header';
-import { NavMenuComponent } from './nav-menu';
-import { NAV_LINKS } from './layout.constants';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
-import { LanguageService } from '../language/language.service';
+import { appRoutes } from '../../app.routes';
+import { NAV_LINKS } from '../layout.constants';
+import { HeaderComponent } from '../header/header';
+import { NavMenuComponent } from '../nav-menu/nav-menu';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
+import { LanguageService } from '../../language/language.service';
 
 describe('ShellComponent', () => {
   function provideLanguage(overrides: {

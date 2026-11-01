@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { PlateInputComponent } from '../shared/plate/plate-input';
+import { PlateInputComponent } from '../../shared/plate/plate-input/plate-input';
 
 @Component({
   selector: 'app-home-page',

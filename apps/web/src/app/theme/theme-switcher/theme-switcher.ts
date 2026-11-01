@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 
-import { ThemeService } from './theme.service';
-import { ThemeToggleComponent } from './theme-toggle';
+import { ThemeService } from '../theme.service';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-theme-switcher',

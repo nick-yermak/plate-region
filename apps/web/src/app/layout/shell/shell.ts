@@ -10,12 +10,12 @@ import {
   NzSkeletonElementDirective,
 } from 'ng-zorro-antd/skeleton';
 
-import { HeaderComponent } from './header';
-import { NavMenuComponent } from './nav-menu';
-import { NAV_LINKS } from './layout.constants';
-import { LanguageService } from '../language/language.service';
-import { ThemeSwitcherComponent } from '../theme/theme-switcher';
-import { LanguageSwitcherComponent } from '../language/language-switcher';
+import { NAV_LINKS } from '../layout.constants';
+import { HeaderComponent } from '../header/header';
+import { NavMenuComponent } from '../nav-menu/nav-menu';
+import { LanguageService } from '../../language/language.service';
+import { ThemeSwitcherComponent } from '../../theme/theme-switcher/theme-switcher';
+import { LanguageSwitcherComponent } from '../../language/language-switcher/language-switcher';
 
 @Component({
   selector: 'app-shell',

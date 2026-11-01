@@ -1,7 +1,7 @@
 import { Component, input, model } from '@angular/core';
 import { FormValueControl } from '@angular/forms/signals';
 
-import { PlateFrameComponent } from './plate-frame';
+import { PlateFrameComponent } from '../plate-frame/plate-frame';
 
 @Component({
   selector: 'app-plate-input',

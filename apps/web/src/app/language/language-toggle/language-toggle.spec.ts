@@ -1,7 +1,7 @@
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 
-import { Language } from '../i18n/language.types';
+import { Language } from '../../i18n/language.types';
 import { LanguageToggleComponent } from './language-toggle';
 
 describe('LanguageToggleComponent', () => {

@@ -7,8 +7,8 @@ import { NzHeaderComponent } from 'ng-zorro-antd/layout';
 import { MenuOutline } from '@ant-design/icons-angular/icons';
 import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
 
-import { NavLink } from './layout.types';
-import { NavMenuComponent } from './nav-menu';
+import { NavLink } from '../layout.types';
+import { NavMenuComponent } from '../nav-menu/nav-menu';
 
 @Component({
   selector: 'app-header',

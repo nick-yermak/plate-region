@@ -1,8 +1,8 @@
 import { Component, input, output } from '@angular/core';
 import { NzButtonComponent } from 'ng-zorro-antd/button';
 
-import { Language } from '../i18n/language.types';
-import { LANGUAGE_ENDONYMS } from './language.constants';
+import { Language } from '../../i18n/language.types';
+import { LANGUAGE_ENDONYMS } from '../language.constants';
 
 @Component({
   selector: 'app-language-toggle',

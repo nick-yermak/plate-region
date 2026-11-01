@@ -2,9 +2,9 @@ import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 
-import { LanguageService } from './language.service';
-import { LanguageToggleComponent } from './language-toggle';
+import { LanguageService } from '../language.service';
 import { LanguageSwitcherComponent } from './language-switcher';
+import { LanguageToggleComponent } from '../language-toggle/language-toggle';
 
 describe('LanguageSwitcherComponent', () => {
   async function createSwitcher(

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 
 import { HomePage } from './home-page';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 describe('HomePage', () => {
   beforeEach(async () => {

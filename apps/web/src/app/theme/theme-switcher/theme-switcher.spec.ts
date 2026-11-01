@@ -3,10 +3,10 @@ import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 
-import { ThemeService } from './theme.service';
-import { ThemeToggleComponent } from './theme-toggle';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { ThemeService } from '../theme.service';
 import { ThemeSwitcherComponent } from './theme-switcher';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle';
 
 describe('ThemeSwitcherComponent', () => {
   async function createSwitcher(setTheme = vi.fn()) {
