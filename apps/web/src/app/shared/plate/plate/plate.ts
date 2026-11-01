@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import { PlateFrameComponent } from './plate-frame';
+import { PlateFrameComponent } from '../plate-frame/plate-frame';
 
 @Component({
   selector: 'app-plate',

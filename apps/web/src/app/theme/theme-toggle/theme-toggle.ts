@@ -4,7 +4,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { MoonOutline, SunOutline } from '@ant-design/icons-angular/icons';
 import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
 
-import { Theme } from './theme.types';
+import { Theme } from '../theme.types';
 
 @Component({
   selector: 'app-theme-toggle',

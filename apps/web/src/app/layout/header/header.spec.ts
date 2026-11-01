@@ -4,10 +4,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 
-import { NavLink } from './layout.types';
+import { NavLink } from '../layout.types';
 import { HeaderComponent } from './header';
-import { NavMenuComponent } from './nav-menu';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { NavMenuComponent } from '../nav-menu/nav-menu';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 const LINKS: readonly NavLink[] = [
   { labelKey: 'layout.nav.home', path: '/' },

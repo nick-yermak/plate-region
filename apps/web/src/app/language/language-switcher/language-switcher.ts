@@ -1,8 +1,8 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { Language } from '../i18n/language.types';
-import { LanguageService } from './language.service';
-import { LanguageToggleComponent } from './language-toggle';
+import { Language } from '../../i18n/language.types';
+import { LanguageService } from '../language.service';
+import { LanguageToggleComponent } from '../language-toggle/language-toggle';
 
 @Component({
   selector: 'app-language-switcher',

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 
 import { RegistryPage } from './registry-page';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 describe('RegistryPage', () => {
   beforeEach(async () => {

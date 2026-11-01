@@ -3,8 +3,8 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 
 import { PlatePage } from './plate-page';
-import { appConfig } from '../app.config';
-import { TRANSLOCO_TESTING } from '../i18n/testing-langs';
+import { appConfig } from '../../app.config';
+import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 describe('PlatePage', () => {
   beforeEach(() => {

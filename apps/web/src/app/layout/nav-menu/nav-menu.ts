@@ -12,7 +12,7 @@ import {
   NzMenuThemeType,
 } from 'ng-zorro-antd/menu';
 
-import { NavLink } from './layout.types';
+import { NavLink } from '../layout.types';
 
 @Component({
   selector: 'app-nav-menu',

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { ShellComponent } from './layout/shell';
+import { ShellComponent } from './layout/shell/shell';
 
 @Component({
   imports: [ShellComponent],

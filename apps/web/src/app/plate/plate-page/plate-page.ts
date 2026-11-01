@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { PlateComponent } from '../shared/plate/plate';
+import { PlateComponent } from '../../shared/plate/plate/plate';
 
 @Component({
   selector: 'app-plate-page',
