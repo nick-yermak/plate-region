@@ -66,6 +66,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - e2e: every Playwright test carries at least one viewport tag (`@desktop`, `@tablet`, `@mobile`): projects select tests by tag (D-50), so an untagged test runs in no project. `--list --grep-invert '@desktop|@tablet|@mobile'` must find no tests.
 - Icons: register icons where they are rendered — `provideNzIconsPatch([...])` in the providers of that component or lazy route; no global icon list in `app.config.ts`; specs do not list icons of child components (D-28).
 - Layout: use NG-ZORRO layout primitives (`nz-flex`, `nz-space`, `nz-row`/`nz-col`) and `var(--pr-*)` tokens; own CSS only for what they cannot express (hide-only media queries, sizing), with no hard-coded spacing values; no utility-class frameworks (D-28, D-50).
+- NG-ZORRO overlays (drawer, modal): mount them only while open or closing, and check the closed state in the accessibility tree and tab order (D-50 Update #105).
 - Translations: add keys to `<feature>/i18n/en.json` and `pl.json` (one top-level key, equal to the folder name); `web:i18n` merges them and `build`, `serve` and `test` depend on it — restart `serve` after editing a dictionary. Switch the language only through `LanguageService`.
 - Nx `inputs` and `outputs`: list file globs explicitly — brace patterns such as `{en,pl}` are not expanded, so a changed file would not invalidate the cache.
 - A presentational component that hosts containers (theme switcher, language switch) receives them through content projection (`<ng-content />`), not by importing them (D-48).
