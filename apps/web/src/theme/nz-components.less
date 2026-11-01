@@ -8,6 +8,18 @@
 // ng-zorro-antd 22.1.2 omits ./flex/style/* from package.json exports (unlike other components)
 @import '../../../../node_modules/ng-zorro-antd/flex/style/entry';
 
+// NG-ZORRO resets outline on buttons/drawer close; menu focus is on the li while focus lands on the inner link.
+.ant-btn:focus-visible,
+.ant-drawer-close:focus-visible {
+  outline: 2px solid var(--pr-primary);
+  outline-offset: 2px;
+}
+
+.ant-menu-item:has(a:focus-visible) {
+  outline: 2px solid var(--pr-primary);
+  outline-offset: -2px;
+}
+
 // Namespaced overrides of NG-ZORRO skeleton/menu internals (no ::ng-deep in components).
 // Heading skeleton mirrors global h1 metrics (font-size 2em, margin-bottom 0.5em, line box 1lh).
 .pr-heading-skeleton.ant-skeleton-element {
