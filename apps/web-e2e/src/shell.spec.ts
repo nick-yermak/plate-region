@@ -180,3 +180,50 @@ test('shell-drawer-back-navigation', { tag: '@mobile' }, async ({ page }) => {
     expect(await activeElementInOverlay(page)).toBe(true);
   }
 });
+
+async function outlineStyleOfActive(page: Page): Promise<string> {
+  return page.evaluate(
+    () => getComputedStyle(document.activeElement!).outlineStyle,
+  );
+}
+
+async function outlineStyleOfActiveMenuItem(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const item = document.activeElement?.closest('.ant-menu-item');
+    if (!item) {
+      throw new Error('active element is not inside .ant-menu-item');
+    }
+    return getComputedStyle(item).outlineStyle;
+  });
+}
+
+test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
+  await page.goto('/');
+
+  const burger = page.getByRole('button', { name: 'Menu' });
+  for (let i = 0; i < 10; i++) {
+    if (await burger.evaluate((el) => el === document.activeElement)) {
+      break;
+    }
+    await page.keyboard.press('Tab');
+  }
+  await expect(burger).toBeFocused();
+  expect(await outlineStyleOfActive(page)).toBe('solid');
+
+  await page.keyboard.press('Enter');
+  const closeButton = page.getByRole('button', { name: 'Close' });
+  await expect(closeButton).toBeFocused();
+  expect(await outlineStyleOfActive(page)).toBe('solid');
+
+  await page.keyboard.press('Tab');
+  expect(await outlineStyleOfActiveMenuItem(page)).toBe('solid');
+
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(0);
+
+  const themeToggle = page
+    .getByRole('banner')
+    .getByRole('button', { name: /Switch to (light|dark) theme/ });
+  await themeToggle.click();
+  expect(await outlineStyleOfActive(page)).toBe('none');
+});
