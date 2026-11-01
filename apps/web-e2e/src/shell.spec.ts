@@ -182,9 +182,13 @@ test('shell-drawer-back-navigation', { tag: '@mobile' }, async ({ page }) => {
 });
 
 async function outlineStyleOfActive(page: Page): Promise<string> {
-  return page.evaluate(
-    () => getComputedStyle(document.activeElement!).outlineStyle,
-  );
+  return page.evaluate(() => {
+    const el = document.activeElement;
+    if (!el) {
+      throw new Error('no active element');
+    }
+    return getComputedStyle(el).outlineStyle;
+  });
 }
 
 async function outlineStyleOfActiveMenuItem(page: Page): Promise<string> {
@@ -201,10 +205,8 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/');
 
   const burger = page.getByRole('button', { name: 'Menu' });
-  for (let i = 0; i < 10; i++) {
-    if (await burger.evaluate((el) => el === document.activeElement)) {
-      break;
-    }
+  // Mobile tab order: PlateRegion, Polski, theme toggle, Menu.
+  for (let i = 0; i < 4; i++) {
     await page.keyboard.press('Tab');
   }
   await expect(burger).toBeFocused();
@@ -225,5 +227,6 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
     .getByRole('banner')
     .getByRole('button', { name: /Switch to (light|dark) theme/ });
   await themeToggle.click();
+  await expect(themeToggle).toBeFocused();
   expect(await outlineStyleOfActive(page)).toBe('none');
 });
