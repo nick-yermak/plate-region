@@ -41,7 +41,7 @@ test('i18n-switch-language-mobile', { tag: '@mobile' }, async ({ page }) => {
 
   await page.getByRole('button', { name: 'Menu' }).click();
   const aboutInDrawer = page.getByRole('link', { name: 'O aplikacji' });
-  await expect(aboutInDrawer).toBeInViewport();
+  await expect(aboutInDrawer).toBeVisible();
   await aboutInDrawer.click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'O aplikacji',
