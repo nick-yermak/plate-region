@@ -12,6 +12,8 @@ import { PlateFrameComponent } from '../plate-frame/plate-frame';
 export class PlateInputComponent implements FormValueControl<string> {
   readonly value = model('');
   readonly label = input.required<string>();
+  readonly invalid = input(false);
+  readonly describedBy = input<string>();
 
   protected onInput(event: Event): void {
     const target = event.target;
