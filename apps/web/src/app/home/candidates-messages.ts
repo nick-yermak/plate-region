@@ -1,16 +1,31 @@
+import { pluralKey } from '../i18n/plural-key';
 import type { Language } from '../i18n/language.types';
 import type { CandidatesView, TranslatableMessage } from './home.types';
 
 export function candidatesHeading(
-  _result: CandidatesView,
-  _language: Language,
+  result: CandidatesView,
+  language: Language,
 ): TranslatableMessage | undefined {
-  throw new Error('not implemented');
+  const count = result.candidates.filter(
+    (candidate) => candidate.kind === 'region2',
+  ).length;
+  if (count === 0) {
+    return undefined;
+  }
+  return {
+    key: pluralKey('home.candidates.heading', count, language),
+    params: { count },
+  };
 }
 
 export function voivodeshipLine(
-  _result: CandidatesView,
-  _language: Language,
+  result: CandidatesView,
+  language: Language,
 ): TranslatableMessage {
-  throw new Error('not implemented');
+  const name =
+    language === 'pl' ? result.region1.name : result.region1.nameEn.value;
+  return {
+    key: 'home.candidates.voivodeship',
+    params: { name },
+  };
 }

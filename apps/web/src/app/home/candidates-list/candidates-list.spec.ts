@@ -1,7 +1,6 @@
-import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
-import { fullCodes } from '@plate-region/plate-data';
 import { candidatesFor } from '@plate-region/plate-domain';
 
 import type { CandidatesView } from '../home.types';
@@ -29,6 +28,7 @@ describe('CandidatesListComponent', () => {
         TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
       ],
     }).compileComponents();
+    TestBed.inject(TranslocoService).setActiveLang(language);
     const fixture = TestBed.createComponent(CandidatesListComponent);
     fixture.componentRef.setInput('result', candidatesView(input));
     fixture.componentRef.setInput('language', language);
@@ -56,12 +56,18 @@ describe('CandidatesListComponent', () => {
     );
     expect(city?.textContent).toContain('DW');
     expect(city?.textContent).toContain(cityKind);
+    const landEntry = candidatesView('DW').candidates.find(
+      (candidate) =>
+        candidate.kind === 'region2' &&
+        candidate.region2.name === county('DWR').name,
+    );
+    if (landEntry === undefined || landEntry.kind !== 'region2') {
+      throw new Error('expected DWR county candidate');
+    }
     const land = items.find((li) =>
       li.textContent?.includes(county('DWR').name),
     );
-    expect(land?.textContent).toContain(
-      fullCodes(voivodeship('D'), county('DWR')).join(', '),
-    );
+    expect(land?.textContent).toContain(landEntry.codes.join(', '));
     expect(land?.textContent).toContain(landKind);
   });
 

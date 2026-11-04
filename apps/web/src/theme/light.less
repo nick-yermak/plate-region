@@ -3,6 +3,11 @@
 @import './nz-components.less';
 @import './tokens.less';
 
+// Last assignment wins for the whole sheet: component styles re-import
+// themes/default.less (via themes/index) which resets @error-color to @red-5
+// (line 46). Palette @red-7 is style/color/colors.less:84.
+@error-color: @red-7;
+
 :root {
   color-scheme: light;
 }

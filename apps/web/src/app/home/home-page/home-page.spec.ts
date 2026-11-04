@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { provideRouter, Router } from '@angular/router';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 
 import { HomePage } from './home-page';
+import { LanguageService } from '../../language/language.service';
 import { testingText, TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 @Component({ template: '' })
@@ -12,12 +12,18 @@ class PlateStub {}
 
 describe('HomePage', () => {
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [HomePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
       providers: [
         provideRouter([{ path: 'plate/:plate', component: PlateStub }]),
       ],
     }).compileComponents();
+    TestBed.inject(LanguageService).setLanguage('en');
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 
   async function createPage(): Promise<{
@@ -64,7 +70,7 @@ describe('HomePage', () => {
   });
 
   it('renders the translated heading', async () => {
-    TestBed.inject(TranslocoService).setActiveLang('pl');
+    TestBed.inject(LanguageService).setLanguage('pl');
     const fixture = TestBed.createComponent(HomePage);
     await fixture.whenStable();
 
@@ -103,12 +109,12 @@ describe('HomePage', () => {
   });
 
   it('announces the candidates summary', async () => {
-    const announce = vi
-      .spyOn(TestBed.inject(LiveAnnouncer), 'announce')
-      .mockResolvedValue(undefined);
     const { fixture, input } = await createPage();
     await submit(fixture, input, 'DW');
-    expect(announce).toHaveBeenCalledWith(
+    const live = fixture.nativeElement.querySelector(
+      '[aria-live="polite"]',
+    ) as HTMLElement | null;
+    expect(live?.textContent?.trim()).toBe(
       testingText('en', 'home.candidates.heading.other', { count: 3 }),
     );
   });
@@ -160,7 +166,7 @@ describe('HomePage', () => {
   });
 
   it('translates the error into Polish', async () => {
-    TestBed.inject(TranslocoService).setActiveLang('pl');
+    TestBed.inject(LanguageService).setLanguage('pl');
     const { fixture, input } = await createPage();
     await submit(fixture, input, '');
     const describedBy = input.getAttribute('aria-describedby');
