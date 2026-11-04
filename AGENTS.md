@@ -77,6 +77,9 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Writes to external systems (`gh issue|pr create|edit|comment`, GitHub MCP writes, and similar) go through a checked file (D-22): for an edit, first fetch the current content to a file; write the new content to a file; check it with `test -s`; show it and its diff against the current content; wait for the user's confirmation; then write with `--body-file <file>` (or the MCP equivalent after the same show-and-confirm step). Chain every `gh` step with `&&` or run under `set -euo pipefail`; never pass content through a shell variable or `$(...)`.
 - When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22). Write the diff to `tmp/<branch>-step-<N>.diff` and give that path in the report instead of referring to chat output.
 - At the end of a task, ask whether anything should go into `AGENTS.md`.
+- Run only tools installed in the workspace. `npx <package>` for a package that is not in `package-lock.json` downloads it from the registry and bypasses dependency review; stop and ask instead.
+- `npx nx run web:serve-static` is a long-running server that prints little until it is stopped; run it in a separate terminal and do not replace it with another server.
+- Import NG-ZORRO and CDK pieces as standalone components or directives, not their `*Module`: a library module that is already in `main` keeps there whatever a lazy chunk uses from it, so module imports grow the initial bundle (D-52).
 
 ## Nx
 
