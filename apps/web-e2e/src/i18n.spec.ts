@@ -80,6 +80,46 @@ test('i18n-first-load-skeleton', { tag: '@desktop' }, async ({ page }) => {
   await expect(page.getByRole('main')).not.toHaveAttribute('aria-busy', 'true');
 });
 
+test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
+  // Counts of county entries per input, from Dz.U. 2024 poz. 1709 (as amended), Załącznik nr 13.
+  // A county is counted when one of its codes (column-4 letter + column-5 suffix) starts with the input:
+  // AA: mazowieckie, suffix A of m.st. Warszawa only → 1.
+  // AB: mazowieckie, BR (białobrzeski) and B (m.st. Warszawa) → 2.
+  // BS: podlaskie, S (Suwałki), SE, SI, SK, SU → 5.
+  // O: opolskie, every one of its 12 counties → 12.
+  // N: warmińsko-mazurskie, 2 cities + 19 counties → 21.
+  // J: małopolskie (letters K, J), 3 cities + 19 counties → 22.
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Polski' }).click();
+  const main = page.getByRole('main');
+  const field = page.getByRole('textbox', { name: 'Numer rejestracyjny' });
+  for (const [input, text] of [
+    ['AA', '1 możliwy powiat'],
+    ['AB', '2 możliwe powiaty'],
+    ['BS', '5 możliwych powiatów'],
+    ['O', '12 możliwych powiatów'],
+    ['N', '21 możliwych powiatów'],
+    ['J', '22 możliwe powiaty'],
+  ] as const) {
+    await field.fill(input);
+    await field.press('Enter');
+    await expect(main.getByRole('heading', { level: 2 })).toHaveText(text);
+  }
+
+  await page.getByRole('button', { name: 'English' }).click();
+  const enField = page.getByRole('textbox', { name: 'Licence plate number' });
+  await enField.fill('AA');
+  await enField.press('Enter');
+  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
+    '1 possible county',
+  );
+  await enField.fill('AB');
+  await enField.press('Enter');
+  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
+    '2 possible counties',
+  );
+});
+
 test('i18n-active-dictionary-once', { tag: '@desktop' }, async ({ page }) => {
   const dictionaryRequests: string[] = [];
   page.on('request', (request) => {

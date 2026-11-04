@@ -8,10 +8,15 @@ import { PlateFrameComponent } from '../plate-frame/plate-frame';
   imports: [PlateFrameComponent],
   templateUrl: './plate-input.html',
   styleUrl: './plate-input.less',
+  host: {
+    '[class.pr-invalid]': 'invalid()',
+  },
 })
 export class PlateInputComponent implements FormValueControl<string> {
   readonly value = model('');
   readonly label = input.required<string>();
+  readonly invalid = input(false);
+  readonly describedBy = input<string>();
 
   protected onInput(event: Event): void {
     const target = event.target;

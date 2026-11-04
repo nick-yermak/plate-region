@@ -1,6 +1,34 @@
 {
   "home": {
     "title": "Strona główna",
-    "plateNumber": "Numer rejestracyjny"
+    "plateNumber": "Numer rejestracyjny",
+    "search": "Szukaj",
+    "errors": {
+      "empty": "Wpisz numer rejestracyjny.",
+      "invalidCharacters": "Niedozwolone na polskich tablicach: {{characters}}",
+      "noMatchingFormat": "To nie jest format polskiej tablicy.",
+      "notInRegistry": "Tego wyróżnika nie ma w rejestrze."
+    },
+    "candidates": {
+      "voivodeship": "Województwo: {{name}}",
+      "heading": {
+        "one": "{{count}} możliwy powiat",
+        "few": "{{count}} możliwe powiaty",
+        "many": "{{count}} możliwych powiatów",
+        "other": "{{count}} możliwego powiatu"
+      },
+      "more": {
+        "one": "i jeszcze {{count}} powiat — wpisz więcej znaków",
+        "few": "i jeszcze {{count}} powiaty — wpisz więcej znaków",
+        "many": "i jeszcze {{count}} powiatów — wpisz więcej znaków",
+        "other": "i jeszcze {{count}} powiatu — wpisz więcej znaków"
+      },
+      "kind": {
+        "city": "miasto na prawach powiatu",
+        "land": "powiat"
+      },
+      "withoutRegion2": "Możliwa też tablica tylko z wyróżnikiem województwa, bez powiatu.",
+      "notInRegistry": "Możliwy też wyróżnik powiatu, którego nie ma w obecnym rejestrze."
+    }
   }
 }

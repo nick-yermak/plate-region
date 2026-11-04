@@ -31,13 +31,9 @@ function uppercaseAscii(char: string): string {
 }
 
 /**
- * Normalises typed or recognised plate text for parsing. Pure and total: never throws.
- *
- * Whitespace, dash punctuation and '.' separate groups; a run of them is one boundary, and leading or trailing
- * ones are dropped. Only ASCII a–z is uppercased, and no Unicode normalisation is applied, so characters such
- * as 'ı', 'ſ' or fullwidth letters stay outside the alphabet instead of turning into valid letters.
- * Any character outside the § 30 ust. 1 alphabet (R-23) makes the result `invalid`.
- * Empty or separator-only input is `ok` with no groups, because partial input starts empty.
+ * Splits typed or recognised plate text into upper-case groups at separators (whitespace, dash
+ * punctuation, '.'); a leading 0 or 1 reads as O or I. Characters outside § 30 ust. 1 (R-23) give
+ * `invalid`; empty or separator-only input is `ok` with no groups. Never throws.
  */
 export function normalisePlateInput(input: string): NormalisedPlateInput {
   const rawGroups = input.split(SEPARATOR).filter((group) => group.length > 0);

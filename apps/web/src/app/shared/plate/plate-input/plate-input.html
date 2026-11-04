@@ -2,6 +2,8 @@
   <input
     type="text"
     [attr.aria-label]="label()"
+    [attr.aria-invalid]="invalid() ? 'true' : null"
+    [attr.aria-describedby]="describedBy() ?? null"
     [value]="value()"
     (input)="onInput($event)"
     autocomplete="off"

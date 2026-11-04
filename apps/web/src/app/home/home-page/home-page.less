@@ -1,0 +1,22 @@
+// `nz-form-item` is a custom element (default `display: inline`). `.plate-wrap`
+// uses `container-type: inline-size`, whose intrinsic inline size is 0, so a
+// percentage width collapses unless the form item is a definite block box.
+form.ant-form {
+  display: block;
+  width: 100%;
+}
+
+.ant-form-item {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+}
+
+.plate-wrap {
+  container-type: inline-size;
+  width: 100%;
+}
+
+app-plate-input {
+  font-size: min(5rem, calc(100cqi * 114 / 520));
+}

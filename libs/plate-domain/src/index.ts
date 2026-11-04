@@ -3,6 +3,7 @@ export {
   examplePlateForCode,
   examplePlateForRegion1,
 } from './lib/pl/example-plate';
+export { normalisePlateInput } from './lib/pl/normalise-plate-input';
 export { parsePlate } from './lib/pl/parse-plate';
 export {
   variantCountsForCode,
@@ -10,6 +11,7 @@ export {
 } from './lib/pl/variant-counts';
 export type { Candidate, CandidatesResult } from './lib/pl/candidates';
 export type { RandomSource } from './lib/pl/example-plate';
+export type { NormalisedPlateInput } from './lib/pl/normalise-plate-input';
 export type { ParseResult } from './lib/pl/parse-plate';
 export type { PlateType } from './lib/pl/plate-type';
 export type {

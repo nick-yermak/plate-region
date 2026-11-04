@@ -1,0 +1,28 @@
+<h1>{{ 'home.title' | transloco }}</h1>
+<nz-flex nzVertical nzGap="middle">
+  <form nz-form [formRoot]="searchForm">
+    <nz-form-item>
+      <nz-form-control nzDisableAutoTips [nzErrorTip]="errorTip">
+        <div class="plate-wrap">
+          <app-plate-input
+            [formField]="searchForm"
+            [label]="'home.plateNumber' | transloco"
+            [describedBy]="error() ? errorId : undefined"
+          />
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <button nz-button nzType="primary" type="submit">
+      {{ 'home.search' | transloco }}
+    </button>
+  </form>
+  @if (candidates(); as result) {
+    <app-candidates-list [result]="result" [language]="language()" />
+  }
+</nz-flex>
+<div class="cdk-visually-hidden" aria-live="polite">{{ announcement() }}</div>
+<ng-template #errorTip>
+  @if (error(); as message) {
+    <span [id]="errorId">{{ message.key | transloco: message.params }}</span>
+  }
+</ng-template>

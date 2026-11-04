@@ -6,6 +6,7 @@ describe('plate-domain public API', () => {
       'candidatesFor',
       'examplePlateForCode',
       'examplePlateForRegion1',
+      'normalisePlateInput',
       'parsePlate',
       'variantCountsForCode',
       'variantCountsForRegion1',

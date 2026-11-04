@@ -4,7 +4,7 @@ import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 
 import { PlatePage } from './plate-page';
 import { appConfig } from '../../app.config';
-import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
+import { TESTING_LANGS, TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 describe('PlatePage', () => {
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe('PlatePage', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({}),
+        json: async () => TESTING_LANGS.en,
       }),
     );
   });

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormField, FormRoot, form } from '@angular/forms/signals';
 
 import { PlateInputComponent } from './plate-input';
 
@@ -27,6 +27,39 @@ class PlateInputFormHostComponent {
   readonly plateForm = form(this.model);
 }
 
+@Component({
+  imports: [PlateInputComponent],
+  template: `<app-plate-input
+    [(value)]="value"
+    label="Licence plate number"
+    [invalid]="invalid()"
+    [describedBy]="describedBy()"
+  />`,
+})
+class PlateInputA11yHostComponent {
+  readonly value = signal('');
+  readonly invalid = signal(false);
+  readonly describedBy = signal<string | undefined>(undefined);
+}
+
+@Component({
+  imports: [FormField, FormRoot, PlateInputComponent],
+  template: `
+    <form [formRoot]="plateForm">
+      <app-plate-input [formField]="plateForm" label="Licence plate number" />
+      <button type="submit">Go</button>
+    </form>
+  `,
+})
+class PlateInputSubmissionHostComponent {
+  readonly plate = signal('');
+  readonly plateForm = form(this.plate, {
+    submission: {
+      action: async () => ({ kind: 'empty' as const }),
+    },
+  });
+}
+
 function queryInput(fixture: ComponentFixture<unknown>): HTMLInputElement {
   const root: HTMLElement = fixture.nativeElement;
   const input: HTMLInputElement | null = root.querySelector('input');
@@ -39,7 +72,12 @@ function queryInput(fixture: ComponentFixture<unknown>): HTMLInputElement {
 describe('PlateInputComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PlateInputHostComponent, PlateInputFormHostComponent],
+      imports: [
+        PlateInputHostComponent,
+        PlateInputFormHostComponent,
+        PlateInputA11yHostComponent,
+        PlateInputSubmissionHostComponent,
+      ],
     }).compileComponents();
   });
 
@@ -93,5 +131,58 @@ describe('PlateInputComponent', () => {
     await fixture.whenStable();
 
     expect(input.value).toBe('KR 9');
+  });
+
+  it('sets aria-invalid and the error class only while invalid', async () => {
+    const fixture = TestBed.createComponent(PlateInputA11yHostComponent);
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector(
+      'app-plate-input',
+    ) as HTMLElement;
+    const input = queryInput(fixture);
+
+    expect(input.getAttribute('aria-invalid')).toBeNull();
+    expect(host.classList.contains('pr-invalid')).toBe(false);
+
+    fixture.componentInstance.invalid.set(true);
+    await fixture.whenStable();
+
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(host.classList.contains('pr-invalid')).toBe(true);
+
+    fixture.componentInstance.invalid.set(false);
+    await fixture.whenStable();
+
+    expect(input.getAttribute('aria-invalid')).toBeNull();
+    expect(host.classList.contains('pr-invalid')).toBe(false);
+  });
+
+  it('receives invalid from a Signal Form submission error', async () => {
+    const fixture = TestBed.createComponent(PlateInputSubmissionHostComponent);
+    await fixture.whenStable();
+    const input = queryInput(fixture);
+    const button = fixture.nativeElement.querySelector(
+      'button[type="submit"]',
+    ) as HTMLButtonElement;
+    button.click();
+    await fixture.whenStable();
+
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('references its description by id only when given', async () => {
+    const fixture = TestBed.createComponent(PlateInputA11yHostComponent);
+    await fixture.whenStable();
+    const input = queryInput(fixture);
+
+    expect(input.getAttribute('aria-describedby')).toBeNull();
+
+    fixture.componentInstance.describedBy.set('home-plate-error');
+    await fixture.whenStable();
+    expect(input.getAttribute('aria-describedby')).toBe('home-plate-error');
+
+    fixture.componentInstance.describedBy.set(undefined);
+    await fixture.whenStable();
+    expect(input.getAttribute('aria-describedby')).toBeNull();
   });
 });
