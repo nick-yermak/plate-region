@@ -4,8 +4,11 @@
 @import './tokens.less';
 
 // Last assignment wins for the whole sheet: component styles re-import the
-// dark theme palette. @red-7 is style/themes/dark.less:77 (lighter mix).
+// dark theme palette. @red-7 / @blue-7 / @blue-8 are style/themes/dark.less:77,
+// 11, 12 (lighter mixes).
 @error-color: @red-7;
+@link-color: @blue-7;
+@link-hover-color: @blue-8;
 
 :root {
   color-scheme: dark;

@@ -1,3 +1,11 @@
+// Keep the brand on --pr-primary: the theme link colour is darker for AA on
+// the page background and would drop the brand to 2.46:1 on #001529 (D-28).
+// Encapsulated `.header-brand[_ngcontent-…]` (0,2,0) also beats theme
+// `a:hover` / `a:active` (0,1,1), so one rule covers those states.
+.header-brand {
+  color: var(--pr-primary);
+}
+
 @media (width < 768px) {
   .header-nav {
     display: none;
