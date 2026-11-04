@@ -32,8 +32,3 @@ export type SearchOutcome =
   | { readonly kind: 'navigate'; readonly plate: string }
   | { readonly kind: 'candidates'; readonly result: CandidatesView }
   | { readonly kind: 'error'; readonly error: SearchError };
-
-export interface TranslatableMessage {
-  readonly key: string;
-  readonly params?: Readonly<Record<string, string | number>>;
-}
