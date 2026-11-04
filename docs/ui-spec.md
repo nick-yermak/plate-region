@@ -22,10 +22,14 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 ### Home — `/`
 
-- A plate input styled as a Polish plate, and a photo button. On phones the photo button opens the camera directly; elsewhere it opens a file picker.
+- Heading: the question the app answers — "Where is this plate from?" / "Skąd jest ta tablica?" (D-53).
+- One centred column; the plate input, styled as a Polish plate, is the main element. Under it, a hint that the first letters are enough.
+- A photo button. On phones it opens the camera directly and is the primary action, placed before Search; elsewhere it opens a file picker and Search is primary.
 - Search runs on Enter or the Search button, not on every keystroke.
 - A complete plate navigates to the result page.
-- An incomplete plate does not navigate: the home page lists the regions it can belong to (`candidatesFor`).
+- An incomplete plate does not navigate: the home page lists the regions it can belong to (`candidatesFor`, D-52). A county whose code equals the whole input is shown first, as the answer. County lines link to the voivodeship page (#93).
+- With the SVG map (#94), the result shows a small map with the voivodeship highlighted.
+- The empty state offers a few tappable examples (short codes and one full plate) from `plate-domain`.
 
 ### Result — `/plate/:plate`
 
