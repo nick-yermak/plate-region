@@ -1,3 +1,10 @@
+// Brand colour is per-theme (--pr-header-brand): page link colours fail AA on the
+// header backgrounds (D-28). Encapsulated `.header-brand[_ngcontent-…]` (0,2,0)
+// also beats theme `a:hover` / `a:active` (0,1,1), so one rule covers those states.
+.header-brand {
+  color: var(--pr-header-brand);
+}
+
 @media (width < 768px) {
   .header-nav {
     display: none;

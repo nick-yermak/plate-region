@@ -1,6 +1,7 @@
 import type { ValidationError } from '@angular/forms/signals';
 
-import type { SearchError, TranslatableMessage } from './home.types';
+import type { SearchError } from './home.types';
+import type { TranslatableMessage } from '../i18n/i18n.types';
 
 const SEARCH_ERROR_KINDS = new Set([
   'empty',

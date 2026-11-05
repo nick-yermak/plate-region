@@ -36,7 +36,7 @@ test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
 
   const routes: { path: string; heading: string }[] = [
     { path: '/', heading: 'Home' },
-    { path: '/plate/WA12345', heading: 'Plate' },
+    { path: '/plate/WA12345', heading: 'm.st. Warszawa' },
     { path: '/voivodeship/mazowieckie', heading: 'Voivodeship' },
     { path: '/registry', heading: 'Registry' },
     { path: '/charts', heading: 'Charts' },

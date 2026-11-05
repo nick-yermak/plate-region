@@ -1,6 +1,7 @@
 import { pluralKey } from '../i18n/plural-key';
+import type { CandidatesView } from './home.types';
 import type { Language } from '../i18n/language.types';
-import type { CandidatesView, TranslatableMessage } from './home.types';
+import type { TranslatableMessage } from '../i18n/i18n.types';
 
 export function candidatesHeading(
   result: CandidatesView,

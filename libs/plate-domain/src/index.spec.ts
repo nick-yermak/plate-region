@@ -10,6 +10,7 @@ describe('plate-domain public API', () => {
       'parsePlate',
       'variantCountsForCode',
       'variantCountsForRegion1',
+      'voivodeshipSlug',
     ]);
   });
 });
