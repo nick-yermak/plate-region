@@ -5,5 +5,5 @@ export default {
     'prettier --write',
     'eslint --fix --no-warn-ignored',
   ],
-  '*.{json,md,css,yml,yaml}': 'prettier --write',
+  '*.{json,md,css,less,yml,yaml}': 'prettier --write',
 };
