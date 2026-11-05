@@ -1,8 +1,8 @@
 import { Router } from '@angular/router';
-import { NzFlexModule } from 'ng-zorro-antd/flex';
+import { NzFlexDirective } from 'ng-zorro-antd/flex';
 import { NzButtonComponent } from 'ng-zorro-antd/button';
-import { FormField, FormRoot, form } from '@angular/forms/signals';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { FormField, FormRoot, form, submit } from '@angular/forms/signals';
 import {
   Component,
   computed,
@@ -17,11 +17,13 @@ import {
 } from 'ng-zorro-antd/form';
 
 import { search } from '../search';
-import { PLATE_ERROR_ID } from '../home.constants';
+import { homeExamples } from '../examples';
 import type { CandidatesView, SearchError } from '../home.types';
 import { LanguageService } from '../../language/language.service';
 import { isSearchError, searchErrorMessage } from '../search-error';
+import { HomeExamplesComponent } from '../home-examples/home-examples';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
+import { HOME_RANDOM, PLATE_ERROR_ID, PLATE_HINT_ID } from '../home.constants';
 import { PlateInputComponent } from '../../shared/plate/plate-input/plate-input';
 import {
   answerHeading,
@@ -35,8 +37,9 @@ import {
     CandidatesListComponent,
     FormField,
     FormRoot,
+    HomeExamplesComponent,
     NzButtonComponent,
-    NzFlexModule,
+    NzFlexDirective,
     NzFormControlComponent,
     NzFormDirective,
     NzFormItemComponent,
@@ -51,6 +54,8 @@ export class HomePage {
   private readonly transloco = inject(TranslocoService);
   protected readonly language = inject(LanguageService).language;
   protected readonly errorId = PLATE_ERROR_ID;
+  protected readonly hintId = PLATE_HINT_ID;
+  protected readonly examples = homeExamples(inject(HOME_RANDOM));
   protected readonly plate = signal('');
   protected readonly searchForm = form(this.plate, {
     submission: { action: async () => this.runSearch() },
@@ -75,6 +80,14 @@ export class HomePage {
     }
     return undefined;
   });
+  protected readonly describedBy = computed(() =>
+    this.error() === undefined ? this.hintId : `${this.errorId} ${this.hintId}`,
+  );
+
+  protected pickExample(text: string): void {
+    this.plate.set(text);
+    void submit(this.searchForm);
+  }
 
   private async runSearch(): Promise<SearchError | undefined> {
     const outcome = search(this.plate());

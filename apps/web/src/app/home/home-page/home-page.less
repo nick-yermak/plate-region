@@ -1,15 +1,27 @@
+:host {
+  display: block;
+  max-width: var(--pr-column-max-width);
+  margin-inline: auto;
+}
+
+.home-form {
+  width: 100%;
+  text-align: center;
+}
+
 // `nz-form-item` is a custom element (default `display: inline`). `.plate-wrap`
 // uses `container-type: inline-size`, whose intrinsic inline size is 0, so a
 // percentage width collapses unless the form item is a definite block box.
 form.ant-form {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 
 .ant-form-item {
   display: block;
   width: 100%;
-  max-width: 32rem;
 }
 
 .plate-wrap {
@@ -18,5 +30,7 @@ form.ant-form {
 }
 
 app-plate-input {
+  // The host is `width: fit-content` (shared plate-input); centre it in the form column (D-53 Update #115).
+  margin-inline: auto;
   font-size: min(5rem, calc(100cqi * 114 / 520));
 }

@@ -4,12 +4,34 @@ export function candidatesView(
   result: CandidatesFound,
   compact: string,
 ): CandidatesView {
-  void compact;
+  let answer: CandidatesView['answer'];
+  const counties: CandidatesView['counties'][number][] = [];
+  let withoutRegion2 = false;
+  let notInRegistry = false;
+
+  for (const entry of result.candidates) {
+    switch (entry.kind) {
+      case 'region2':
+        if (answer === undefined && entry.codes.includes(compact)) {
+          answer = entry;
+        } else {
+          counties.push(entry);
+        }
+        break;
+      case 'without-region2':
+        withoutRegion2 = true;
+        break;
+      case 'region2-not-in-registry':
+        notInRegistry = true;
+        break;
+    }
+  }
+
   return {
     region1: result.region1,
-    answer: undefined,
-    counties: [],
-    withoutRegion2: false,
-    notInRegistry: false,
+    answer,
+    counties,
+    withoutRegion2,
+    notInRegistry,
   };
 }

@@ -1,6 +1,14 @@
+@if (answer(); as answerMessage) {
+  <h2>{{ answerMessage.key | transloco: answerMessage.params }}</h2>
+}
 <p>{{ voivodeship().key | transloco: voivodeship().params }}</p>
+@if (others(); as othersMessage) {
+  <h2>{{ othersMessage.key | transloco }}</h2>
+}
 @if (heading(); as headingMessage) {
   <h2>{{ headingMessage.key | transloco: headingMessage.params }}</h2>
+}
+@if (shown().length > 0) {
   <ul>
     @for (entry of shown(); track entry.region2.name) {
       <li>
