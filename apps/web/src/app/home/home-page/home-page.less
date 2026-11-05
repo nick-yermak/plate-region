@@ -9,19 +9,34 @@
   text-align: center;
 }
 
-// `nz-form-item` is a custom element (default `display: inline`). `.plate-wrap`
-// uses `container-type: inline-size`, whose intrinsic inline size is 0, so a
-// percentage width collapses unless the form item is a definite block box.
+// Same expression for the plate font-size and the Search height (J3).
+@plate-em: min(5rem, calc(100cqi * 114 / 520));
+
+// Form is the size container for Search; `.plate-wrap` for the plate.
+// `nz-form-item` is a custom element (default `display: inline`). A size
+// container has zero intrinsic width, so stacked widths need a definite block.
 form.ant-form {
+  container-type: inline-size;
+  display: block;
+  width: 100%;
+}
+
+.search-row {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  gap: var(--pr-padding-md);
   width: 100%;
 }
 
 .ant-form-item {
   display: block;
   width: 100%;
+  position: relative;
+  // Tips under the plate must not add a second gap before Search.
+  margin-bottom: 0;
+  // Reserve one line for an absolute error tip so Search does not move (I1).
+  padding-bottom: 1.5rem;
 }
 
 .plate-wrap {
@@ -30,7 +45,34 @@ form.ant-form {
 }
 
 app-plate-input {
-  // The host is `width: fit-content` (shared plate-input); centre it in the form column (D-53 Update #115).
+  // The host is `width: fit-content` (shared plate-input); centre it when the wrap is full width.
   margin-inline: auto;
-  font-size: min(5rem, calc(100cqi * 114 / 520));
+  font-size: @plate-em;
+}
+
+button.search {
+  height: @plate-em;
+  width: 100%;
+}
+
+// 32rem is `--pr-column-max-width`; 512 − 364.9 − 16 = 131 px for the button.
+@container (width >= 32rem) {
+  .search-row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .ant-form-item {
+    width: auto;
+  }
+
+  .plate-wrap {
+    width: calc(5rem * 520 / 114);
+  }
+
+  button.search {
+    width: auto;
+  }
 }

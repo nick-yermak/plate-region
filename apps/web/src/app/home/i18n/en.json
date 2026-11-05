@@ -5,7 +5,7 @@
     "search": "Search",
     "hint": "The first letters are enough — usually two or three.",
     "examples": {
-      "label": "Try:"
+      "label": "Examples"
     },
     "errors": {
       "empty": "Enter a plate number.",

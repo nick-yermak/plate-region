@@ -5,7 +5,7 @@
     "search": "Szukaj",
     "hint": "Wystarczą pierwsze litery — zwykle dwie lub trzy.",
     "examples": {
-      "label": "Spróbuj:"
+      "label": "Przykłady"
     },
     "errors": {
       "empty": "Wpisz numer rejestracyjny.",

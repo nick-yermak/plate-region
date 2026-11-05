@@ -28,6 +28,15 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+// Home Search must not move when the error tip appears; NZ renders explain outside the
+// component template, so the rule cannot live in emulated component styles (D-28).
+.pr-home-search .ant-form-item-explain {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
 // Namespaced overrides of NG-ZORRO skeleton/menu internals (no ::ng-deep in components).
 // Heading skeleton mirrors global h1 metrics (font-size 2em, margin-bottom 0.5em, line box 1lh).
 .pr-heading-skeleton.ant-skeleton-element {

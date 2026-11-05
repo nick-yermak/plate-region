@@ -1,12 +1,11 @@
 <div
   role="group"
-  [attr.aria-labelledby]="labelId"
+  [attr.aria-label]="'home.examples.label' | transloco"
   nz-flex
   nzWrap="wrap"
   nzGap="small"
   nzAlign="center"
 >
-  <span [id]="labelId">{{ 'home.examples.label' | transloco }}</span>
   @for (example of examples(); track example) {
     <button
       nz-button

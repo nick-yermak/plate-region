@@ -41,15 +41,7 @@ describe('HomeExamplesComponent', () => {
       fixture.nativeElement,
       '[role="group"]',
     );
-    const labelId = group.getAttribute('aria-labelledby');
-    if (labelId === null) {
-      throw new Error('examples group has no aria-labelledby');
-    }
-    const label = requireElement<HTMLElement>(
-      fixture.nativeElement,
-      `#${labelId}`,
-    );
-    expect(label.textContent?.trim()).toBe(
+    expect(group.getAttribute('aria-label')).toBe(
       testingText('en', 'home.examples.label'),
     );
   });

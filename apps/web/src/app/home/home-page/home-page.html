@@ -1,25 +1,33 @@
 <div nz-flex nzVertical nzGap="large">
   <div class="home-form" nz-flex nzVertical nzGap="middle" nzAlign="center">
     <h1>{{ 'home.title' | transloco }}</h1>
-    <form nz-form [formRoot]="searchForm">
-      <nz-form-item>
-        <nz-form-control
-          nzDisableAutoTips
-          [nzErrorTip]="errorTip"
-          [nzExtra]="hintTip"
+    <form nz-form class="pr-home-search" [formRoot]="searchForm">
+      <div class="search-row">
+        <nz-form-item>
+          <nz-form-control
+            nzDisableAutoTips
+            [nzErrorTip]="errorTip"
+            [nzExtra]="hintTip"
+          >
+            <div class="plate-wrap">
+              <app-plate-input
+                [formField]="searchForm"
+                [label]="'home.plateNumber' | transloco"
+                [describedBy]="describedBy()"
+              />
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+        <button
+          nz-button
+          nzType="primary"
+          nzSize="large"
+          type="submit"
+          class="search"
         >
-          <div class="plate-wrap">
-            <app-plate-input
-              [formField]="searchForm"
-              [label]="'home.plateNumber' | transloco"
-              [describedBy]="describedBy()"
-            />
-          </div>
-        </nz-form-control>
-      </nz-form-item>
-      <button nz-button nzType="primary" type="submit">
-        {{ 'home.search' | transloco }}
-      </button>
+          {{ 'home.search' | transloco }}
+        </button>
+      </div>
     </form>
     <app-home-examples [examples]="examples" (pick)="pickExample($event)" />
   </div>
