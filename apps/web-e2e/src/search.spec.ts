@@ -36,13 +36,16 @@ test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
   await field.focus();
   await field.press('Enter');
   await expect(field).toHaveAttribute('aria-invalid', 'true');
-  await expect(field).toHaveAccessibleDescription('Enter a plate number.');
+  await expect(field).toHaveAccessibleDescription(
+    'Enter a plate number. The first letters are enough — usually two or three.',
+  );
 
   await field.fill('DW');
   await field.press('Enter');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    '3 possible counties',
-  );
+  await expect(main.getByRole('heading', { level: 2 })).toHaveText([
+    'Wrocław',
+    'Other possible counties',
+  ]);
 
   await field.fill('DW12345');
   await page.getByRole('button', { name: 'Search' }).tap();

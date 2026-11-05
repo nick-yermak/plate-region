@@ -32,10 +32,12 @@ test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
 
   await banner.getByRole('link', { name: 'Home' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Where is this plate from?',
+  );
 
   const routes: { path: string; heading: string }[] = [
-    { path: '/', heading: 'Home' },
+    { path: '/', heading: 'Where is this plate from?' },
     { path: '/plate/WA12345', heading: 'm.st. Warszawa' },
     { path: '/voivodeship/mazowieckie', heading: 'Voivodeship' },
     { path: '/registry', heading: 'Registry' },

@@ -23,11 +23,7 @@ export class CandidatesListComponent {
   protected readonly heading = computed(() =>
     candidatesHeading(this.result(), this.language()),
   );
-  protected readonly counties = computed(() =>
-    this.result().candidates.filter(
-      (candidate) => candidate.kind === 'region2',
-    ),
-  );
+  protected readonly counties = computed(() => this.result().counties);
   protected readonly shown = computed(() =>
     this.counties().slice(0, CANDIDATES_LIMIT),
   );
@@ -44,14 +40,10 @@ export class CandidatesListComponent {
       params: { count },
     };
   });
-  protected readonly hasWithoutRegion2 = computed(() =>
-    this.result().candidates.some(
-      (candidate) => candidate.kind === 'without-region2',
-    ),
+  protected readonly hasWithoutRegion2 = computed(
+    () => this.result().withoutRegion2,
   );
-  protected readonly hasNotInRegistry = computed(() =>
-    this.result().candidates.some(
-      (candidate) => candidate.kind === 'region2-not-in-registry',
-    ),
+  protected readonly hasNotInRegistry = computed(
+    () => this.result().notInRegistry,
   );
 }

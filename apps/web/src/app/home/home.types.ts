@@ -1,5 +1,6 @@
 import type { ValidationError } from '@angular/forms/signals';
 
+import type { Region1 } from '@plate-region/plate-data';
 import type {
   CandidatesResult,
   ParseResult as PlateParseResult,
@@ -23,12 +24,25 @@ export type SearchError =
       readonly characters: InvalidCharacters;
     });
 
-export type CandidatesView = Extract<
+export type CandidatesFound = Extract<
   CandidatesResult,
   { status: 'candidates' }
 >;
 
+export type CountyCandidate = Extract<
+  CandidatesFound['candidates'][number],
+  { kind: 'region2' }
+>;
+
+export type CandidatesView = {
+  readonly region1: Region1;
+  readonly answer: CountyCandidate | undefined;
+  readonly counties: readonly CountyCandidate[];
+  readonly withoutRegion2: boolean;
+  readonly notInRegistry: boolean;
+};
+
 export type SearchOutcome =
   | { readonly kind: 'navigate'; readonly plate: string }
-  | { readonly kind: 'candidates'; readonly result: CandidatesView }
+  | { readonly kind: 'candidates'; readonly view: CandidatesView }
   | { readonly kind: 'error'; readonly error: SearchError };

@@ -21,9 +21,13 @@ import { PLATE_ERROR_ID } from '../home.constants';
 import type { CandidatesView, SearchError } from '../home.types';
 import { LanguageService } from '../../language/language.service';
 import { isSearchError, searchErrorMessage } from '../search-error';
-import { candidatesHeading, voivodeshipLine } from '../candidates-messages';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
 import { PlateInputComponent } from '../../shared/plate/plate-input/plate-input';
+import {
+  answerHeading,
+  candidatesHeading,
+  voivodeshipLine,
+} from '../candidates-messages';
 
 @Component({
   selector: 'app-home-page',
@@ -79,8 +83,8 @@ export class HomePage {
         await this.router.navigate(['/plate', outcome.plate]);
         return undefined;
       case 'candidates':
-        this.candidates.set(outcome.result);
-        this.announce(outcome.result);
+        this.candidates.set(outcome.view);
+        this.announce(outcome.view);
         return undefined;
       case 'error':
         return outcome.error;
@@ -90,7 +94,9 @@ export class HomePage {
   private announce(result: CandidatesView): void {
     const language = this.language();
     const message =
-      candidatesHeading(result, language) ?? voivodeshipLine(result, language);
+      answerHeading(result) ??
+      candidatesHeading(result, language) ??
+      voivodeshipLine(result, language);
     this.announcement.set(
       this.transloco.translate(message.key, message.params),
     );

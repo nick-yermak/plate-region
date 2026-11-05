@@ -3,6 +3,10 @@
     "title": "Home",
     "plateNumber": "Licence plate number",
     "search": "Search",
+    "hint": "The first letters are enough — usually two or three.",
+    "examples": {
+      "label": "Try:"
+    },
     "errors": {
       "empty": "Enter a plate number.",
       "invalidCharacters": "Not allowed on Polish plates: {{characters}}",
@@ -17,6 +21,7 @@
         "many": "{{count}} possible counties",
         "other": "{{count}} possible counties"
       },
+      "others": "Other possible counties",
       "more": {
         "one": "and {{count}} more county — type more characters",
         "few": "and {{count}} more counties — type more characters",

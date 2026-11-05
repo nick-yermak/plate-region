@@ -3,6 +3,10 @@
     "title": "Strona główna",
     "plateNumber": "Numer rejestracyjny",
     "search": "Szukaj",
+    "hint": "Wystarczą pierwsze litery — zwykle dwie lub trzy.",
+    "examples": {
+      "label": "Spróbuj:"
+    },
     "errors": {
       "empty": "Wpisz numer rejestracyjny.",
       "invalidCharacters": "Niedozwolone na polskich tablicach: {{characters}}",
@@ -17,6 +21,7 @@
         "many": "{{count}} możliwych powiatów",
         "other": "{{count}} możliwego powiatu"
       },
+      "others": "Inne możliwe powiaty",
       "more": {
         "one": "i jeszcze {{count}} powiat — wpisz więcej znaków",
         "few": "i jeszcze {{count}} powiaty — wpisz więcej znaków",

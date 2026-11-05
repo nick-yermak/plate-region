@@ -1,6 +1,6 @@
-import { candidatesFor } from '@plate-region/plate-domain';
-
 import { search } from './search';
+import { county, found } from './home.testing';
+import { candidatesView } from './candidates-view';
 
 describe('search', () => {
   it.each([
@@ -32,7 +32,19 @@ describe('search', () => {
   it('returns candidates for an incomplete plate', () => {
     expect(search('DW')).toEqual({
       kind: 'candidates',
-      result: candidatesFor('DW'),
+      view: candidatesView(found('DW'), 'DW'),
+    });
+  });
+
+  it('answers for a separated full code', () => {
+    expect(search('G D')).toMatchObject({
+      kind: 'candidates',
+      view: {
+        answer: {
+          codes: ['GD'],
+          region2: { name: county('GD').name },
+        },
+      },
     });
   });
 

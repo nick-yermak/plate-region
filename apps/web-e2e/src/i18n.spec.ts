@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Where is this plate from?',
+  );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Registry' }),
   ).toBeVisible();
@@ -11,7 +13,7 @@ test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Strona główna',
+    'Skąd jest ta tablica?',
   );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
@@ -26,7 +28,7 @@ test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Strona główna',
+    'Skąd jest ta tablica?',
   );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
@@ -75,17 +77,20 @@ test('i18n-first-load-skeleton', { tag: '@desktop' }, async ({ page }) => {
 
   release();
   await navigation;
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Where is this plate from?',
+  );
   await expect(nav).not.toHaveAttribute('aria-busy', 'true');
   await expect(page.getByRole('main')).not.toHaveAttribute('aria-busy', 'true');
 });
 
 test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
-  // Counts of county entries per input, from Dz.U. 2024 poz. 1709 (as amended), Załącznik nr 13.
-  // A county is counted when one of its codes (column-4 letter + column-5 suffix) starts with the input:
-  // AA: mazowieckie, suffix A of m.st. Warszawa only → 1.
-  // AB: mazowieckie, BR (białobrzeski) and B (m.st. Warszawa) → 2.
-  // BS: podlaskie, S (Suwałki), SE, SI, SK, SU → 5.
+  // Counts of county entries per input, from Dz.U. 2024 poz. 1709 (as amended),
+  // Załącznik nr 13 (tmp/D20241709.txt). A county is counted when one of its
+  // codes (column-4 letter + column-5 suffix) starts with the input, and the
+  // input is not itself that county's full code (no answer — D-53 Update #115):
+  // GW: pomorskie (G, X), line 3659 wejherowski WE, WO → 1.
+  // GK: lines 3647–3650 kartuski KA, KY, KZ; kościerski KS; kwidzyński KW → 3.
   // O: opolskie, every one of its 12 counties → 12.
   // N: warmińsko-mazurskie, 2 cities + 19 counties → 21.
   // J: małopolskie (letters K, J), 3 cities + 19 counties → 22.
@@ -94,9 +99,8 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
   const main = page.getByRole('main');
   const field = page.getByRole('textbox', { name: 'Numer rejestracyjny' });
   for (const [input, text] of [
-    ['AA', '1 możliwy powiat'],
-    ['AB', '2 możliwe powiaty'],
-    ['BS', '5 możliwych powiatów'],
+    ['GW', '1 możliwy powiat'],
+    ['GK', '3 możliwe powiaty'],
     ['O', '12 możliwych powiatów'],
     ['N', '21 możliwych powiatów'],
     ['J', '22 możliwe powiaty'],
@@ -108,15 +112,15 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
 
   await page.getByRole('button', { name: 'English' }).click();
   const enField = page.getByRole('textbox', { name: 'Licence plate number' });
-  await enField.fill('AA');
+  await enField.fill('GW');
   await enField.press('Enter');
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(
     '1 possible county',
   );
-  await enField.fill('AB');
+  await enField.fill('GK');
   await enField.press('Enter');
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    '2 possible counties',
+    '3 possible counties',
   );
 });
 
@@ -130,7 +134,9 @@ test('i18n-active-dictionary-once', { tag: '@desktop' }, async ({ page }) => {
   });
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Where is this plate from?',
+  );
   expect(dictionaryRequests).toHaveLength(1);
 
   const preload = await page.evaluate(() => {

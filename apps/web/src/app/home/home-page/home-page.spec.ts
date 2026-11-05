@@ -4,11 +4,25 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomePage } from './home-page';
+import { HOME_RANDOM } from '../home.constants';
+import { county, requireElement } from '../home.testing';
 import { LanguageService } from '../../language/language.service';
 import { testingText, TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 @Component({ template: '' })
 class PlateStub {}
+
+function scripted(values: readonly number[]): () => number {
+  let index = 0;
+  return () => {
+    const value = values[index];
+    if (value === undefined) {
+      throw new Error('scripted random exhausted');
+    }
+    index += 1;
+    return value;
+  };
+}
 
 describe('HomePage', () => {
   beforeEach(async () => {
@@ -17,6 +31,7 @@ describe('HomePage', () => {
       imports: [HomePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
       providers: [
         provideRouter([{ path: 'plate/:plate', component: PlateStub }]),
+        { provide: HOME_RANDOM, useValue: scripted([0, 0, 0, 0]) },
       ],
     }).compileComponents();
     TestBed.inject(LanguageService).setLanguage('en');
@@ -32,13 +47,10 @@ describe('HomePage', () => {
   }> {
     const fixture = TestBed.createComponent(HomePage);
     await fixture.whenStable();
-    const input = fixture.nativeElement.querySelector(
-      'input',
-    ) as HTMLInputElement | null;
-    if (input === null) {
-      throw new Error('plate input not rendered');
-    }
-    return { fixture, input };
+    return {
+      fixture,
+      input: requireElement<HTMLInputElement>(fixture.nativeElement, 'input'),
+    };
   }
 
   async function submit(
@@ -49,13 +61,10 @@ describe('HomePage', () => {
     input.value = value;
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
-    const button = fixture.nativeElement.querySelector(
+    requireElement<HTMLButtonElement>(
+      fixture.nativeElement,
       'button[type="submit"]',
-    ) as HTMLButtonElement | null;
-    if (button === null) {
-      throw new Error('search submit button not rendered');
-    }
-    button.click();
+    ).click();
     await fixture.whenStable();
   }
 
@@ -75,7 +84,7 @@ describe('HomePage', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('h1').textContent.trim()).toBe(
-      'Strona główna',
+      'Skąd jest ta tablica?',
     );
   });
 
@@ -89,7 +98,7 @@ describe('HomePage', () => {
       fixture.nativeElement.querySelector('app-candidates-list'),
     ).toBeNull();
     expect(input.getAttribute('aria-invalid')).toBeNull();
-    expect(input.getAttribute('aria-describedby')).toBeNull();
+    expect(input.getAttribute('aria-describedby')).toBe('home-plate-hint');
     expect(TestBed.inject(Router).url).toBe('/');
   });
 
@@ -114,13 +123,24 @@ describe('HomePage', () => {
     ).not.toBeNull();
   });
 
-  it('announces the candidates summary', async () => {
+  it('announces the answer heading', async () => {
     const { fixture, input } = await createPage();
     await submit(fixture, input, 'DW');
-    const live = fixture.nativeElement.querySelector(
+    const live = requireElement<HTMLElement>(
+      fixture.nativeElement,
       '[aria-live="polite"]',
-    ) as HTMLElement | null;
-    expect(live?.textContent?.trim()).toBe(
+    );
+    expect(live.textContent?.trim()).toBe(county('DW').name);
+  });
+
+  it('announces the counted heading without an answer', async () => {
+    const { fixture, input } = await createPage();
+    await submit(fixture, input, 'GK');
+    const live = requireElement<HTMLElement>(
+      fixture.nativeElement,
+      '[aria-live="polite"]',
+    );
+    expect(live.textContent?.trim()).toBe(
       testingText('en', 'home.candidates.heading.other', { count: 3 }),
     );
   });
@@ -152,11 +172,16 @@ describe('HomePage', () => {
       const expected = testingText('en', key, params);
       expect(input.getAttribute('aria-invalid')).toBe('true');
       const describedBy = input.getAttribute('aria-describedby');
-      expect(describedBy).toBeTruthy();
-      const description = fixture.nativeElement.querySelector(
-        `#${describedBy}`,
-      ) as HTMLElement | null;
-      expect(description?.textContent?.trim()).toBe(expected);
+      expect(describedBy).toBe('home-plate-error home-plate-hint');
+      const errorId = describedBy?.split(' ')[0];
+      if (errorId === undefined) {
+        throw new Error('missing error id in aria-describedby');
+      }
+      const description = requireElement<HTMLElement>(
+        fixture.nativeElement,
+        `#${errorId}`,
+      );
+      expect(description.textContent?.trim()).toBe(expected);
     },
   );
 
@@ -168,7 +193,7 @@ describe('HomePage', () => {
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     expect(input.getAttribute('aria-invalid')).toBeNull();
-    expect(input.getAttribute('aria-describedby')).toBeNull();
+    expect(input.getAttribute('aria-describedby')).toBe('home-plate-hint');
   });
 
   it('translates the error into Polish', async () => {
@@ -176,11 +201,69 @@ describe('HomePage', () => {
     const { fixture, input } = await createPage();
     await submit(fixture, input, '');
     const describedBy = input.getAttribute('aria-describedby');
-    const description = fixture.nativeElement.querySelector(
-      `#${describedBy}`,
-    ) as HTMLElement | null;
-    expect(description?.textContent?.trim()).toBe(
+    expect(describedBy).toBe('home-plate-error home-plate-hint');
+    const errorId = describedBy?.split(' ')[0];
+    if (errorId === undefined) {
+      throw new Error('missing error id in aria-describedby');
+    }
+    const description = requireElement<HTMLElement>(
+      fixture.nativeElement,
+      `#${errorId}`,
+    );
+    expect(description.textContent?.trim()).toBe(
       testingText('pl', 'home.errors.empty'),
+    );
+  });
+
+  it('renders three examples from the random source', async () => {
+    const { fixture } = await createPage();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'app-home-examples button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(buttons).toHaveLength(3);
+    expect([...buttons].map((button) => button.textContent?.trim())).toEqual([
+      'DJ',
+      'DBL',
+      'DJ 00001',
+    ]);
+  });
+
+  it('fills the field and submits on an example tap', async () => {
+    const { fixture, input } = await createPage();
+    requireElement<HTMLButtonElement>(
+      fixture.nativeElement,
+      'app-home-examples button',
+    ).click();
+    await fixture.whenStable();
+    expect(input.value).toBe('DJ');
+    expect(fixture.nativeElement.querySelector('h2')?.textContent?.trim()).toBe(
+      county('DJ').name,
+    );
+  });
+
+  it('navigates on a full-plate example tap', async () => {
+    const { fixture } = await createPage();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'app-home-examples button',
+    );
+    const fullPlate = buttons.item(2);
+    if (fullPlate === null) {
+      throw new Error('missing full-plate example button');
+    }
+    (fullPlate as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/plate/DJ%2000001');
+  });
+
+  it('describes the field with the hint', async () => {
+    const { input } = await createPage();
+    expect(input.getAttribute('aria-describedby')).toBe('home-plate-hint');
+  });
+
+  it('renders the hint text', async () => {
+    const { fixture } = await createPage();
+    expect(fixture.nativeElement.textContent).toContain(
+      testingText('en', 'home.hint'),
     );
   });
 });
