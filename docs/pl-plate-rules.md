@@ -1,10 +1,10 @@
 # Polish plate rules — source table
 
-Every rule that `libs/plate-domain` relies on, with its source in the act. Decision: D-33.
+Every rule that `libs/plate-domain` relies on, with its source in the acts. Decision: D-33.
 
-**Acts.** "1709" = Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. w sprawie rejestracji i oznaczania pojazdów, wymagań dla tablic rejestracyjnych oraz wzorów innych dokumentów związanych z rejestracją pojazdów (Dz.U. 2024 poz. 1709); "939" = Dz.U. 2025 poz. 939; "891" = Dz.U. 2026 poz. 891. No consolidated text exists (D-26); where an amendment changes a provision, the amending text is quoted.
+**Acts.** "1709" = Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. w sprawie rejestracji i oznaczania pojazdów, wymagań dla tablic rejestracyjnych oraz wzorów innych dokumentów związanych z rejestracją pojazdów (Dz.U. 2024 poz. 1709); "939" = Dz.U. 2025 poz. 939; "891" = Dz.U. 2026 poz. 891; "1776" = Rozporządzenie Ministra Obrony Narodowej z dnia 30 sierpnia 2023 r. w sprawie rejestracji pojazdów Sił Zbrojnych Rzeczypospolitej Polskiej oraz pojazdów należących do obcych sił zbrojnych przebywających na terytorium Rzeczypospolitej Polskiej na podstawie umów międzynarodowych (Dz.U. 2023 poz. 1776), quoted from its consolidated text Dz.U. 2026 poz. 1300; "1326" = Rozporządzenie Ministra Spraw Wewnętrznych i Administracji z dnia 30 września 2025 r. w sprawie rejestracji pojazdów Służby Ochrony Państwa, Policji, Agencji Bezpieczeństwa Wewnętrznego, Agencji Wywiadu, Centralnego Biura Antykorupcyjnego, Straży Granicznej i Krajowej Administracji Skarbowej wykorzystywanych przez Służbę Celno-Skarbową (Dz.U. 2025 poz. 1326), it repealed Dz.U. 2023 poz. 1778; "1777" = Rozporządzenie Ministra Obrony Narodowej z dnia 31 sierpnia 2023 r. w sprawie rejestracji pojazdów Służby Kontrwywiadu Wojskowego i Służby Wywiadu Wojskowego (Dz.U. 2023 poz. 1777); "1547" = Dz.U. 2025 poz. 1547. No consolidated text of 1709 exists (D-26); where an amendment changes a provision of 1709 or 1777, the amending text is quoted.
 
-**Amendment check.** 939 changes § 27 ust. 5 (§ 1 pkt 1), § 31 ust. 3 (§ 1 pkt 2), § 32 ust. 2 (§ 1 pkt 3) and Annex 13 (§ 1 pkt 4). 891 changes §§ 2, 6, 7, 18, 19, 20, 21, 22 and Annex 13 (§ 1 pkt 9). Neither touches § 25, § 26, § 27 ust. 2–4 and 6–10, § 28, § 30, § 31 ust. 1–2, § 32 ust. 1 and 3, or Annex 12.
+**Amendment check.** 939 changes § 27 ust. 5 (§ 1 pkt 1), § 31 ust. 3 (§ 1 pkt 2), § 32 ust. 2 (§ 1 pkt 3) and Annex 13 (§ 1 pkt 4). 891 changes §§ 2, 6, 7, 18, 19, 20, 21, 22 and Annex 13 (§ 1 pkt 9). Neither touches § 25, § 26, § 27 ust. 2–4 and 6–10, § 28, § 30, § 31 ust. 1–2, § 32 ust. 1 and 3, or Annex 12. The consolidated text of 1776 includes its only amendment, Dz.U. 2025 poz. 1123, which does not change § 6. 1547 § 1 replaces only the annex of 1777. 1326 has no amendment.
 
 **Conventions.** Row IDs are stable: never renumbered or reused (D-33). Code and specs cite the row ID next to the provision, e.g. `§ 31 ust. 1 (R-36)`. Quotes are under "Quotes", one line per row, so a changed quote changes one line; words hyphenated across line breaks in the published text are joined. "Visible" says whether the rule can be seen in the typed characters: yes / no: colour / no: size / no: other. Code paths are relative to `libs/plate-domain/src/lib/pl/` unless stated.
 
@@ -61,6 +61,17 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 | R-47 | Plate backgrounds are white, yellow, blue or green.                                                                                           | 1709 Annex 12 pkt 2.14 lit. b                                 | —                                        | no: colour                                                                                                                   | —                                                         |
 | R-48 | Annex 13 columns 4–5 serve ordinary, vintage and diplomatic plates; column 6 serves temporary and individual plates.                          | 1709 Annex 13 table header                                    | Table body: 939 § 1 pkt 4, 891 § 1 pkt 9 | yes                                                                                                                          | plate-data `registry.ts`; `readings.ts`; `parse-plate.ts` |
 | R-49 | An individual distinguisher must be a word, abbreviation or expression with no offensive meaning.                                             | 1709 § 32 ust. 3                                              | —                                        | no: other (meaning, not characters; individual variant counts are an upper bound, D-43)                                      | —                                                         |
+| R-50 | An Armed Forces service number starts with the capital letter U.                                                                              | 1776 § 6 ust. 3 pkt 1                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-51 | The letter after U is one of 23 letters (no O, Q, U).                                                                                         | 1776 § 6 ust. 3 pkt 2 lit. a                                  | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-52 | A state-service number starts with a service code and one of 25 letters (no Q).                                                               | 1326 § 5 ust. 2 pkt 1                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-53 | HB is the code of the State Protection Service.                                                                                               | 1326 § 5 ust. 3 pkt 1                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-54 | HP is the code of the Police.                                                                                                                 | 1326 § 5 ust. 3 pkt 2                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-55 | HK is the code of both the Internal Security Agency and the Foreign Intelligence Agency.                                                      | 1326 § 5 ust. 3 pkt 3                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-56 | HA is the code of the Central Anti-Corruption Bureau.                                                                                         | 1326 § 5 ust. 3 pkt 4                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-57 | HW is the code of the Border Guard.                                                                                                           | 1326 § 5 ust. 3 pkt 5                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-58 | HC is the code of the Customs and Tax Service.                                                                                                | 1326 § 5 ust. 3 pkt 6                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-59 | An SKW/SWW number starts with the service code and one of 25 letters (no Q).                                                                  | 1777 § 6 ust. 1 pkt 1                                         | —                                        | yes                                                                                                                          | `readings.ts`                                             |
+| R-60 | HM is the code of the Military Counterintelligence Service and the Military Intelligence Service.                                             | 1777 § 6 ust. 2                                               | —                                        | yes                                                                                                                          | `readings.ts`                                             |
 
 ## Quotes
 
@@ -260,6 +271,50 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 
 > „Wyróżnik indywidualny powinien być wyrazem, skrótem lub określeniem, które nie zawierają w swoim znaczeniu w języku polskim albo obcym treści obraźliwych lub niezgodnych z zasadami współżycia społecznego.”
 
+### R-50 — 1776 § 6 ust. 3 pkt 1
+
+> „Numer rejestracyjny z wyróżnikiem służby składa się z: 1) wyróżnika Sił Zbrojnych, którym jest wielka litera U umieszczana jako pierwsza;”
+
+### R-51 — 1776 § 6 ust. 3 pkt 2 lit. a
+
+> „2) wyróżnika pojazdu, którym są: a) jedna z wielkich liter: A, B, C, D, E, F, G, H, I, J, K, L, M, N, P, R, S, T, V, W, X, Y, Z,”
+
+### R-52 — 1326 § 5 ust. 2 pkt 1
+
+> „Numer rejestracyjny pojazdu składa się z: 1) wyróżnika służby i jednej litery ze zbioru następujących 25 liter: A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, R, S, T, U, V, W, X, Y, Z oraz wyróżnika pojazdu albo”
+
+### R-53 — 1326 § 5 ust. 3 pkt 1
+
+> „Jako wyróżniki służb określa się litery: 1) HB – dla Służby Ochrony Państwa;”
+
+### R-54 — 1326 § 5 ust. 3 pkt 2
+
+> „2) HP – dla Policji;”
+
+### R-55 — 1326 § 5 ust. 3 pkt 3
+
+> „3) HK – dla Agencji Bezpieczeństwa Wewnętrznego i Agencji Wywiadu;”
+
+### R-56 — 1326 § 5 ust. 3 pkt 4
+
+> „4) HA – dla Centralnego Biura Antykorupcyjnego;”
+
+### R-57 — 1326 § 5 ust. 3 pkt 5
+
+> „5) HW – dla Straży Granicznej;”
+
+### R-58 — 1326 § 5 ust. 3 pkt 6
+
+> „6) HC – dla Służby Celno-Skarbowej.”
+
+### R-59 — 1777 § 6 ust. 1 pkt 1
+
+> „Numer na tablicach rejestracyjnych pojazdu składa się z: 1) wyróżnika służby i jednej litery ze zbioru następujących 25 liter: A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, R, S, T, U, V, W, X, Y, Z oraz wyróżnika pojazdu albo”
+
+### R-60 — 1777 § 6 ust. 2
+
+> „Wyróżnik dla służb SKW i SWW stanowią litery HM.”
+
 ## Notes on rows
 
 - **R-24.** After a one-letter powiat, five vehicle-part layouts are allowed.
@@ -269,7 +324,8 @@ Every rule that `libs/plate-domain` relies on, with its source in the act. Decis
 - **R-36, R-39.** The B/D/I/O/Z exception for individual plates comes from the base-text reservation „z zastrzeżeniem § 32 ust. 2” in § 31 ust. 1. 939 added only the choice of letter.
 - **R-39.** Because the choice is only between the two letters of one voivodeship, the plate still carries a code of one voivodeship, and region1 is determined. Wording: the plate carries a voivodeship code; it does not say where the vehicle is registered (D-36).
 - **R-41, R-42.** The extract does not define the Annex 12 notation (L = letter, C = digit, "+" = boundary); it is read from context. The two-row split is the "+": row 1 distinguisher, row 2 vehicle part, confirmed by the drawings in #39 (D-40). The Annex 12 layout tables for ordinary car, motorcycle and moped plates list the same layouts as pkt 1 and pkt 3. The legalisation-sticker field sits between the distinguisher and the vehicle part on one-row car plates; after the distinguisher on two-row car and motorcycle plates; before the vehicle part on moped plates.
-- **R-37, R-48.** H and U are in the alphabet (R-23) but never in Annex 13 column 4; in the act they occur only as column-5 suffixes (m.st. Warszawa, Chorzów). A leading H or U is therefore `not-in-registry` (D-35).
+- **R-37, R-48.** H and U are in the alphabet (R-23) but never in Annex 13 column 4; in 1709 they occur only as column-5 suffixes (m.st. Warszawa, Chorzów). A leading H or U is therefore `not-in-registry` (D-35); a service or military distinguisher and one allowed letter add its series (R-50–R-60, D-46).
+- **R-50–R-60.** Only the distinguisher and the letter after it are rows: the code does not check the vehicle part (1776 § 6 ust. 3 pkt 2 lit. b–d, 1326 § 5 ust. 4, 1777 § 6 ust. 3), and the provisions that allow voivodeship and powiat numbers instead (1776 § 6 ust. 2, 1326 § 5 ust. 2 pkt 2, 1777 § 6 ust. 1 pkt 2) are the known limitation of D-46. Q is outside R-23, so input never reaches R-51, R-52 or R-59 with a Q.
 
 ## Read, not rows
 
@@ -288,4 +344,4 @@ Derived by hand in #38 and pinned by literal expectations in `parse-plate.spec.t
 
 ## Out of scope
 
-Military, service and trade/test plates: not regulated by 1709, 939 or 891 (D-35, D-46). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); Annex 12 Rys. 18–26 (images); Rys. 11, 13–16 were read in #39 (D-40).
+Trade/test plates: not regulated by 1709, 939, 891, 1776, 1326 or 1777; their act was not looked up (D-35, D-46). Military and service plates: only the series rows R-50–R-60 (D-46). Documents not consulted: ustawa z dnia 20 czerwca 1997 r. – Prawo o ruchu drogowym (Dz. U. z 2024 r. poz. 1251, z późn. zm.); Annex 12 Rys. 18–26 (images); Rys. 11, 13–16 were read in #39 (D-40).

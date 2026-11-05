@@ -36,7 +36,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - The URL holds the plate, so the page can be shared.
 - Shows: voivodeship and powiat, plate type, the powiat highlighted on the map of Poland, and a link to the voivodeship page that opens at the matching powiat.
 - Image: the photo, if the user took or uploaded one in this session; otherwise an SVG car with the plate drawn in its plate area. A shared link always shows the SVG car: photos never leave the device.
-- Covers every `ParseResult` variant, including service and military plates (`not-in-registry`, D-46), ambiguous readings and invalid input.
+- Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
 
 ### Voivodeship — `/voivodeship/:slug`
 

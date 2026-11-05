@@ -11,6 +11,16 @@
       "noMatchingFormat": "To nie jest format polskiej tablicy.",
       "empty": "W tym linku nie ma numeru rejestracyjnego."
     },
+    "series": {
+      "armedForces": "Tablica wojskowa: Siły Zbrojne",
+      "stateProtectionService": "Tablica służbowa: Służba Ochrony Państwa",
+      "police": "Tablica służbowa: Policja",
+      "abwAw": "Tablica służbowa: Agencja Bezpieczeństwa Wewnętrznego lub Agencja Wywiadu",
+      "cba": "Tablica służbowa: Centralne Biuro Antykorupcyjne",
+      "borderGuard": "Tablica służbowa: Straż Graniczna",
+      "customsAndTaxService": "Tablica służbowa: Służba Celno-Skarbowa",
+      "skwSww": "Tablica służbowa: Służba Kontrwywiadu Wojskowego lub Służba Wywiadu Wojskowego"
+    },
     "backHome": "Wyszukaj inną tablicę",
     "notes": {
       "region1Only": "Ta tablica ma tylko wyróżnik województwa, bez powiatu.",

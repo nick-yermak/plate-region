@@ -118,6 +118,19 @@ describe('PlatePage', () => {
     ).toHaveLength(0);
   });
 
+  it('shows the series heading and a home link for HPN 12AA', async () => {
+    const fixture = await renderPage('HPN 12AA');
+    expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
+      testingText('en', 'plate.series.police'),
+    );
+    const root = fixture.nativeElement as HTMLElement;
+    const home = root.querySelector<HTMLAnchorElement>('a[href="/"]');
+    expect(home).not.toBeNull();
+    expect(
+      fixture.debugElement.queryAll(By.directive(ResultReadingComponent)),
+    ).toHaveLength(0);
+  });
+
   it('uses the LanguageService language for the heading', async () => {
     await TestBed.configureTestingModule({
       imports: [PlatePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],

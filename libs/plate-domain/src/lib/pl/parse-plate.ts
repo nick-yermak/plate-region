@@ -7,6 +7,7 @@ import {
   region1ForFirstLetter,
   rejectWithoutRegion1,
   resolveCompact,
+  type PlateSeries,
   type Reading,
 } from './readings';
 
@@ -64,13 +65,13 @@ export type ParseResult =
     }
   | {
       /**
-       * First character is a letter outside Annex 13 column 4 (H, U) —
-       * § 31 ust. 2 (R-37), Annex 13 table header (R-48). Final within
-       * Dz.U. 2024 poz. 1709; out of scope: service, military and trade
-       * plates (D-35, D-46).
+       * First character is a letter outside Annex 13 column 4 (H, U) — § 31 ust. 2 (R-37),
+       * Annex 13 table header (R-48) (D-35). `series` is present only when the input starts with
+       * a service or military distinguisher and one allowed letter; the rest is not checked (D-46).
        */
       readonly status: 'not-in-registry';
       readonly country: Country;
+      readonly series?: PlateSeries;
     }
   | {
       /** Characters outside § 30 ust. 1 (R-23), as typed. */
@@ -171,6 +172,8 @@ function classify(
  * letters B, D, I, O and Z are rejected except on individual plates — § 31 ust. 1 (R-36).
  * From position 4, a typed I or O is read as 1 or 0 (D-42); on individual
  * plates I and O remain letters — § 32 ust. 2 (R-39).
+ * A leading service or military distinguisher and one allowed letter add `series`
+ * to `not-in-registry` (D-46); no look-alike reading applies there.
  *
  * Result variants: {@link ParseResult}.
  */
@@ -194,7 +197,7 @@ export function parsePlate(input: string): ParseResult {
   if (region1 === undefined) {
     const reject = rejectWithoutRegion1(compact);
     if (reject.status === 'not-in-registry') {
-      return { status: 'not-in-registry', country: 'PL' };
+      return reject;
     }
     return {
       status: 'invalid-input',
