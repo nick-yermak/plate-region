@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
@@ -38,6 +39,7 @@ describe('PlatePage', () => {
   async function renderPage(plate: string) {
     await TestBed.configureTestingModule({
       imports: [PlatePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
+      providers: [provideRouter([])],
     }).compileComponents();
     const fixture = TestBed.createComponent(PlatePage);
     fixture.componentRef.setInput('plate', plate);
@@ -120,6 +122,7 @@ describe('PlatePage', () => {
     await TestBed.configureTestingModule({
       imports: [PlatePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
       providers: [
+        provideRouter([]),
         {
           provide: LanguageService,
           useValue: { language: signal('pl' as const) },

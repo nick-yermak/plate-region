@@ -12,7 +12,7 @@ test(
     expect(response.ok()).toBe(true);
     expect(new URL(response.url()).origin).toBe(new URL(page.url()).origin);
 
-    const plateText = page.getByText('wa12345', { exact: true });
+    const plateText = page.getByText('WA12345', { exact: true });
     await expect(plateText).toBeVisible();
     await expect(plateText).toHaveCSS('text-transform', 'uppercase');
 

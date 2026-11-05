@@ -1,0 +1,25 @@
+@if (reading().captionKey; as captionKey) {
+  <h2>{{ captionKey | transloco }}</h2>
+}
+<dl>
+  @if (reading().powiat; as powiat) {
+    <dt>{{ 'plate.reading.county' | transloco }}</dt>
+    <dd>
+      @let kindLabel = powiat.kindKey | transloco;
+      {{
+        'plate.reading.countyValue'
+          | transloco: { name: powiat.name, kind: kindLabel }
+      }}
+    </dd>
+  }
+  <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
+  <dd>{{ reading().voivodeshipName }}</dd>
+  <dt>{{ reading().typesLabelKey | transloco }}</dt>
+  <dd>{{ typesText() }}</dd>
+</dl>
+<a
+  [routerLink]="['/voivodeship', reading().link.slug]"
+  [fragment]="reading().link.fragment"
+>
+  {{ linkKey() | transloco: { name: linkName() } }}
+</a>

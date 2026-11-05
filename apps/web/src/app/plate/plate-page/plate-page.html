@@ -1,15 +1,17 @@
 @let page = view();
-<h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
-<app-car-illustration>
-  <app-plate [plate]="plateText()" />
-</app-car-illustration>
-@if (page.kind === 'readings') {
-  @if (page.noteKey) {
-    <p>{{ page.noteKey | transloco }}</p>
+<nz-flex nzVertical nzGap="middle">
+  <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
+  <app-car-illustration>
+    <app-plate [plate]="plateText()" />
+  </app-car-illustration>
+  @if (page.kind === 'readings') {
+    @if (page.noteKey) {
+      <p>{{ page.noteKey | transloco }}</p>
+    }
+    @for (reading of page.readings; track $index) {
+      <app-result-reading [reading]="reading" [language]="language()" />
+    }
+  } @else {
+    <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
   }
-  @for (reading of page.readings; track $index) {
-    <app-result-reading [reading]="reading" [language]="language()" />
-  }
-} @else {
-  <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
-}
+</nz-flex>

@@ -1,6 +1,8 @@
 @import 'ng-zorro-antd/style/dark.less';
 @import 'ng-zorro-antd/style/entry.less';
 @import './nz-components.less';
+// Dark header (#1f1f1f): @primary-color is 3.93:1; dark-palette @blue-7 is 5.48:1.
+@header-brand-color: @blue-7;
 @import './tokens.less';
 
 // Last assignment wins for the whole sheet: component styles re-import the
@@ -9,6 +11,7 @@
 @error-color: @red-7;
 @link-color: @blue-7;
 @link-hover-color: @blue-8;
+@text-color-secondary: fade(@white, 55%);
 
 :root {
   color-scheme: dark;

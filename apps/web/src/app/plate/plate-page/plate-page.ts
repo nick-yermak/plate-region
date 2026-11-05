@@ -1,5 +1,6 @@
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { NzFlexDirective } from 'ng-zorro-antd/flex';
 import { Component, computed, inject, input } from '@angular/core';
 
 import { parsePlate } from '@plate-region/plate-domain';
@@ -14,6 +15,7 @@ import { CarIllustrationComponent } from '../car-illustration/car-illustration';
   selector: 'app-plate-page',
   imports: [
     CarIllustrationComponent,
+    NzFlexDirective,
     PlateComponent,
     ResultReadingComponent,
     RouterLink,

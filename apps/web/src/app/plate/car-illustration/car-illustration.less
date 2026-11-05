@@ -1,3 +1,39 @@
+@import (reference) 'ng-zorro-antd/style/themes/default.less';
+
+// Ant Design / NG-ZORRO Gray 9 (#434343); not exported as a Less var in this package.
+@gray-9: #434343;
+
+@car-body: @white;
+@car-line: @gray-9;
+
 :host {
+  position: relative;
   display: block;
+  width: 100%;
+  max-width: 48rem;
+  container-type: inline-size;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.car-body {
+  fill: @car-body;
+}
+
+.car-line {
+  fill: @car-line;
+}
+
+// Plate 268.47 × 58.86 on viewBox 196 18 984 × 732: 95% of hole 547.2–829.8 × 500.2–563.4,
+// centred (gaps 7.07 / 2.17) → left (554.27−196)/984, top (502.37−18)/732;
+// font-size scales the 520×114 plate to 268.47 viewBox units.
+.plate-slot {
+  position: absolute;
+  top: 66.171%;
+  left: 36.410%;
+  font-size: calc(100cqi * 268.47 / 984 * 114 / 520);
 }
