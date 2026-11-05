@@ -27,9 +27,9 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - A photo button. On phones it opens the camera directly and is the primary action, placed before Search; elsewhere it opens a file picker and Search is primary.
 - Search runs on Enter or the Search button, not on every keystroke.
 - A complete plate navigates to the result page.
-- An incomplete plate does not navigate: the home page lists the regions it can belong to (`candidatesFor`, D-52). A county whose code equals the whole input is shown first, as the answer. County lines link to the voivodeship page (#93).
+- An incomplete plate does not navigate: the home page lists the regions it can belong to (`candidatesFor`, D-52). A county whose code equals the whole normalised input is the answer: it comes first under its own heading, and the other possible counties follow (D-53 Update #115). County lines link to the voivodeship page (#93).
 - With the SVG map (#94), the result shows a small map with the voivodeship highlighted.
-- The empty state offers a few tappable examples (short codes and one full plate) from `plate-domain`.
+- Under the form, three tappable examples — a two-character code, a three-character code and a full plate — from the registry and `plate-domain`; tapping fills the field and submits.
 
 ### Result — `/plate/:plate`
 
