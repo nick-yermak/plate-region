@@ -1,9 +1,7 @@
 {
   "plate": {
     "heading": {
-      "voivodeship": "{{name}} Voivodeship",
-      "city": "{{name}}",
-      "land": "{{name}} county"
+      "voivodeship": "{{name}} Voivodeship"
     },
     "messages": {
       "notInRegistry": "This code is not in the registry.",

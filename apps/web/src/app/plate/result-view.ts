@@ -13,6 +13,7 @@ import {
 import type { Language } from '../i18n/language.types';
 import { SERIES_HEADING_KEYS } from './plate.constants';
 import type { TranslatableMessage } from '../i18n/i18n.types';
+import { countyHeading } from '../shared/county/county-heading';
 import type { PowiatView, ReadingView, ResultView } from './plate.types';
 
 function voivodeshipDisplayName(region1: Region1, language: Language): string {
@@ -89,13 +90,7 @@ export function resultView(
     case 'resolved':
       return {
         kind: 'readings',
-        heading: {
-          key:
-            result.region2.kind === 'city'
-              ? 'plate.heading.city'
-              : 'plate.heading.land',
-          params: { name: result.region2.name },
-        },
+        heading: countyHeading(result.region2),
         noteKey: undefined,
         readings: [
           withCountyReading(

@@ -1,9 +1,7 @@
 {
   "plate": {
     "heading": {
-      "voivodeship": "Województwo {{name}}",
-      "city": "{{name}}",
-      "land": "Powiat {{name}}"
+      "voivodeship": "Województwo {{name}}"
     },
     "messages": {
       "notInRegistry": "Tego wyróżnika nie ma w rejestrze.",

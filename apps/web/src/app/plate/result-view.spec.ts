@@ -8,7 +8,7 @@ describe('resultView', () => {
     expect(resultView(parsePlate('DW 12345'), 'en')).toEqual({
       kind: 'readings',
       heading: {
-        key: 'plate.heading.city',
+        key: 'county.heading.city',
         params: { name: county('DW').name },
       },
       noteKey: undefined,
@@ -171,7 +171,7 @@ describe('resultView', () => {
     expect(resultView(parsePlate('VX12345'), 'en')).toEqual({
       kind: 'readings',
       heading: {
-        key: 'plate.heading.city',
+        key: 'county.heading.city',
         params: { name: county('DW').name },
       },
       noteKey: undefined,
