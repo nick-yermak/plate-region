@@ -99,6 +99,12 @@ describe('HomePage', () => {
     expect(TestBed.inject(Router).url).toBe('/plate/DW%2012345');
   });
 
+  it('navigates on Search for a service plate', async () => {
+    const { fixture, input } = await createPage();
+    await submit(fixture, input, 'HPN 12AA');
+    expect(TestBed.inject(Router).url).toBe('/plate/HPN%2012AA');
+  });
+
   it('lists candidates for an incomplete plate and stays on home', async () => {
     const { fixture, input } = await createPage();
     await submit(fixture, input, 'DW');

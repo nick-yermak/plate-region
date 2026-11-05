@@ -15,6 +15,7 @@ export type { RandomSource } from './lib/pl/example-plate';
 export type { NormalisedPlateInput } from './lib/pl/normalise-plate-input';
 export type { ParseResult } from './lib/pl/parse-plate';
 export type { PlateType } from './lib/pl/plate-type';
+export type { PlateSeries } from './lib/pl/readings';
 export type {
   VariantCountBucket,
   VariantCounts,

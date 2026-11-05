@@ -12,6 +12,7 @@ import {
   resolveCompact,
   unregisteredShapePlateTypes,
   type Completion,
+  type PlateSeries,
   type Reading,
 } from './readings';
 
@@ -81,11 +82,13 @@ export type CandidatesResult =
     }
   | {
       /**
-       * First character is a letter outside Annex 13 column 4 (H, U) —
-       * § 31 ust. 2 (R-37), Annex 13 table header (R-48) (D-35).
+       * First character is a letter outside Annex 13 column 4 (H, U) — § 31 ust. 2 (R-37),
+       * Annex 13 table header (R-48) (D-35). `series` is present only when the input starts with
+       * a service or military distinguisher and one allowed letter; the rest is not checked (D-46).
        */
       readonly status: 'not-in-registry';
       readonly country: Country;
+      readonly series?: PlateSeries;
     }
   | {
       /** Empty or separator-only input. */
@@ -314,7 +317,8 @@ function buildCandidates(
  * is already a complete plate, `completeAs` agrees with {@link parsePlate}.
  * Fully typed all-zero digit groups are rejected — § 30 ust. 2 pkt 1–3, 5–7 (R-34).
  * From position 4, I and O are also read as 1 and 0, as typed first within
- * each level (D-42).
+ * each level (D-42). A leading service or military distinguisher and one allowed
+ * letter add `series` to `not-in-registry` (D-46); no look-alike reading applies there.
  *
  * Result variants: {@link CandidatesResult}.
  */
@@ -339,7 +343,7 @@ export function candidatesFor(input: string): CandidatesResult {
   if (region1 === undefined) {
     const reject = rejectWithoutRegion1(compact);
     if (reject.status === 'not-in-registry') {
-      return { status: 'not-in-registry', country: 'PL' };
+      return reject;
     }
     return {
       status: 'invalid-input',

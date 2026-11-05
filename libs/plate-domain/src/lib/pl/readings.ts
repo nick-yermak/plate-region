@@ -1,5 +1,5 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
-import type { Region1, Region2 } from '@plate-region/plate-data';
+import type { Country, Region1, Region2 } from '@plate-region/plate-data';
 
 import { mergePlateTypes, type PlateTypes } from './plate-type';
 import {
@@ -55,9 +55,26 @@ export type CompactResolution =
     }
   | { readonly kind: 'none' };
 
+/**
+ * Series of a leading distinguisher and one allowed letter (D-46): `U` + one of 23 letters — 1776 § 6 ust. 3 pkt 1 (R-50), pkt 2 lit. a (R-51); HB, HP, HK, HA, HW, HC + one of 25 letters — 1326 § 5 ust. 2 pkt 1 (R-52), § 5 ust. 3 pkt 1–6 (R-53–R-58); HM + one of 25 letters — 1777 § 6 ust. 1 pkt 1 (R-59), § 6 ust. 2 (R-60).
+ */
+export type PlateSeries =
+  | 'armed-forces' // U  — R-50, R-51
+  | 'state-protection-service' // HB — R-52, R-53
+  | 'police' // HP — R-52, R-54
+  | 'abw-aw' // HK — R-52, R-55
+  | 'cba' // HA — R-52, R-56
+  | 'border-guard' // HW — R-52, R-57
+  | 'customs-and-tax-service' // HC — R-52, R-58
+  | 'skw-sww'; // HM — R-59, R-60
+
 /** When the first character is not a column-4 letter (D-35). */
 export type FirstLetterReject =
-  | { readonly status: 'not-in-registry' }
+  | {
+      readonly status: 'not-in-registry';
+      readonly country: Country;
+      readonly series?: PlateSeries;
+    }
   | { readonly status: 'no-matching-format' };
 
 /** region2 rows that belong to this region1 (primary letter), for index builds. */
@@ -197,6 +214,37 @@ export function region1ForFirstLetter(compact: string): Region1 | undefined {
   return BY_LETTER.get(compact.charAt(0));
 }
 
+// 1776 § 6 ust. 3 pkt 2 lit. a (R-51)
+const ARMED_FORCES_LETTERS: ReadonlySet<string> = new Set(
+  'ABCDEFGHIJKLMNPRSTVWXYZ',
+);
+// 1326 § 5 ust. 2 pkt 1 (R-52); 1777 § 6 ust. 1 pkt 1 (R-59)
+const SERVICE_LETTERS: ReadonlySet<string> = new Set(
+  'ABCDEFGHIJKLMNOPRSTUVWXYZ',
+);
+const SERVICE_CODES: ReadonlyMap<string, PlateSeries> = new Map([
+  ['HB', 'state-protection-service'], // 1326 § 5 ust. 3 pkt 1 (R-53)
+  ['HP', 'police'], // pkt 2 (R-54)
+  ['HK', 'abw-aw'], // pkt 3 (R-55)
+  ['HA', 'cba'], // pkt 4 (R-56)
+  ['HW', 'border-guard'], // pkt 5 (R-57)
+  ['HC', 'customs-and-tax-service'], // pkt 6 (R-58)
+  ['HM', 'skw-sww'], // 1777 § 6 ust. 2 (R-60)
+]);
+
+// The first character is H or U here: digits return earlier.
+function seriesOf(compact: string): PlateSeries | undefined {
+  if (compact.charAt(0) === 'U') {
+    // 1776 § 6 ust. 3 pkt 1 (R-50)
+    return ARMED_FORCES_LETTERS.has(compact.charAt(1))
+      ? 'armed-forces'
+      : undefined;
+  }
+  return SERVICE_LETTERS.has(compact.charAt(2))
+    ? SERVICE_CODES.get(compact.slice(0, 2))
+    : undefined;
+}
+
 /**
  * H/U → not-in-registry; a leading digit → no-matching-format (D-35, D-32).
  * Shared by {@link parsePlate} and {@link candidatesFor} (D-39).
@@ -206,7 +254,10 @@ export function rejectWithoutRegion1(compact: string): FirstLetterReject {
   if (/\d/.test(compact.charAt(0))) {
     return { status: 'no-matching-format' };
   }
-  return { status: 'not-in-registry' };
+  const series = seriesOf(compact);
+  return series === undefined
+    ? { status: 'not-in-registry', country: 'PL' }
+    : { status: 'not-in-registry', country: 'PL', series };
 }
 
 /**

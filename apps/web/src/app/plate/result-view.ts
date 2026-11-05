@@ -11,6 +11,7 @@ import {
 } from '@plate-region/plate-domain';
 
 import type { Language } from '../i18n/language.types';
+import { SERIES_HEADING_KEYS } from './plate.constants';
 import type { TranslatableMessage } from '../i18n/i18n.types';
 import type { PowiatView, ReadingView, ResultView } from './plate.types';
 
@@ -158,7 +159,12 @@ export function resultView(
     case 'not-in-registry':
       return {
         kind: 'message',
-        heading: { key: 'plate.messages.notInRegistry' },
+        heading: {
+          key:
+            result.series === undefined
+              ? 'plate.messages.notInRegistry'
+              : SERIES_HEADING_KEYS[result.series],
+        },
       };
     case 'invalid-input':
       if (result.reason === 'invalid-characters') {

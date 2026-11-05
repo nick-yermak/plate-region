@@ -4,6 +4,7 @@ import type { Region1, Region2 } from '@plate-region/plate-data';
 import { PLATE_ALPHABET } from './alphabet';
 import { candidatesFor } from './candidates';
 import type { PlateType } from './plate-type';
+import type { PlateSeries } from './readings';
 import type { Candidate, CandidatesResult } from './candidates';
 
 function region1ByName(name: string): Region1 {
@@ -865,5 +866,131 @@ describe('candidatesFor', () => {
       expect(checks).toBe(1_380);
       expect(violations).toEqual([]);
     }, 10_000);
+  });
+
+  describe('service and military series (D-46)', () => {
+    it.each([
+      { id: 'C64', input: 'UA', series: 'armed-forces' as const },
+      {
+        id: 'C65',
+        input: 'HBA',
+        series: 'state-protection-service' as const,
+      },
+      { id: 'C66', input: 'HPN', series: 'police' as const },
+      { id: 'C67', input: 'HKA', series: 'abw-aw' as const },
+      { id: 'C68', input: 'HAA', series: 'cba' as const },
+      { id: 'C69', input: 'HWA', series: 'border-guard' as const },
+      {
+        id: 'C70',
+        input: 'HCA',
+        series: 'customs-and-tax-service' as const,
+      },
+      { id: 'C71', input: 'HMA', series: 'skw-sww' as const },
+      { id: 'C72', input: 'HPN 12AA', series: 'police' as const },
+      { id: 'C73', input: 'hpn', series: 'police' as const },
+    ])('$id $input → series $series', ({ input, series }) => {
+      expect(candidatesFor(input)).toStrictEqual({
+        status: 'not-in-registry',
+        country: 'PL',
+        series,
+      });
+    });
+
+    it.each([
+      { id: 'C74', input: 'H' },
+      { id: 'C75', input: 'U' },
+      { id: 'C76', input: 'HP' },
+      { id: 'C77', input: 'HM' },
+      { id: 'C78', input: 'HX' },
+      { id: 'C79', input: 'UO' },
+      { id: 'C80', input: 'UU' },
+      { id: 'C81', input: 'U0' },
+      { id: 'C82', input: 'U12345' },
+      { id: 'C83', input: 'HP0 12AA' },
+    ])('$id $input → not-in-registry without series', ({ input }) => {
+      expect(candidatesFor(input)).toStrictEqual(notInRegistry);
+    });
+
+    it('C84 H or U + two alphabet characters → series per R-50–R-60 (oracle from the act text)', () => {
+      const armedForcesLetters = new Set('ABCDEFGHIJKLMNPRSTVWXYZ');
+      const serviceLetters = new Set('ABCDEFGHIJKLMNOPRSTUVWXYZ');
+      const serviceCodes: ReadonlyMap<string, PlateSeries> = new Map([
+        ['HB', 'state-protection-service'],
+        ['HP', 'police'],
+        ['HK', 'abw-aw'],
+        ['HA', 'cba'],
+        ['HW', 'border-guard'],
+        ['HC', 'customs-and-tax-service'],
+        ['HM', 'skw-sww'],
+      ]);
+
+      function expectedSeries(compact: string): PlateSeries | undefined {
+        if (compact.charAt(0) === 'U') {
+          return armedForcesLetters.has(compact.charAt(1))
+            ? 'armed-forces'
+            : undefined;
+        }
+        return serviceLetters.has(compact.charAt(2))
+          ? serviceCodes.get(compact.slice(0, 2))
+          : undefined;
+      }
+
+      const counts: Record<string, number> = {
+        'armed-forces': 0,
+        'state-protection-service': 0,
+        police: 0,
+        'abw-aw': 0,
+        cba: 0,
+        'border-guard': 0,
+        'customs-and-tax-service': 0,
+        'skw-sww': 0,
+        none: 0,
+      };
+      const violations: string[] = [];
+      let total = 0;
+
+      for (const first of ['H', 'U'] as const) {
+        for (const second of PLATE_ALPHABET) {
+          for (const third of PLATE_ALPHABET) {
+            total += 1;
+            const input = first + second + third;
+            const expected = expectedSeries(input);
+            const result = candidatesFor(input);
+            if (expected === undefined) {
+              counts['none'] += 1;
+              if (result.status !== 'not-in-registry' || 'series' in result) {
+                violations.push(
+                  `${input}: expected no series, got ${JSON.stringify(result)}`,
+                );
+              }
+            } else {
+              counts[expected] += 1;
+              if (
+                result.status !== 'not-in-registry' ||
+                result.series !== expected
+              ) {
+                violations.push(
+                  `${input}: expected series ${expected}, got ${JSON.stringify(result)}`,
+                );
+              }
+            }
+          }
+        }
+      }
+
+      expect(total).toBe(2_450);
+      expect(counts).toEqual({
+        'armed-forces': 805,
+        'state-protection-service': 25,
+        police: 25,
+        'abw-aw': 25,
+        cba: 25,
+        'border-guard': 25,
+        'customs-and-tax-service': 25,
+        'skw-sww': 25,
+        none: 1_470,
+      });
+      expect(violations).toEqual([]);
+    });
   });
 });

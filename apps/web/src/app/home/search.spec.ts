@@ -63,4 +63,14 @@ describe('search', () => {
       error: { kind: 'not-in-registry' },
     });
   });
+
+  it.each([
+    ['hpn 12aa', 'HPN 12AA'],
+    ['UA12345', 'UA12345'],
+  ] as const)(
+    'navigates for a service or military series: %s → %s',
+    (input, plate) => {
+      expect(search(input)).toEqual({ kind: 'navigate', plate });
+    },
+  );
 });

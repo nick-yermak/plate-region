@@ -11,6 +11,16 @@
       "noMatchingFormat": "This is not a Polish plate format.",
       "empty": "There is no plate number in this link."
     },
+    "series": {
+      "armedForces": "Military plate: Armed Forces",
+      "stateProtectionService": "Service plate: State Protection Service",
+      "police": "Service plate: Police",
+      "abwAw": "Service plate: Internal Security Agency or Foreign Intelligence Agency",
+      "cba": "Service plate: Central Anti-Corruption Bureau",
+      "borderGuard": "Service plate: Border Guard",
+      "customsAndTaxService": "Service plate: Customs and Tax Service",
+      "skwSww": "Service plate: Military Counterintelligence Service or Military Intelligence Service"
+    },
     "backHome": "Search for another plate",
     "notes": {
       "region1Only": "This plate shows only the voivodeship code, not a county.",

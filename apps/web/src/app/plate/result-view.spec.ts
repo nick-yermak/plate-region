@@ -103,6 +103,46 @@ describe('resultView', () => {
     });
   });
 
+  it.each([
+    {
+      input: 'UA 12345',
+      key: 'plate.series.armedForces',
+    },
+    {
+      input: 'HBA 12AA',
+      key: 'plate.series.stateProtectionService',
+    },
+    {
+      input: 'HPN 12AA',
+      key: 'plate.series.police',
+    },
+    {
+      input: 'HKA 12AA',
+      key: 'plate.series.abwAw',
+    },
+    {
+      input: 'HAA 12AA',
+      key: 'plate.series.cba',
+    },
+    {
+      input: 'HWA 12AA',
+      key: 'plate.series.borderGuard',
+    },
+    {
+      input: 'HCA 12AA',
+      key: 'plate.series.customsAndTaxService',
+    },
+    {
+      input: 'HMA 12AA',
+      key: 'plate.series.skwSww',
+    },
+  ])('not-in-registry $input → $key', ({ input, key }) => {
+    expect(resultView(parsePlate(input), 'en')).toEqual({
+      kind: 'message',
+      heading: { key },
+    });
+  });
+
   it('invalid-characters DW 1234Q → characters param', () => {
     expect(resultView(parsePlate('DW 1234Q'), 'en')).toEqual({
       kind: 'message',

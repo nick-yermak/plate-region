@@ -27,7 +27,9 @@ export function search(input: string): SearchOutcome {
     case 'empty':
       return { kind: 'error', error: { kind: 'empty' } };
     case 'not-in-registry':
-      return { kind: 'error', error: { kind: 'not-in-registry' } };
+      return parsed.series === undefined
+        ? { kind: 'error', error: { kind: 'not-in-registry' } }
+        : { kind: 'navigate', plate: routePlate(input) };
   }
 }
 

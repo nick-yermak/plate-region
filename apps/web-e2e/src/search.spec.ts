@@ -48,3 +48,19 @@ test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
   await page.getByRole('button', { name: 'Search' }).tap();
   await expect(page).toHaveURL(/\/plate\/DW12345$/);
 });
+
+test('search-service-plate', { tag: '@desktop' }, async ({ page }) => {
+  await page.goto('/');
+  const field = page.getByRole('textbox', { name: 'Licence plate number' });
+  await field.fill('HPN 12AA');
+  await field.press('Enter');
+  await expect(page).toHaveURL(/\/plate\/HPN%2012AA$/);
+  const main = page.getByRole('main');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Service plate: Police',
+  );
+  await expect(
+    main.getByRole('link', { name: 'Search for another plate' }),
+  ).toHaveAttribute('href', '/');
+  await expect(main.getByRole('link')).toHaveCount(1);
+});

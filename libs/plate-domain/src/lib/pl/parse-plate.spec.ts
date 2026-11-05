@@ -3,6 +3,7 @@ import type { Region1, Region2 } from '@plate-region/plate-data';
 
 import { parsePlate } from './parse-plate';
 import { PLATE_ALPHABET } from './alphabet';
+import type { PlateSeries } from './readings';
 import type { PlateTypes } from './plate-type';
 import type { ParseResult } from './parse-plate';
 
@@ -684,7 +685,6 @@ describe('parsePlate', () => {
     it.each([
       // Final within Dz.U. 2024 poz. 1709; out of scope per D-35, D-46 (R-37, R-48).
       { input: 'HA12345' },
-      { input: 'UA12345' },
       { input: 'H' },
       { input: 'H0' },
     ])('$input → not-in-registry (D-35)', ({ input }) => {
@@ -913,5 +913,166 @@ describe('parsePlate', () => {
         expect(parsePlate(without)).toEqual(expected);
       },
     );
+  });
+
+  describe('service and military series (D-46)', () => {
+    it.each([
+      { input: 'UA', series: 'armed-forces' as const, rows: 'R-50, R-51' },
+      {
+        input: 'UA12345',
+        series: 'armed-forces' as const,
+        rows: 'R-50, R-51',
+      },
+      {
+        input: 'HBA',
+        series: 'state-protection-service' as const,
+        rows: 'R-52, R-53',
+      },
+      { input: 'HPN', series: 'police' as const, rows: 'R-52, R-54' },
+      { input: 'HKA', series: 'abw-aw' as const, rows: 'R-52, R-55' },
+      { input: 'HAA', series: 'cba' as const, rows: 'R-52, R-56' },
+      { input: 'HWA', series: 'border-guard' as const, rows: 'R-52, R-57' },
+      {
+        input: 'HCA',
+        series: 'customs-and-tax-service' as const,
+        rows: 'R-52, R-58',
+      },
+      { input: 'HMA', series: 'skw-sww' as const, rows: 'R-59, R-60' },
+      { input: 'HPN 12AA', series: 'police' as const, rows: 'rest unchecked' },
+      { input: 'hpn', series: 'police' as const, rows: 'case normalisation' },
+      {
+        input: 'HPO 12AA',
+        series: 'police' as const,
+        rows: 'O in R-52 letters',
+      },
+    ])('$input → series $series ($rows)', ({ input, series }) => {
+      expect(parsePlate(input)).toStrictEqual({
+        status: 'not-in-registry',
+        country: 'PL',
+        series,
+      });
+    });
+
+    it.each([
+      { input: 'H', why: 'short' },
+      { input: 'U', why: 'short' },
+      { input: 'HP', why: 'short' },
+      { input: 'HM', why: 'short' },
+      { input: 'HX', why: 'not a code' },
+      { input: 'UO', why: 'O excluded by R-51' },
+      { input: 'UU', why: 'U excluded by R-51' },
+      { input: 'U0', why: 'digit' },
+      { input: 'U12345', why: 'digit' },
+      { input: 'HP0 12AA', why: 'digit, no look-alike' },
+    ])('$input → not-in-registry without series ($why)', ({ input }) => {
+      expect(parsePlate(input)).toStrictEqual(notInRegistry);
+    });
+
+    // Normalisation rejects Q (R-23) before the series check, so Q in a series letter set is an equivalent mutant.
+    it.each([
+      {
+        input: 'HPQ',
+        expected: {
+          status: 'invalid-input' as const,
+          country: 'PL' as const,
+          reason: 'invalid-characters' as const,
+          invalidCharacters: ['Q'],
+        },
+      },
+      {
+        input: 'UQ',
+        expected: {
+          status: 'invalid-input' as const,
+          country: 'PL' as const,
+          reason: 'invalid-characters' as const,
+          invalidCharacters: ['Q'],
+        },
+      },
+    ])('$input → invalid-characters [Q] (R-23)', ({ input, expected }) => {
+      expect(parsePlate(input)).toStrictEqual(expected);
+    });
+
+    it('H or U + two alphabet characters → series per R-50–R-60 (oracle from the act text)', () => {
+      // 1776 § 6 ust. 3 pkt 2 lit. a (R-51); 1326 § 5 ust. 2 pkt 1 (R-52); 1777 § 6 ust. 1 pkt 1 (R-59).
+      const armedForcesLetters = new Set('ABCDEFGHIJKLMNPRSTVWXYZ');
+      const serviceLetters = new Set('ABCDEFGHIJKLMNOPRSTUVWXYZ');
+      const serviceCodes: ReadonlyMap<string, PlateSeries> = new Map([
+        ['HB', 'state-protection-service'],
+        ['HP', 'police'],
+        ['HK', 'abw-aw'],
+        ['HA', 'cba'],
+        ['HW', 'border-guard'],
+        ['HC', 'customs-and-tax-service'],
+        ['HM', 'skw-sww'],
+      ]);
+
+      function expectedSeries(compact: string): PlateSeries | undefined {
+        if (compact.charAt(0) === 'U') {
+          return armedForcesLetters.has(compact.charAt(1))
+            ? 'armed-forces'
+            : undefined;
+        }
+        return serviceLetters.has(compact.charAt(2))
+          ? serviceCodes.get(compact.slice(0, 2))
+          : undefined;
+      }
+
+      const counts: Record<string, number> = {
+        'armed-forces': 0,
+        'state-protection-service': 0,
+        police: 0,
+        'abw-aw': 0,
+        cba: 0,
+        'border-guard': 0,
+        'customs-and-tax-service': 0,
+        'skw-sww': 0,
+        none: 0,
+      };
+      const violations: string[] = [];
+      let total = 0;
+
+      for (const first of ['H', 'U'] as const) {
+        for (const second of PLATE_ALPHABET) {
+          for (const third of PLATE_ALPHABET) {
+            total += 1;
+            const input = first + second + third;
+            const expected = expectedSeries(input);
+            const result = parsePlate(input);
+            if (expected === undefined) {
+              counts['none'] += 1;
+              if (result.status !== 'not-in-registry' || 'series' in result) {
+                violations.push(
+                  `${input}: expected no series, got ${JSON.stringify(result)}`,
+                );
+              }
+            } else {
+              counts[expected] += 1;
+              if (
+                result.status !== 'not-in-registry' ||
+                result.series !== expected
+              ) {
+                violations.push(
+                  `${input}: expected series ${expected}, got ${JSON.stringify(result)}`,
+                );
+              }
+            }
+          }
+        }
+      }
+
+      expect(total).toBe(2_450);
+      expect(counts).toEqual({
+        'armed-forces': 805,
+        'state-protection-service': 25,
+        police: 25,
+        'abw-aw': 25,
+        cba: 25,
+        'border-guard': 25,
+        'customs-and-tax-service': 25,
+        'skw-sww': 25,
+        none: 1_470,
+      });
+      expect(violations).toEqual([]);
+    });
   });
 });
