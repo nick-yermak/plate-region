@@ -6,7 +6,7 @@ import {
   type Region2,
 } from '@plate-region/plate-data';
 
-import type { CandidatesFound } from './home.types';
+import type { CandidatesFound } from '../plate/plate.types';
 
 export function voivodeship(letter: string): Region1 {
   const found = registry.region1.find((region) =>

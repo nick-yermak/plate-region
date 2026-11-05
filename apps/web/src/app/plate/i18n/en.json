@@ -40,6 +40,18 @@
       "city": "city with county rights",
       "land": "county"
     },
+    "candidates": {
+      "voivodeship": "Voivodeship: {{name}}",
+      "heading": {
+        "one": "{{count}} possible county",
+        "few": "{{count}} possible counties",
+        "many": "{{count}} possible counties",
+        "other": "{{count}} possible counties"
+      },
+      "others": "Other possible counties",
+      "withoutRegion2": "Also possible: a plate with the voivodeship code only, without a county.",
+      "notInRegistry": "Also possible: a county code that is not in the current registry."
+    },
     "types": {
       "ordinary": "ordinary",
       "individual": "individual",

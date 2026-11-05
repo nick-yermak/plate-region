@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
 import { candidatesView } from '../candidates-view';
-import type { CandidatesView } from '../home.types';
+import type { CandidatesView } from '../plate.types';
 import type { Language } from '../../i18n/language.types';
 import { CandidatesListComponent } from './candidates-list';
-import { compactOf, county, found, voivodeship } from '../home.testing';
+import { compactOf, county, found, voivodeship } from '../plate.testing';
 import { testingText, TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 function view(input: string): CandidatesView {
@@ -36,13 +36,13 @@ describe('CandidatesListComponent', () => {
     const fixture = await render('GK');
     const heading = fixture.nativeElement.querySelector('h2');
     expect(heading?.textContent?.trim()).toBe(
-      testingText('en', 'home.candidates.heading.other', { count: 3 }),
+      testingText('en', 'plate.candidates.heading.other', { count: 3 }),
     );
   });
 
   it('lists code, name and kind per county', async () => {
     const fixture = await render('GK');
-    const landKind = testingText('en', 'home.candidates.kind.land');
+    const landKind = testingText('en', 'plate.kind.land');
     const items = Array.from(
       fixture.nativeElement.querySelectorAll('li') as NodeListOf<HTMLElement>,
     );
@@ -79,21 +79,21 @@ describe('CandidatesListComponent', () => {
     const fixture = await render('DA');
     expect(fixture.nativeElement.querySelector('h2')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain(
-      testingText('en', 'home.candidates.withoutRegion2'),
+      testingText('en', 'plate.candidates.withoutRegion2'),
     );
   });
 
   it('shows the not-in-registry line', async () => {
     const fixture = await render('DAB');
     expect(fixture.nativeElement.textContent).toContain(
-      testingText('en', 'home.candidates.notInRegistry'),
+      testingText('en', 'plate.candidates.notInRegistry'),
     );
   });
 
   it('uses Polish plural forms', async () => {
     const fixture = await render('O', 'pl');
     expect(fixture.nativeElement.querySelector('h2')?.textContent?.trim()).toBe(
-      testingText('pl', 'home.candidates.heading.many', { count: 12 }),
+      testingText('pl', 'plate.candidates.heading.many', { count: 12 }),
     );
     expect(fixture.nativeElement.textContent).toContain(
       testingText('pl', 'home.candidates.more.few', { count: 2 }),
@@ -103,14 +103,14 @@ describe('CandidatesListComponent', () => {
   it('names the voivodeship in the active language', async () => {
     const en = await render('DW', 'en');
     expect(en.nativeElement.textContent).toContain(
-      testingText('en', 'home.candidates.voivodeship', {
+      testingText('en', 'plate.candidates.voivodeship', {
         name: voivodeship('D').nameEn.value,
       }),
     );
     TestBed.resetTestingModule();
     const pl = await render('DW', 'pl');
     expect(pl.nativeElement.textContent).toContain(
-      testingText('pl', 'home.candidates.voivodeship', {
+      testingText('pl', 'plate.candidates.voivodeship', {
         name: voivodeship('D').name,
       }),
     );
@@ -149,7 +149,7 @@ describe('CandidatesListComponent', () => {
     ).map((heading) => heading.textContent?.trim());
     expect(headings).toEqual([
       county('GD').name,
-      testingText('en', 'home.candidates.others'),
+      testingText('en', 'plate.candidates.others'),
     ]);
     expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(1);
     expect(fixture.nativeElement.querySelector('li')?.textContent).toContain(
@@ -164,7 +164,7 @@ describe('CandidatesListComponent', () => {
     expect(headings[0]?.textContent?.trim()).toBe(county('VX').name);
     expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).toContain(
-      testingText('en', 'home.candidates.withoutRegion2'),
+      testingText('en', 'plate.candidates.withoutRegion2'),
     );
   });
 });

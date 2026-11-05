@@ -1,5 +1,5 @@
 import { pluralKey } from '../i18n/plural-key';
-import type { CandidatesView } from './home.types';
+import type { CandidatesView } from './plate.types';
 import type { Language } from '../i18n/language.types';
 import type { TranslatableMessage } from '../i18n/i18n.types';
 import { countyHeading } from '../shared/county/county-heading';
@@ -18,7 +18,7 @@ export function othersHeading(
   if (view.answer === undefined || view.counties.length === 0) {
     return undefined;
   }
-  return { key: 'home.candidates.others' };
+  return { key: 'plate.candidates.others' };
 }
 
 export function candidatesHeading(
@@ -33,7 +33,7 @@ export function candidatesHeading(
     return undefined;
   }
   return {
-    key: pluralKey('home.candidates.heading', count, language),
+    key: pluralKey('plate.candidates.heading', count, language),
     params: { count },
   };
 }
@@ -45,7 +45,7 @@ export function voivodeshipLine(
   const name =
     language === 'pl' ? view.region1.name : view.region1.nameEn.value;
   return {
-    key: 'home.candidates.voivodeship',
+    key: 'plate.candidates.voivodeship',
     params: { name },
   };
 }

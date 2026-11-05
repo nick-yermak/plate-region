@@ -5,7 +5,7 @@ import {
 } from '@plate-region/plate-domain';
 
 import type { SearchOutcome } from './home.types';
-import { candidatesView } from './candidates-view';
+import { candidatesView } from '../plate/candidates-view';
 
 export function search(input: string): SearchOutcome {
   const parsed = parsePlate(input);

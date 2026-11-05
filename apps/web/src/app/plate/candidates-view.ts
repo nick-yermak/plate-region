@@ -1,4 +1,4 @@
-import type { CandidatesFound, CandidatesView } from './home.types';
+import type { CandidatesFound, CandidatesView } from './plate.types';
 
 export function candidatesView(
   result: CandidatesFound,

@@ -1,6 +1,6 @@
 import { candidatesView } from './candidates-view';
-import { compactOf, county, found } from './home.testing';
-import type { CandidatesFound, CandidatesView } from './home.types';
+import { compactOf, county, found } from './plate.testing';
+import type { CandidatesFound, CandidatesView } from './plate.types';
 
 function view(input: string): CandidatesView {
   return candidatesView(found(input), compactOf(input));

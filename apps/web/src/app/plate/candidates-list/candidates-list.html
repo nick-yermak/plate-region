@@ -17,8 +17,8 @@
         <span class="candidates-kind"
           >({{
             (entry.region2.kind === 'city'
-              ? 'home.candidates.kind.city'
-              : 'home.candidates.kind.land'
+              ? 'plate.kind.city'
+              : 'plate.kind.land'
             ) | transloco
           }})</span
         >
@@ -32,8 +32,8 @@
   }
 }
 @if (hasWithoutRegion2()) {
-  <p>{{ 'home.candidates.withoutRegion2' | transloco }}</p>
+  <p>{{ 'plate.candidates.withoutRegion2' | transloco }}</p>
 }
 @if (hasNotInRegistry()) {
-  <p>{{ 'home.candidates.notInRegistry' | transloco }}</p>
+  <p>{{ 'plate.candidates.notInRegistry' | transloco }}</p>
 }

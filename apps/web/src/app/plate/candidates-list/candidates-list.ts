@@ -2,9 +2,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, computed, input } from '@angular/core';
 
 import { pluralKey } from '../../i18n/plural-key';
-import type { CandidatesView } from '../home.types';
-import { CANDIDATES_LIMIT } from '../home.constants';
+import type { CandidatesView } from '../plate.types';
 import type { Language } from '../../i18n/language.types';
+import { CANDIDATES_LIMIT } from '../../home/home.constants';
 import {
   answerHeading,
   candidatesHeading,

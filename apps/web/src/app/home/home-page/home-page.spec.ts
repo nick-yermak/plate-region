@@ -141,7 +141,7 @@ describe('HomePage', () => {
       '[aria-live="polite"]',
     );
     expect(live.textContent?.trim()).toBe(
-      testingText('en', 'home.candidates.heading.other', { count: 3 }),
+      testingText('en', 'plate.candidates.heading.other', { count: 3 }),
     );
   });
 

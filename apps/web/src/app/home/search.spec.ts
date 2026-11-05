@@ -1,6 +1,6 @@
 import { search } from './search';
 import { county, found } from './home.testing';
-import { candidatesView } from './candidates-view';
+import { candidatesView } from '../plate/candidates-view';
 
 describe('search', () => {
   it.each([

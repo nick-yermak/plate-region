@@ -22,14 +22,14 @@ import type { CandidatesView, SearchError } from '../home.types';
 import { LanguageService } from '../../language/language.service';
 import { isSearchError, searchErrorMessage } from '../search-error';
 import { HomeExamplesComponent } from '../home-examples/home-examples';
-import { CandidatesListComponent } from '../candidates-list/candidates-list';
 import { HOME_RANDOM, PLATE_ERROR_ID, PLATE_HINT_ID } from '../home.constants';
 import { PlateInputComponent } from '../../shared/plate/plate-input/plate-input';
+import { CandidatesListComponent } from '../../plate/candidates-list/candidates-list';
 import {
   answerHeading,
   candidatesHeading,
   voivodeshipLine,
-} from '../candidates-messages';
+} from '../../plate/candidates-messages';
 
 @Component({
   selector: 'app-home-page',
