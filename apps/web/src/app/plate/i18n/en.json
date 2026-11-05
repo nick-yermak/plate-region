@@ -1,5 +1,43 @@
 {
   "plate": {
-    "title": "Plate"
+    "heading": {
+      "voivodeship": "{{name}} Voivodeship",
+      "city": "{{name}}",
+      "land": "{{name}} county"
+    },
+    "messages": {
+      "notInRegistry": "This code is not in the registry.",
+      "invalidCharacters": "Not allowed on Polish plates: {{characters}}",
+      "noMatchingFormat": "This is not a Polish plate format.",
+      "empty": "There is no plate number in this link."
+    },
+    "backHome": "Search for another plate",
+    "notes": {
+      "region1Only": "This plate shows only the voivodeship code, not a county.",
+      "region2NotInRegistry": "The county code is not in the current registry.",
+      "ambiguous": "The characters can be read in two ways."
+    },
+    "reading": {
+      "withCounty": "Read with a county code",
+      "withoutCounty": "Read without a county code",
+      "county": "County",
+      "voivodeship": "Voivodeship",
+      "type": "Plate type",
+      "possibleTypes": "Possible plate types",
+      "countyValue": "{{name}} ({{kind}})",
+      "countyLink": "{{name}} on the voivodeship page",
+      "voivodeshipLink": "Voivodeship page: {{name}}"
+    },
+    "kind": {
+      "city": "city with county rights",
+      "land": "county"
+    },
+    "types": {
+      "ordinary": "ordinary",
+      "individual": "individual",
+      "vintage": "vintage",
+      "temporary": "temporary",
+      "diplomatic": "diplomatic"
+    }
   }
 }

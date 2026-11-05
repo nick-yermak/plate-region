@@ -1,5 +1,43 @@
 {
   "plate": {
-    "title": "Tablica rejestracyjna"
+    "heading": {
+      "voivodeship": "Województwo {{name}}",
+      "city": "{{name}}",
+      "land": "Powiat {{name}}"
+    },
+    "messages": {
+      "notInRegistry": "Tego wyróżnika nie ma w rejestrze.",
+      "invalidCharacters": "Niedozwolone na polskich tablicach: {{characters}}",
+      "noMatchingFormat": "To nie jest format polskiej tablicy.",
+      "empty": "W tym linku nie ma numeru rejestracyjnego."
+    },
+    "backHome": "Wyszukaj inną tablicę",
+    "notes": {
+      "region1Only": "Ta tablica ma tylko wyróżnik województwa, bez powiatu.",
+      "region2NotInRegistry": "Wyróżnika powiatu nie ma w obecnym rejestrze.",
+      "ambiguous": "Znaki można odczytać na dwa sposoby."
+    },
+    "reading": {
+      "withCounty": "Odczyt z wyróżnikiem powiatu",
+      "withoutCounty": "Odczyt bez wyróżnika powiatu",
+      "county": "Powiat",
+      "voivodeship": "Województwo",
+      "type": "Rodzaj tablicy",
+      "possibleTypes": "Możliwe rodzaje tablicy",
+      "countyValue": "{{name}} ({{kind}})",
+      "countyLink": "{{name}} na stronie województwa",
+      "voivodeshipLink": "Strona województwa: {{name}}"
+    },
+    "kind": {
+      "city": "miasto na prawach powiatu",
+      "land": "powiat"
+    },
+    "types": {
+      "ordinary": "zwyczajna",
+      "individual": "indywidualna",
+      "vintage": "zabytkowa",
+      "temporary": "tymczasowa",
+      "diplomatic": "dyplomatyczna"
+    }
   }
 }

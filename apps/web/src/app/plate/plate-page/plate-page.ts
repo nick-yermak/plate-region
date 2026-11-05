@@ -1,27 +1,39 @@
-import { Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { Component, computed, inject, input } from '@angular/core';
 
+import { parsePlate } from '@plate-region/plate-domain';
+
+import { plateDisplayText, resultView } from '../result-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
+import { LanguageService } from '../../language/language.service';
+import { ResultReadingComponent } from '../result-reading/result-reading';
+import { CarIllustrationComponent } from '../car-illustration/car-illustration';
 
 @Component({
   selector: 'app-plate-page',
-  imports: [PlateComponent, TranslocoPipe],
-  template: `
-    <h1>{{ 'plate.title' | transloco }}</h1>
-    <div class="plate-wrap">
-      <app-plate [plate]="plate()" />
-    </div>
-  `,
-  styles: `
-    .plate-wrap {
-      container-type: inline-size;
-    }
-
-    app-plate {
-      font-size: min(4rem, calc(100cqi * 114 / 520));
-    }
-  `,
+  imports: [
+    CarIllustrationComponent,
+    PlateComponent,
+    ResultReadingComponent,
+    RouterLink,
+    TranslocoPipe,
+  ],
+  templateUrl: './plate-page.html',
+  styleUrl: './plate-page.less',
 })
 export class PlatePage {
+  private readonly languageService = inject(LanguageService);
+
   readonly plate = input.required<string>();
+
+  protected readonly language = this.languageService.language;
+
+  protected readonly result = computed(() => parsePlate(this.plate()));
+
+  protected readonly view = computed(() =>
+    resultView(this.result(), this.language()),
+  );
+
+  protected readonly plateText = computed(() => plateDisplayText(this.plate()));
 }
