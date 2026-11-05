@@ -66,6 +66,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Every report after running code starts with test/typecheck/lint results: pass/fail counts and exit codes. Each failing test is listed with input, expected and actual, and classified as a code bug or a wrong expectation. Spec expectations change only with approval.
 - e2e: every Playwright test carries at least one viewport tag (`@desktop`, `@tablet`, `@mobile`): projects select tests by tag (D-50), so an untagged test runs in no project. `--list --grep-invert '@desktop|@tablet|@mobile'` must find no tests.
 - Before changing what a page renders, `git grep` the e2e specs for its route and visible texts, and list every assertion that changes in the plan.
+- Never remove or weaken a failing test, screenshot or contrast check to get a green run: fix the code, or prove the check wrong with measured values and report it.
 - Icons: register icons where they are rendered — `provideNzIconsPatch([...])` in the providers of that component or lazy route; no global icon list in `app.config.ts`; specs do not list icons of child components (D-28).
 - Layout: use NG-ZORRO layout primitives (`nz-flex`, `nz-space`, `nz-row`/`nz-col`) and `var(--pr-*)` tokens; own CSS only for what they cannot express (hide-only media queries, sizing), with no hard-coded spacing values; no utility-class frameworks (D-28, D-50).
 - NG-ZORRO overlays (drawer, modal): mount them only while open or closing, and check the closed state in the accessibility tree and tab order (D-50 Update #105).
