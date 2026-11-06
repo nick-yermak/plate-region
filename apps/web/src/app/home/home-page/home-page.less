@@ -15,6 +15,14 @@
 // Plate + gap + square Search share one cqi; gap is --pr-padding-xs (D-53 Update #115).
 @plate-em: min(7rem, calc((100cqi - var(--pr-padding-xs)) * 114 / 634));
 
+// EU field blue of the plate and its states: fixed, because the plate does not follow the theme
+// (D-28 Update #88, #121). White icon: 10.86:1, 7.75:1, 13.11:1.
+@search-bg: #003399;
+@search-bg-hover: #1a4dad;
+@search-bg-active: #002780;
+// White inset ring = plate body margin up to the outer edge of the black frame (D-51).
+@search-ring: inset 0 0 0 calc(@plate-em * 4 / 114) #fff;
+
 form.ant-form {
   display: block;
   width: 100%;
@@ -59,8 +67,19 @@ button.search {
   padding: 0;
   border-width: 0;
   border-radius: calc(@plate-em * 10 / 114);
-  // White inset ring = plate body margin up to the outer edge of the black frame (D-51).
-  box-shadow: inset 0 0 0 calc(@plate-em * 4 / 114) #fff;
+  box-shadow: @search-ring;
+  background: @search-bg;
+
+  &:hover,
+  &:focus {
+    background: @search-bg-hover;
+  }
+
+  &:active {
+    background: @search-bg-active;
+    // .ant-btn:not([disabled]):active (0,3,0) sets box-shadow: none; encapsulated :active is (0,3,1).
+    box-shadow: @search-ring;
+  }
 
   .anticon {
     font-size: calc(@plate-em * 0.4);
