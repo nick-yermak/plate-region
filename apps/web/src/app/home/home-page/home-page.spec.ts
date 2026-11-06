@@ -70,7 +70,7 @@ describe('HomePage', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('h1').textContent.trim()).toBe(
-      'Skąd jest ta tablica?',
+      'Rozszyfruj polską tablicę',
     );
   });
 

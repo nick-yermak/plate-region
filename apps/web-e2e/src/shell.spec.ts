@@ -33,11 +33,11 @@ test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
 
   await banner.getByRole('link', { name: 'Home' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Where is this plate from?',
+    'Decode a Polish plate',
   );
 
   const routes: { path: string; heading: string }[] = [
-    { path: '/', heading: 'Where is this plate from?' },
+    { path: '/', heading: 'Decode a Polish plate' },
     { path: '/plate/WA12345', heading: 'm.st. Warszawa' },
     { path: '/voivodeship/mazowieckie', heading: 'Voivodeship' },
     { path: '/registry', heading: 'Registry' },

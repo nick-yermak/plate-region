@@ -191,7 +191,7 @@ describe('ShellComponent', () => {
     const heading = fixture.debugElement.query(By.css('h1'));
     expect(heading).toBeTruthy();
     expect(heading.nativeElement.textContent.trim()).toBe(
-      'Where is this plate from?',
+      'Decode a Polish plate',
     );
   });
 });

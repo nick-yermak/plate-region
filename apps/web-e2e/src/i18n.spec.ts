@@ -4,7 +4,7 @@ test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Where is this plate from?',
+    'Decode a Polish plate',
   );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Registry' }),
@@ -13,7 +13,7 @@ test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Skąd jest ta tablica?',
+    'Rozszyfruj polską tablicę',
   );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
@@ -28,7 +28,7 @@ test('i18n-switch-language', { tag: '@desktop' }, async ({ page }) => {
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Skąd jest ta tablica?',
+    'Rozszyfruj polską tablicę',
   );
   await expect(
     page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
@@ -78,7 +78,7 @@ test('i18n-first-load-skeleton', { tag: '@desktop' }, async ({ page }) => {
   release();
   await navigation;
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Where is this plate from?',
+    'Decode a Polish plate',
   );
   await expect(nav).not.toHaveAttribute('aria-busy', 'true');
   await expect(page.getByRole('main')).not.toHaveAttribute('aria-busy', 'true');
@@ -130,7 +130,7 @@ test('i18n-active-dictionary-once', { tag: '@desktop' }, async ({ page }) => {
 
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Where is this plate from?',
+    'Decode a Polish plate',
   );
   expect(dictionaryRequests).toHaveLength(1);
 
