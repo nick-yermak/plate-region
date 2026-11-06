@@ -13,13 +13,35 @@
 // NG-ZORRO resets outline on buttons/drawer close; menu focus is on the li while focus lands on the inner link.
 .ant-btn:focus-visible,
 .ant-drawer-close:focus-visible {
-  outline: 2px solid var(--pr-primary);
+  outline: 2px solid var(--pr-focus-ring);
   outline-offset: 2px;
 }
 
 .ant-menu-item:has(a:focus-visible) {
-  outline: 2px solid var(--pr-primary);
+  outline: 2px solid var(--pr-focus-ring);
   outline-offset: -2px;
+}
+
+// Menu ring is on the item (D-28 Update #110); suppress the plain-link ring from #91.
+.ant-menu-item a:focus-visible {
+  outline: none;
+}
+
+// Library default-button hover/focus/active come from colorPalette(primary, 5) / @primary-5
+// with no variable of their own and fail contrast; @blue-7/@blue-8 resolve per theme.
+// Needs nzType="default" on the button: NG-ZORRO adds .ant-btn-default only for an explicit type.
+// (0,2,0) ties .ant-btn:hover and wins by order; .ant-btn[disabled]:hover (0,3,0) still wins.
+.ant-btn-default {
+  &:hover,
+  &:focus {
+    color: @blue-7;
+    border-color: @blue-7;
+  }
+
+  &:active {
+    color: @blue-8;
+    border-color: @blue-8;
+  }
 }
 
 // Base styles clear link outlines; the result page is the first plain <a> use (WCAG 2.4.7).

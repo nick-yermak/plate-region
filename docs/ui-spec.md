@@ -10,7 +10,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 ## Global
 
-- UI library: NG-ZORRO with the default Ant Design theme. Custom styling only for the plate component and the plate input (see Components).
+- UI library: NG-ZORRO with the Ant Design theme, adjusted through theme variables and global rules in `src/theme/` for WCAG AA contrast and the header design (D-28 and its Updates). Custom component styling only for the plate component, the plate input and the home Search button (see Components).
 - Theme: follows the system setting; a toggle in the top bar overrides it (D-28).
 - Languages: Polish and English. Plural forms must be handled: Polish uses the CLDR categories one, few, many and other; English uses one and other.
 - Navigation: a light top bar on every page (component background, a 1 px divider below, a text brand); on narrow screens its links collapse into a burger menu. The bar holds the theme toggle and the language switch. Page content starts 24 px below the bar.
