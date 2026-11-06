@@ -50,11 +50,44 @@ describe('HeaderComponent', () => {
     const brand = fixture.debugElement
       .query(By.directive(HeaderComponent))
       .queryAll(By.css('a'))
-      .find((el) => el.nativeElement.textContent.trim() === 'PlateRegion');
+      .find((el) => el.nativeElement.textContent.trim() === 'Tablicomat');
     if (!brand) {
       throw new Error('brand link not found');
     }
     expect(brand.nativeElement.getAttribute('href')).toBe('/');
+  });
+
+  it('renders the brand icon before the name', async () => {
+    const fixture = TestBed.createComponent(HeaderHostComponent);
+    await fixture.whenStable();
+
+    const brand = fixture.debugElement.query(By.css('a.header-brand'));
+    if (!brand) {
+      throw new Error('brand link not found');
+    }
+    const first = brand.nativeElement.firstElementChild as HTMLElement | null;
+    expect(first?.tagName).toBe('IMG');
+    expect(first?.getAttribute('src')).toBe('/icon.svg');
+    expect(first?.getAttribute('width')).toBe('32');
+    expect(first?.getAttribute('height')).toBe('32');
+  });
+
+  it('marks the brand icon as decorative', async () => {
+    const fixture = TestBed.createComponent(HeaderHostComponent);
+    await fixture.whenStable();
+
+    const brand = fixture.debugElement.query(By.css('a.header-brand'));
+    if (!brand) {
+      throw new Error('brand link not found');
+    }
+    const img = brand.nativeElement.querySelector(
+      'img',
+    ) as HTMLImageElement | null;
+    if (!img) {
+      throw new Error('brand icon not found');
+    }
+    expect(img.getAttribute('alt')).toBe('');
+    expect(brand.nativeElement.getAttribute('aria-label')).toBeNull();
   });
 
   it('emits menuOpen when the burger is clicked', async () => {

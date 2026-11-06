@@ -171,9 +171,9 @@ test('header-threshold-fit-pl', { tag: '@desktop' }, async ({ page }) => {
   );
   expect(new Set(tops.map((t) => Math.round(t * 10) / 10)).size).toBe(1);
 
-  const brandBox = await boxOf(
-    banner.getByRole('link', { name: 'PlateRegion' }),
-  );
+  const brandLink = banner.getByRole('link', { name: 'Tablicomat' });
+  await expect(brandLink).toBeVisible();
+  const brandBox = await boxOf(brandLink);
   const navBox = await boxOf(nav);
   const englishBox = await boxOf(
     banner.getByRole('button', { name: 'English' }),
@@ -339,10 +339,11 @@ test('shell-drawer-reopen-focus', { tag: '@mobile' }, async ({ page }) => {
 
 test('shell-drawer-back-navigation', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/about');
-  await page
+  const brandLink = page
     .getByRole('banner')
-    .getByRole('link', { name: 'PlateRegion' })
-    .click();
+    .getByRole('link', { name: 'Tablicomat' });
+  await expect(brandLink).toBeVisible();
+  await brandLink.click();
   await expect(page).toHaveURL(/\/$/);
 
   await page.getByRole('button', { name: 'Menu' }).click();
@@ -388,7 +389,7 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/');
 
   const burger = page.getByRole('button', { name: 'Menu' });
-  // Mobile tab order: PlateRegion, Polski, theme toggle, Menu.
+  // Mobile tab order: Tablicomat, Polski, theme toggle, Menu.
   for (let i = 0; i < 4; i++) {
     await page.keyboard.press('Tab');
   }
@@ -412,4 +413,114 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   await themeToggle.click();
   await expect(themeToggle).toBeFocused();
   expect(await outlineStyleOfActive(page)).toBe('none');
+});
+
+async function expectBrandOneLine(brandLink: Locator): Promise<void> {
+  const metrics = await brandLink.evaluate((link) => {
+    const img = link.querySelector('img');
+    if (!img) {
+      throw new Error('brand icon missing');
+    }
+    const imgBox = img.getBoundingClientRect();
+    const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+    let textNode: Text | null = null;
+    while (walker.nextNode()) {
+      const node = walker.currentNode as Text;
+      if (node.textContent?.trim()) {
+        textNode = node;
+        break;
+      }
+    }
+    if (!textNode) {
+      throw new Error('brand text missing');
+    }
+    const range = document.createRange();
+    range.selectNodeContents(textNode);
+    const textBox = range.getBoundingClientRect();
+    return {
+      iconRight: imgBox.right,
+      textLeft: textBox.left,
+      iconCenterY: imgBox.top + imgBox.height / 2,
+      textCenterY: textBox.top + textBox.height / 2,
+    };
+  });
+  expect(
+    Math.abs(metrics.iconRight + 8 - metrics.textLeft),
+  ).toBeLessThanOrEqual(0.5);
+  expect(
+    Math.abs(metrics.iconCenterY - metrics.textCenterY),
+  ).toBeLessThanOrEqual(1);
+}
+
+test('header-brand-accessible-name', { tag: '@mobile' }, async ({ page }) => {
+  await readyHome(page);
+  const brandLink = page.getByRole('banner').getByRole('link', {
+    name: 'Tablicomat',
+    exact: true,
+  });
+  await expect(brandLink).toHaveCount(1);
+});
+
+test('header-brand-icon-decorative', { tag: '@mobile' }, async ({ page }) => {
+  await readyHome(page);
+  const brandLink = page.getByRole('banner').getByRole('link', {
+    name: 'Tablicomat',
+    exact: true,
+  });
+  const icon = brandLink.locator('img');
+  await expect(icon).toHaveCount(1);
+  await expect(brandLink.getByRole('img')).toHaveCount(0);
+});
+
+test(
+  'header-brand-one-line',
+  { tag: ['@tablet', '@mobile'] },
+  async ({ page }) => {
+    await readyHome(page);
+    const banner = page.getByRole('banner');
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandOneLine(brandLink);
+
+    await banner.getByRole('button', { name: 'Polski' }).click();
+    await expect(banner.getByRole('button', { name: 'English' })).toBeVisible();
+    const brandLinkPl = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLinkPl).toBeVisible();
+    await expectBrandOneLine(brandLinkPl);
+  },
+);
+
+test('header-brand-one-line-desktop', { tag: '@desktop' }, async ({ page }) => {
+  await readyHome(page);
+  const banner = page.getByRole('banner');
+  const widths = [991, 992, 1280] as const;
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 800 });
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandOneLine(brandLink);
+  }
+
+  await banner.getByRole('button', { name: 'Polski' }).click();
+  await expect(banner.getByRole('button', { name: 'English' })).toBeVisible();
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 800 });
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandOneLine(brandLink);
+  }
 });
