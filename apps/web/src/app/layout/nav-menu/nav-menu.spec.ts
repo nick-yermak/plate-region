@@ -43,18 +43,16 @@ describe('NavMenuComponent', () => {
     }
   });
 
-  it('passes mode and theme to NzMenuDirective', async () => {
+  it('passes mode to NzMenuDirective', async () => {
     const fixture = TestBed.createComponent(NavMenuComponent);
     fixture.componentRef.setInput('links', LINKS);
     fixture.componentRef.setInput('mode', 'inline');
-    fixture.componentRef.setInput('theme', 'dark');
     await fixture.whenStable();
 
     const menu = fixture.debugElement
       .query(By.directive(NzMenuDirective))
       .injector.get(NzMenuDirective);
     expect(menu.nzMode).toBe('inline');
-    expect(menu.nzTheme).toBe('dark');
   });
 
   it('emits linkSelect with the clicked link', async () => {

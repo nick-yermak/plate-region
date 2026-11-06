@@ -1,5 +1,22 @@
 import { test, expect } from '@playwright/test';
 
+test(
+  'home-no-page-scroll',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/');
+    await expect(
+      page.locator('[role="main"]:not([aria-busy="true"])'),
+    ).toBeVisible();
+    const noPageScroll = await page.evaluate(
+      () =>
+        document.documentElement.scrollHeight ===
+        document.documentElement.clientHeight,
+    );
+    expect(noPageScroll).toBe(true);
+  },
+);
+
 test('home-short-code-answer', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   const main = page.getByRole('main');

@@ -18,6 +18,66 @@ async function activeElementInOverlay(page: Page): Promise<boolean> {
   );
 }
 
+test('header-divider', { tag: ['@desktop', '@mobile'] }, async ({ page }) => {
+  const cases = [
+    {
+      colorScheme: 'light' as const,
+      bodyBg: lightBg,
+      divider: 'rgb(240, 240, 240)',
+    },
+    {
+      colorScheme: 'dark' as const,
+      bodyBg: darkBg,
+      divider: 'rgb(48, 48, 48)',
+    },
+  ];
+  for (const c of cases) {
+    await page.emulateMedia({ colorScheme: c.colorScheme });
+    await page.goto('/');
+    await expect.poll(() => bodyBackground(page)).toBe(c.bodyBg);
+
+    const banner = page.getByRole('banner');
+    const metrics = await banner.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        height: el.getBoundingClientRect().height,
+        borderBottomWidth: style.borderBottomWidth,
+        borderBottomColor: style.borderBottomColor,
+      };
+    });
+    expect(metrics.height).toBe(64);
+    expect(metrics.borderBottomWidth).toBe('1px');
+    expect(metrics.borderBottomColor).toBe(c.divider);
+  }
+});
+
+test(
+  'content-padding-top',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    for (const path of ['/', '/registry'] as const) {
+      await page.goto(path);
+      const main = page.getByRole('main');
+      await expect
+        .poll(() => main.evaluate((el) => getComputedStyle(el).paddingTop))
+        .toBe('24px');
+    }
+  },
+);
+
+test(
+  'header-brand-name',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/');
+    const brand = page
+      .getByRole('banner')
+      .getByRole('link', { name: 'PlateRegion', exact: true });
+    await expect(brand).toBeVisible();
+    await expect(brand.locator('svg[aria-hidden="true"]')).toHaveCount(1);
+  },
+);
+
 test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   const banner = page.getByRole('banner');
