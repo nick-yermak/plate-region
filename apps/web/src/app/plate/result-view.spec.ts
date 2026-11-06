@@ -1,11 +1,9 @@
-import { parsePlate } from '@plate-region/plate-domain';
-
 import { resultView } from './result-view';
 import { county, voivodeship } from './plate.testing';
 
 describe('resultView', () => {
   it('resolved DW 12345 → city reading with DW anchor', () => {
-    expect(resultView(parsePlate('DW 12345'), 'en')).toEqual({
+    expect(resultView('DW 12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'county.heading.city',
@@ -26,7 +24,7 @@ describe('resultView', () => {
   });
 
   it('region1-only WA12 → voivodeship heading and possible types', () => {
-    expect(resultView(parsePlate('WA12'), 'en')).toEqual({
+    expect(resultView('WA12', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'plate.heading.voivodeship',
@@ -47,7 +45,7 @@ describe('resultView', () => {
   });
 
   it('ambiguous WOO1A → with-county and without-county readings', () => {
-    expect(resultView(parsePlate('WOO1A'), 'en')).toEqual({
+    expect(resultView('WOO1A', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'plate.heading.voivodeship',
@@ -76,7 +74,7 @@ describe('resultView', () => {
   });
 
   it('region2-not-in-registry DA12345 → note and link without fragment', () => {
-    expect(resultView(parsePlate('DA12345'), 'en')).toEqual({
+    expect(resultView('DA12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'plate.heading.voivodeship',
@@ -97,7 +95,7 @@ describe('resultView', () => {
   });
 
   it('not-in-registry HA12345 → message', () => {
-    expect(resultView(parsePlate('HA12345'), 'en')).toEqual({
+    expect(resultView('HA12345', 'en')).toEqual({
       kind: 'message',
       heading: { key: 'plate.messages.notInRegistry' },
     });
@@ -137,14 +135,14 @@ describe('resultView', () => {
       key: 'plate.series.skwSww',
     },
   ])('not-in-registry $input → $key', ({ input, key }) => {
-    expect(resultView(parsePlate(input), 'en')).toEqual({
+    expect(resultView(input, 'en')).toEqual({
       kind: 'message',
       heading: { key },
     });
   });
 
   it('invalid-characters DW 1234Q → characters param', () => {
-    expect(resultView(parsePlate('DW 1234Q'), 'en')).toEqual({
+    expect(resultView('DW 1234Q', 'en')).toEqual({
       kind: 'message',
       heading: {
         key: 'plate.messages.invalidCharacters',
@@ -153,22 +151,22 @@ describe('resultView', () => {
     });
   });
 
-  it('no-matching-format DWR1234 → message', () => {
-    expect(resultView(parsePlate('DWR1234'), 'en')).toEqual({
+  it('no-matching-format 2A12345 → message', () => {
+    expect(resultView('2A12345', 'en')).toEqual({
       kind: 'message',
       heading: { key: 'plate.messages.noMatchingFormat' },
     });
   });
 
   it('empty separator-only input → message', () => {
-    expect(resultView(parsePlate(' -. '), 'en')).toEqual({
+    expect(resultView(' -. ', 'en')).toEqual({
       kind: 'message',
       heading: { key: 'plate.messages.empty' },
     });
   });
 
   it('resolved VX12345 → primary DW anchor', () => {
-    expect(resultView(parsePlate('VX12345'), 'en')).toEqual({
+    expect(resultView('VX12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'county.heading.city',
@@ -189,7 +187,7 @@ describe('resultView', () => {
   });
 
   it('region1-only WA12 in PL → Polish voivodeship name', () => {
-    expect(resultView(parsePlate('WA12'), 'pl')).toEqual({
+    expect(resultView('WA12', 'pl')).toEqual({
       kind: 'readings',
       heading: {
         key: 'plate.heading.voivodeship',
@@ -207,5 +205,106 @@ describe('resultView', () => {
         },
       ],
     });
+  });
+
+  it('candidates GD → city answer with link and others', () => {
+    expect(resultView('GD', 'en')).toEqual({
+      kind: 'candidates',
+      heading: {
+        key: 'county.heading.city',
+        params: { name: county('GD').name },
+      },
+      candidates: expect.objectContaining({
+        answer: expect.objectContaining({
+          codes: ['GD'],
+          region2: expect.objectContaining({ name: county('GD').name }),
+        }),
+        counties: [
+          expect.objectContaining({
+            codes: ['GDA'],
+            region2: expect.objectContaining({ name: county('GDA').name }),
+          }),
+        ],
+      }),
+      link: { slug: 'pomorskie', fragment: 'GD' },
+    });
+  });
+
+  it('candidates GDA → land answer listing GD', () => {
+    const view = resultView('GDA', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.heading).toEqual({
+      key: 'county.heading.land',
+      params: { name: county('GDA').name },
+    });
+    expect(view.link).toEqual({ slug: 'pomorskie', fragment: 'GDA' });
+    expect(view.candidates.counties.map((entry) => entry.codes)).toEqual([
+      ['GD'],
+    ]);
+  });
+
+  it('candidates VX → answer without counties, primary DW link', () => {
+    const view = resultView('VX', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.heading).toEqual({
+      key: 'county.heading.city',
+      params: { name: county('VX').name },
+    });
+    expect(view.candidates.counties).toEqual([]);
+    expect(view.candidates.withoutRegion2).toBe(true);
+    expect(view.link).toEqual({ slug: 'dolnoslaskie', fragment: 'DW' });
+  });
+
+  it('candidates GK → voivodeship heading, three counties, no link', () => {
+    const view = resultView('GK', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.heading).toEqual({
+      key: 'plate.heading.voivodeship',
+      params: { name: voivodeship('G').nameEn.value },
+    });
+    expect(view.candidates.answer).toBeUndefined();
+    expect(view.candidates.counties).toHaveLength(3);
+    expect(view.link).toBeUndefined();
+  });
+
+  it('candidates GD 1 → no answer, Gdańsk listed', () => {
+    const view = resultView('GD 1', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.heading).toEqual({
+      key: 'plate.heading.voivodeship',
+      params: { name: voivodeship('G').nameEn.value },
+    });
+    expect(view.candidates.answer).toBeUndefined();
+    expect(view.candidates.counties).toHaveLength(1);
+    expect(view.candidates.counties[0]?.codes).toEqual(['GD']);
+    expect(view.link).toBeUndefined();
+  });
+
+  it('candidates DWR1234 → one county, no answer', () => {
+    const view = resultView('DWR1234', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.heading).toEqual({
+      key: 'plate.heading.voivodeship',
+      params: { name: voivodeship('D').nameEn.value },
+    });
+    expect(view.candidates.answer).toBeUndefined();
+    expect(view.candidates.counties).toHaveLength(1);
+    expect(view.candidates.counties[0]?.codes).toEqual(['DWR']);
+    expect(view.link).toBeUndefined();
   });
 });

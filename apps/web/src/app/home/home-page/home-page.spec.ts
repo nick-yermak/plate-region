@@ -4,25 +4,12 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomePage } from './home-page';
-import { HOME_RANDOM } from '../home.constants';
-import { county, requireElement } from '../home.testing';
+import { requireElement } from '../home.testing';
 import { LanguageService } from '../../language/language.service';
 import { testingText, TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 
 @Component({ template: '' })
 class PlateStub {}
-
-function scripted(values: readonly number[]): () => number {
-  let index = 0;
-  return () => {
-    const value = values[index];
-    if (value === undefined) {
-      throw new Error('scripted random exhausted');
-    }
-    index += 1;
-    return value;
-  };
-}
 
 describe('HomePage', () => {
   beforeEach(async () => {
@@ -31,7 +18,6 @@ describe('HomePage', () => {
       imports: [HomePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
       providers: [
         provideRouter([{ path: 'plate/:plate', component: PlateStub }]),
-        { provide: HOME_RANDOM, useValue: scripted([0, 0, 0, 0]) },
       ],
     }).compileComponents();
     TestBed.inject(LanguageService).setLanguage('en');
@@ -94,9 +80,6 @@ describe('HomePage', () => {
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
 
-    expect(
-      fixture.nativeElement.querySelector('app-candidates-list'),
-    ).toBeNull();
     expect(input.getAttribute('aria-invalid')).toBeNull();
     expect(input.getAttribute('aria-describedby')).toBe('home-plate-hint');
     expect(TestBed.inject(Router).url).toBe('/');
@@ -114,56 +97,19 @@ describe('HomePage', () => {
     expect(TestBed.inject(Router).url).toBe('/plate/HPN%2012AA');
   });
 
-  it('lists candidates for an incomplete plate and stays on home', async () => {
+  it.each([
+    ['GD', '/plate/GD'],
+    ['2A12345', '/plate/2A12345'],
+    ['H', '/plate/H'],
+  ] as const)('navigates on Search for %j', async (value, url) => {
     const { fixture, input } = await createPage();
-    await submit(fixture, input, 'DW');
-    expect(TestBed.inject(Router).url).toBe('/');
-    expect(
-      fixture.nativeElement.querySelector('app-candidates-list'),
-    ).not.toBeNull();
-  });
-
-  it('announces the answer heading', async () => {
-    const { fixture, input } = await createPage();
-    await submit(fixture, input, 'DW');
-    const live = requireElement<HTMLElement>(
-      fixture.nativeElement,
-      '[aria-live="polite"]',
-    );
-    expect(live.textContent?.trim()).toBe(county('DW').name);
-  });
-
-  it('announces the counted heading without an answer', async () => {
-    const { fixture, input } = await createPage();
-    await submit(fixture, input, 'GK');
-    const live = requireElement<HTMLElement>(
-      fixture.nativeElement,
-      '[aria-live="polite"]',
-    );
-    expect(live.textContent?.trim()).toBe(
-      testingText('en', 'plate.candidates.heading.other', { count: 3 }),
-    );
-  });
-
-  it('clears the candidates when the value changes', async () => {
-    const { fixture, input } = await createPage();
-    await submit(fixture, input, 'DW');
-    expect(
-      fixture.nativeElement.querySelector('app-candidates-list'),
-    ).not.toBeNull();
-    input.value = 'DWW';
-    input.dispatchEvent(new Event('input'));
-    await fixture.whenStable();
-    expect(
-      fixture.nativeElement.querySelector('app-candidates-list'),
-    ).toBeNull();
+    await submit(fixture, input, value);
+    expect(TestBed.inject(Router).url).toBe(url);
   });
 
   it.each([
     ['', 'home.errors.empty', {}],
     ['DW 1234Q', 'home.errors.invalidCharacters', { characters: 'Q' }],
-    ['2A12345', 'home.errors.noMatchingFormat', {}],
-    ['H', 'home.errors.notInRegistry', {}],
   ] as const)(
     'shows the domain error under the plate for %j',
     async (value, key, params) => {
@@ -215,44 +161,39 @@ describe('HomePage', () => {
     );
   });
 
-  it('renders three examples from the random source', async () => {
+  it('renders Search as an outlined icon button named by home.search', async () => {
     const { fixture } = await createPage();
-    const buttons = fixture.nativeElement.querySelectorAll(
-      'app-home-examples button',
-    ) as NodeListOf<HTMLButtonElement>;
-    expect(buttons).toHaveLength(3);
-    expect([...buttons].map((button) => button.textContent?.trim())).toEqual([
-      'DJ',
-      'DBL',
-      'DJ 00001',
-    ]);
-  });
-
-  it('fills the field and submits on an example tap', async () => {
-    const { fixture, input } = await createPage();
-    requireElement<HTMLButtonElement>(
+    const button = requireElement<HTMLButtonElement>(
       fixture.nativeElement,
-      'app-home-examples button',
-    ).click();
-    await fixture.whenStable();
-    expect(input.value).toBe('DJ');
-    expect(fixture.nativeElement.querySelector('h2')?.textContent?.trim()).toBe(
-      county('DJ').name,
+      'button[type="submit"]',
     );
+    expect(button.getAttribute('aria-label')).toBe(
+      testingText('en', 'home.search'),
+    );
+    expect(button.classList.contains('ant-btn-primary')).toBe(true);
+    expect(button.querySelector('span[nz-icon], span.anticon')).not.toBeNull();
+    expect(button.textContent?.trim()).toBe('');
   });
 
-  it('navigates on a full-plate example tap', async () => {
-    const { fixture } = await createPage();
-    const buttons = fixture.nativeElement.querySelectorAll(
-      'app-home-examples button',
+  it('puts the hint after the row and before the error inside the form control', async () => {
+    const { fixture, input } = await createPage();
+    await submit(fixture, input, '');
+    const content = requireElement<HTMLElement>(
+      fixture.nativeElement,
+      '.ant-form-item-control-input-content',
     );
-    const fullPlate = buttons.item(2);
-    if (fullPlate === null) {
-      throw new Error('missing full-plate example button');
-    }
-    (fullPlate as HTMLButtonElement).click();
-    await fixture.whenStable();
-    expect(TestBed.inject(Router).url).toBe('/plate/DJ%2000001');
+    const hint = requireElement<HTMLElement>(content, '#home-plate-hint');
+    const row = requireElement<HTMLElement>(content, '.search-row');
+    expect(
+      row.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const explain = requireElement<HTMLElement>(
+      fixture.nativeElement,
+      '.ant-form-item-explain',
+    );
+    expect(
+      hint.compareDocumentPosition(explain) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('describes the field with the hint', async () => {

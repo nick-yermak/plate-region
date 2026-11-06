@@ -57,6 +57,12 @@ export type ResultView =
         | readonly [ReadingView, ReadingView];
     }
   | {
+      readonly kind: 'candidates';
+      readonly heading: TranslatableMessage;
+      readonly candidates: CandidatesView;
+      readonly link: VoivodeshipLink | undefined;
+    }
+  | {
       readonly kind: 'message';
       readonly heading: TranslatableMessage;
     };

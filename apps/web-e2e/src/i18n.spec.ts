@@ -97,7 +97,6 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Polski' }).click();
   const main = page.getByRole('main');
-  const field = page.getByRole('textbox', { name: 'Numer rejestracyjny' });
   for (const [input, text] of [
     ['GW', '1 możliwy powiat'],
     ['GK', '3 możliwe powiaty'],
@@ -105,20 +104,16 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
     ['N', '21 możliwych powiatów'],
     ['J', '22 możliwe powiaty'],
   ] as const) {
-    await field.fill(input);
-    await field.press('Enter');
+    await page.goto(`/plate/${input}`);
     await expect(main.getByRole('heading', { level: 2 })).toHaveText(text);
   }
 
   await page.getByRole('button', { name: 'English' }).click();
-  const enField = page.getByRole('textbox', { name: 'Licence plate number' });
-  await enField.fill('GW');
-  await enField.press('Enter');
+  await page.goto('/plate/GW');
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(
     '1 possible county',
   );
-  await enField.fill('GK');
-  await enField.press('Enter');
+  await page.goto('/plate/GK');
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(
     '3 possible counties',
   );

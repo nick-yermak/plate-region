@@ -5,8 +5,8 @@ import {
 } from '@plate-region/plate-data';
 import {
   normalisePlateInput,
+  parsePlate,
   voivodeshipSlug,
-  type ParseResult,
   type PlateType,
 } from '@plate-region/plate-domain';
 
@@ -81,11 +81,9 @@ function voivodeshipHeading(
   };
 }
 
-/** Maps a parse result to the result-page view model for the active UI language. */
-export function resultView(
-  result: ParseResult,
-  language: Language,
-): ResultView {
+/** Maps a plate string to the result-page view model for the active UI language. */
+export function resultView(plate: string, language: Language): ResultView {
+  const result = parsePlate(plate);
   switch (result.status) {
     case 'resolved':
       return {

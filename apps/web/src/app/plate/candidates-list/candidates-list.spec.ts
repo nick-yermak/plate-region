@@ -16,6 +16,7 @@ describe('CandidatesListComponent', () => {
   async function render(
     input: string,
     language: Language = 'en',
+    link?: { slug: string; fragment: string | undefined },
   ): Promise<ComponentFixture<CandidatesListComponent>> {
     await TestBed.configureTestingModule({
       imports: [
@@ -27,6 +28,9 @@ describe('CandidatesListComponent', () => {
     const fixture = TestBed.createComponent(CandidatesListComponent);
     fixture.componentRef.setInput('result', view(input));
     fixture.componentRef.setInput('language', language);
+    if (link !== undefined) {
+      fixture.componentRef.setInput('link', link);
+    }
     await fixture.whenStable();
     return fixture;
   }
@@ -59,19 +63,9 @@ describe('CandidatesListComponent', () => {
     expect(koscierski?.textContent).toContain(landKind);
   });
 
-  it('shows at most 10 counties and a more line', async () => {
+  it('lists every county without a more line', async () => {
     const fixture = await render('O');
-    expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(10);
-    expect(
-      fixture.nativeElement
-        .querySelector('.candidates-more')
-        ?.textContent?.trim(),
-    ).toBe(testingText('en', 'home.candidates.more.other', { count: 2 }));
-  });
-
-  it('shows no more line for 10 or fewer', async () => {
-    const fixture = await render('GK');
-    expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(3);
+    expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(12);
     expect(fixture.nativeElement.querySelector('.candidates-more')).toBeNull();
   });
 
@@ -95,20 +89,23 @@ describe('CandidatesListComponent', () => {
     expect(fixture.nativeElement.querySelector('h2')?.textContent?.trim()).toBe(
       testingText('pl', 'plate.candidates.heading.many', { count: 12 }),
     );
-    expect(fixture.nativeElement.textContent).toContain(
-      testingText('pl', 'home.candidates.more.few', { count: 2 }),
-    );
   });
 
   it('names the voivodeship in the active language', async () => {
-    const en = await render('DW', 'en');
+    const en = await render('DW', 'en', {
+      slug: 'dolnoslaskie',
+      fragment: 'DW',
+    });
     expect(en.nativeElement.textContent).toContain(
       testingText('en', 'plate.candidates.voivodeship', {
         name: voivodeship('D').nameEn.value,
       }),
     );
     TestBed.resetTestingModule();
-    const pl = await render('DW', 'pl');
+    const pl = await render('DW', 'pl', {
+      slug: 'dolnoslaskie',
+      fragment: 'DW',
+    });
     expect(pl.nativeElement.textContent).toContain(
       testingText('pl', 'plate.candidates.voivodeship', {
         name: voivodeship('D').name,
@@ -116,41 +113,15 @@ describe('CandidatesListComponent', () => {
     );
   });
 
-  it('shows the city name as the answer heading', async () => {
-    const fixture = await render('GD');
-    const headings = fixture.nativeElement.querySelectorAll('h2');
-    expect(headings[0]?.textContent?.trim()).toBe(county('GD').name);
-  });
-
-  it('shows the land county wording as the answer heading', async () => {
-    const fixture = await render('GDA');
-    const headings = fixture.nativeElement.querySelectorAll('h2');
-    expect(headings[0]?.textContent?.trim()).toBe(
-      testingText('en', 'county.heading.land', {
-        name: county('GDA').name,
-      }),
-    );
-  });
-
-  it('uses the Polish county wording', async () => {
-    const fixture = await render('GDA', 'pl');
-    const headings = fixture.nativeElement.querySelectorAll('h2');
-    expect(headings[0]?.textContent?.trim()).toBe(
-      testingText('pl', 'county.heading.land', {
-        name: county('GDA').name,
-      }),
-    );
-  });
-
   it('lists the other counties under Other possible counties', async () => {
-    const fixture = await render('GD');
+    const fixture = await render('GD', 'en', {
+      slug: 'pomorskie',
+      fragment: 'GD',
+    });
     const headings = Array.from(
       fixture.nativeElement.querySelectorAll('h2') as NodeListOf<HTMLElement>,
     ).map((heading) => heading.textContent?.trim());
-    expect(headings).toEqual([
-      county('GD').name,
-      testingText('en', 'plate.candidates.others'),
-    ]);
+    expect(headings).toEqual([testingText('en', 'plate.candidates.others')]);
     expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(1);
     expect(fixture.nativeElement.querySelector('li')?.textContent).toContain(
       'GDA',
@@ -158,13 +129,39 @@ describe('CandidatesListComponent', () => {
   });
 
   it('shows no Other possible counties heading for a sole county', async () => {
-    const fixture = await render('VX');
-    const headings = fixture.nativeElement.querySelectorAll('h2');
-    expect(headings).toHaveLength(1);
-    expect(headings[0]?.textContent?.trim()).toBe(county('VX').name);
+    const fixture = await render('VX', 'en', {
+      slug: 'dolnoslaskie',
+      fragment: 'DW',
+    });
+    expect(fixture.nativeElement.querySelector('h2')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('li')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).toContain(
       testingText('en', 'plate.candidates.withoutRegion2'),
+    );
+  });
+
+  it('links the answer county to its voivodeship anchor', async () => {
+    const fixture = await render('GD', 'en', {
+      slug: 'pomorskie',
+      fragment: 'GD',
+    });
+    const link = fixture.nativeElement.querySelector(
+      'a[href="/voivodeship/pomorskie#GD"]',
+    );
+    expect(link).not.toBeNull();
+    expect(link?.textContent?.trim()).toBe(
+      testingText('en', 'plate.reading.countyLink', {
+        name: county('GD').name,
+      }),
+    );
+  });
+
+  it('shows no voivodeship line without an answer', async () => {
+    const fixture = await render('GK');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      testingText('en', 'plate.candidates.voivodeship', {
+        name: voivodeship('G').nameEn.value,
+      }),
     );
   });
 });

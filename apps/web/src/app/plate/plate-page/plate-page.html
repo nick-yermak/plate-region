@@ -11,6 +11,12 @@
     @for (reading of page.readings; track $index) {
       <app-result-reading [reading]="reading" [language]="language()" />
     }
+  } @else if (page.kind === 'candidates') {
+    <app-candidates-list
+      [result]="page.candidates"
+      [link]="page.link"
+      [language]="language()"
+    />
   } @else {
     <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
   }

@@ -2,9 +2,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { Component, computed, input } from '@angular/core';
 
 import { pluralKey } from '../../i18n/plural-key';
-import type { CandidatesView } from '../plate.types';
 import type { Language } from '../../i18n/language.types';
 import { CANDIDATES_LIMIT } from '../../home/home.constants';
+import type { CandidatesView, VoivodeshipLink } from '../plate.types';
 import {
   answerHeading,
   candidatesHeading,
@@ -20,6 +20,7 @@ import {
 })
 export class CandidatesListComponent {
   readonly result = input.required<CandidatesView>();
+  readonly link = input<VoivodeshipLink | undefined>();
   readonly language = input.required<Language>();
 
   protected readonly answer = computed(() => answerHeading(this.result()));

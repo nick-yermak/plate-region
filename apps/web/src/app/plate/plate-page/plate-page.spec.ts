@@ -5,14 +5,14 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
-import { parsePlate } from '@plate-region/plate-domain';
-
 import { PlatePage } from './plate-page';
 import { resultView } from '../result-view';
 import { appConfig } from '../../app.config';
+import { county, voivodeship } from '../plate.testing';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
 import { ResultReadingComponent } from '../result-reading/result-reading';
+import { CandidatesListComponent } from '../candidates-list/candidates-list';
 import {
   TESTING_LANGS,
   testingText,
@@ -81,7 +81,7 @@ describe('PlatePage', () => {
       By.directive(ResultReadingComponent),
     );
     expect(readings).toHaveLength(1);
-    const view = resultView(parsePlate('DW 12345'), 'en');
+    const view = resultView('DW 12345', 'en');
     if (view.kind !== 'readings') {
       throw new Error('expected readings view');
     }
@@ -148,6 +148,31 @@ describe('PlatePage', () => {
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
       testingText('pl', 'plate.heading.voivodeship', { name: 'mazowieckie' }),
+    );
+  });
+
+  it('renders the candidates list under the car for GD', async () => {
+    const fixture = await renderPage('GD');
+    expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
+      county('GD').name,
+    );
+    const car = fixture.debugElement.query(By.directive(PlateComponent)).parent;
+    const list = fixture.debugElement.query(
+      By.directive(CandidatesListComponent),
+    );
+    expect(list).not.toBeNull();
+    expect(
+      car?.nativeElement.compareDocumentPosition(list.nativeElement) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('renders the voivodeship heading for GK', async () => {
+    const fixture = await renderPage('GK');
+    expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
+      testingText('en', 'plate.heading.voivodeship', {
+        name: voivodeship('G').nameEn.value,
+      }),
     );
   });
 });

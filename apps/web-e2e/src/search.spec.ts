@@ -17,21 +17,18 @@ test('search-incomplete-candidates', { tag: '@desktop' }, async ({ page }) => {
   const field = page.getByRole('textbox', { name: 'Licence plate number' });
   await field.fill('O');
   await page.getByRole('button', { name: 'Search' }).click();
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/plate/O');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Opole Voivodeship',
+  );
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(
     '12 possible counties',
   );
-  await expect(main.getByRole('listitem')).toHaveCount(10);
-  await expect(
-    page.getByText('and 2 more counties — type more characters'),
-  ).toBeVisible();
-  await field.pressSequentially('P');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveCount(0);
+  await expect(main.getByRole('listitem')).toHaveCount(12);
 });
 
 test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/');
-  const main = page.getByRole('main');
   const field = page.getByRole('textbox', { name: 'Licence plate number' });
   await field.focus();
   await field.press('Enter');
@@ -42,12 +39,14 @@ test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
 
   await field.fill('DW');
   await field.press('Enter');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText([
-    'Wrocław',
-    'Other possible counties',
-  ]);
+  await expect(page).toHaveURL('/plate/DW');
+  await expect(
+    page.getByRole('main').getByRole('heading', { level: 1 }),
+  ).toHaveText('Wrocław');
 
-  await field.fill('DW12345');
+  await page.goto('/');
+  const again = page.getByRole('textbox', { name: 'Licence plate number' });
+  await again.fill('DW12345');
   await page.getByRole('button', { name: 'Search' }).tap();
   await expect(page).toHaveURL(/\/plate\/DW12345$/);
 });
