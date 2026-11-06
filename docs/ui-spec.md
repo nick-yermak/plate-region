@@ -22,7 +22,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 ### Home — `/`
 
-- Heading: the question the app answers — "Where is this plate from?" / "Skąd jest ta tablica?" (D-53).
+- Heading: "Decode a Polish plate" / "Rozszyfruj polską tablicę" (D-53 Update #115).
 - The heading, the plate input with a square icon Search button beside it and the hint under them, centred horizontally and vertically (D-53 Update #115).
 - A photo button. On phones it opens the camera directly and is the primary action, placed before Search; elsewhere it opens a file picker and Search is primary.
 - Search runs on Enter or the Search button, not on every keystroke.
