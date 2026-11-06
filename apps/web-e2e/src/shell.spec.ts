@@ -66,7 +66,6 @@ test(
 );
 
 test('header-menu-one-row', { tag: '@tablet' }, async ({ page }) => {
-  // Polish UI the same way as i18n.spec.ts:3–12 (goto `/`, then click Polski).
   await page.goto('/');
   await page.getByRole('button', { name: 'Polski' }).click();
   await expect(
