@@ -38,12 +38,14 @@ a:focus-visible {
 }
 
 // Namespaced overrides of NG-ZORRO skeleton/menu internals (no ::ng-deep in components).
-// Heading skeleton mirrors global h1 metrics (font-size 2em, margin-bottom 0.5em, line box 1lh).
+// Heading skeleton mirrors the global h1 metrics (font-size 2em, line-height 1.2,
+// margin-bottom 0.5em); its height is one line box (1lh).
 .pr-heading-skeleton.ant-skeleton-element {
   display: block;
   box-sizing: border-box;
   width: 8em;
   font-size: 2em;
+  line-height: 1.2;
   height: 1lh;
   margin-top: 0;
   margin-bottom: 0.5em;
@@ -57,6 +59,14 @@ a:focus-visible {
   min-width: 0;
   height: 100%;
   line-height: 1;
+}
+
+// Drawer inline menu: flush on the drawer surface (D-50 Update #122).
+// Beats NG-ZORRO `.ant-menu` background (0,1,0) and `.ant-menu-inline`
+// border-inline-end (0,1,0) with `.pr-drawer-nav .ant-menu.ant-menu-inline` (0,3,0).
+.pr-drawer-nav .ant-menu.ant-menu-inline {
+  background: transparent;
+  border-inline-end: 0;
 }
 
 // Pending horizontal nav only — do not affect the loaded menu.

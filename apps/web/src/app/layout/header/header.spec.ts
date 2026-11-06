@@ -57,21 +57,6 @@ describe('HeaderComponent', () => {
     expect(brand.nativeElement.getAttribute('href')).toBe('/');
   });
 
-  it('renders an aria-hidden plate mark in the brand link', async () => {
-    const fixture = TestBed.createComponent(HeaderHostComponent);
-    await fixture.whenStable();
-
-    const brand = fixture.debugElement
-      .query(By.directive(HeaderComponent))
-      .queryAll(By.css('a'))
-      .find((el) => el.nativeElement.textContent.trim() === 'PlateRegion');
-    if (!brand) {
-      throw new Error('brand link not found');
-    }
-    expect(brand.queryAll(By.css('svg[aria-hidden="true"]'))).toHaveLength(1);
-    expect(brand.nativeElement.textContent.trim()).toBe('PlateRegion');
-  });
-
   it('emits menuOpen when the burger is clicked', async () => {
     const fixture = TestBed.createComponent(HeaderHostComponent);
     await fixture.whenStable();

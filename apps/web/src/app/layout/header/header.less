@@ -1,8 +1,17 @@
-// Brand colour is per-theme (--pr-header-brand): page link colours fail AA on the
-// header backgrounds (D-28). Encapsulated `.header-brand[_ngcontent-…]` (0,2,0)
-// also beats theme `a:hover` / `a:active` (0,1,1), so one rule covers those states.
+// The brand has its own token `--pr-header-brand` (D-28 Update #122) so its
+// colour is decided separately from link colours. Encapsulated
+// `.header-brand[_ngcontent-…]` (0,2,0) also beats theme `a:hover` /
+// `a:active` (0,1,1), so one rule covers those states.
 .header-brand {
   color: var(--pr-header-brand);
+  font-weight: 600;
+  // matches @font-size-lg
+  font-size: 16px;
+}
+
+// Divider keeps the 64 px box because nz-header is border-box (D-50 Update #122).
+nz-header {
+  border-bottom: 1px solid var(--pr-border-split);
 }
 
 @media (width < 768px) {

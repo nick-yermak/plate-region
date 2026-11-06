@@ -1,18 +1,21 @@
 @import 'ng-zorro-antd/style/default.less';
 @import 'ng-zorro-antd/style/patch.less';
 @import './nz-components.less';
-// Light header (#001529): @primary-color keeps 5.68:1; page link @blue-8 would be 2.46:1.
-@header-brand-color: @primary-color;
 @import './tokens.less';
 
 // Last assignment wins for the whole sheet: component styles re-import
 // themes/default.less (via themes/index) which resets @error-color to @red-5
 // (line 46) and @link-color to @primary-color (line 155). Palette @red-7 /
-// @blue-8 / @blue-9 are style/color/colors.less:84, 12, 13.
+// @blue-8 / @blue-9 are style/color/colors.less:84, 12, 13. Header and menu
+// colours (D-28 Update #122): @blue-7 is colors.less:11.
 @error-color: @red-7;
 @link-color: @blue-8;
 @link-hover-color: @blue-9;
 @text-color-secondary: fade(@black, 60%);
+@layout-header-background: @component-background;
+@menu-highlight-color: @blue-7;
+@header-brand-color: @blue-7;
+@border-radius-base: 6px;
 
 :root {
   color-scheme: light;

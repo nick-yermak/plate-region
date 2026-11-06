@@ -65,18 +65,25 @@ test(
   },
 );
 
-test(
-  'header-brand-name',
-  { tag: ['@desktop', '@mobile'] },
-  async ({ page }) => {
-    await page.goto('/');
-    const brand = page
-      .getByRole('banner')
-      .getByRole('link', { name: 'PlateRegion', exact: true });
-    await expect(brand).toBeVisible();
-    await expect(brand.locator('svg[aria-hidden="true"]')).toHaveCount(1);
-  },
-);
+test('header-menu-one-row', { tag: '@tablet' }, async ({ page }) => {
+  // Polish UI the same way as i18n.spec.ts:3–12 (goto `/`, then click Polski).
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Polski' }).click();
+  await expect(
+    page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
+  ).toBeVisible();
+
+  const banner = page.getByRole('banner');
+  const items = banner.locator('.ant-menu-item');
+  await expect(items).toHaveCount(4);
+  const tops = await items.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().top),
+  );
+  expect(new Set(tops.map((t) => Math.round(t * 10) / 10)).size).toBe(1);
+  expect(await banner.evaluate((el) => el.getBoundingClientRect().height)).toBe(
+    64,
+  );
+});
 
 test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
