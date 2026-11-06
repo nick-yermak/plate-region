@@ -1,13 +1,11 @@
-<nz-header role="banner" nz-flex nzAlign="center" nzJustify="space-between">
-  <div nz-flex nzAlign="center" nzGap="small">
-    <a class="header-brand" routerLink="/">PlateRegion</a>
-    <app-nav-menu
-      class="header-nav"
-      mode="horizontal"
-      [links]="links()"
-      [pending]="pending()"
-    />
-  </div>
+<nz-header role="banner">
+  <a class="header-brand" routerLink="/">PlateRegion</a>
+  <app-nav-menu
+    class="header-nav"
+    mode="horizontal"
+    [links]="links()"
+    [pending]="pending()"
+  />
   <div nz-flex nzAlign="center" nzGap="small" class="header-actions">
     <ng-content />
     <button

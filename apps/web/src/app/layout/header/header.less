@@ -7,25 +7,45 @@
   font-weight: 600;
   // matches @font-size-lg
   font-size: 16px;
+  grid-column: 1;
+  justify-self: start;
 }
 
+// Three equal-side columns keep the menu centred; when one side needs more
+// than its share the menu shifts instead of being overlapped (D-50 Update #127).
 // Divider keeps the 64 px box because nz-header is border-box (D-50 Update #122).
 nz-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: var(--pr-padding-xs);
   border-bottom: 1px solid var(--pr-border-split);
 }
 
-@media (width < 768px) {
+.header-nav {
+  grid-column: 2;
+}
+
+.header-actions {
+  grid-column: 3;
+  justify-self: end;
+}
+
+// Ant @screen-lg; literal per D-28/D-50: component styles never import NG-ZORRO Less
+@media (width < 992px) {
   .header-nav {
     display: none;
   }
+}
 
-  nz-header {
-    padding: 0 var(--pr-padding-md);
+@media (width >= 992px) {
+  .header-burger {
+    display: none;
   }
 }
 
-@media (width >= 768px) {
-  .header-burger {
-    display: none;
+@media (width < 768px) {
+  nz-header {
+    padding: 0 var(--pr-padding-md);
   }
 }

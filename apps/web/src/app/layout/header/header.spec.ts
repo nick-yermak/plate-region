@@ -103,4 +103,18 @@ describe('HeaderComponent', () => {
       .injector.get(NavMenuComponent);
     expect(navMenu.pending()).toBe(true);
   });
+
+  it('keeps brand, navigation and actions in DOM order', async () => {
+    const fixture = TestBed.createComponent(HeaderHostComponent);
+    await fixture.whenStable();
+
+    const headerEl = fixture.debugElement.query(By.css('nz-header'))
+      .nativeElement as HTMLElement;
+    const children = Array.from(headerEl.children) as HTMLElement[];
+    expect(children).toHaveLength(3);
+    expect(children[0].classList.contains('header-brand')).toBe(true);
+    expect(children[1].tagName.toLowerCase()).toBe('app-nav-menu');
+    expect(children[1].classList.contains('header-nav')).toBe(true);
+    expect(children[2].classList.contains('header-actions')).toBe(true);
+  });
 });
