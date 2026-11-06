@@ -332,6 +332,9 @@ test('focus-ring-drawer', { tag: '@mobile' }, async ({ page }) => {
     await expect(homeLink).toBeFocused();
     // Selected drawer item: 4.55:1 on #e6f7ff (light), 5.77:1 on #111b26 (dark).
     expect.soft(await outlineColorOf(homeLink, '.ant-menu-item')).toBe(e.ring);
+    expect
+      .soft(await homeLink.evaluate((el) => getComputedStyle(el).outlineStyle))
+      .toBe('none');
 
     // Non-selected item: text ≠ ring, so an undefined outline var falling back to
     // currentColor cannot pass. Measured surface: #fff 5.00:1 (light), #1f1f1f 5.48:1 (dark).
@@ -339,6 +342,9 @@ test('focus-ring-drawer', { tag: '@mobile' }, async ({ page }) => {
     const nextLink = page.getByRole('navigation').getByRole('link').nth(1);
     await expect(nextLink).toBeFocused();
     expect.soft(await outlineColorOf(nextLink, '.ant-menu-item')).toBe(e.ring);
+    expect
+      .soft(await nextLink.evaluate((el) => getComputedStyle(el).outlineStyle))
+      .toBe('none');
 
     await page.keyboard.press('Escape');
     await expect(closeButton).toHaveCount(0);
