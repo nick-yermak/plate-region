@@ -16,7 +16,7 @@ test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
 });
 
 test('result-invalid-input', { tag: '@desktop' }, async ({ page }) => {
-  await page.goto('/plate/DWR1234');
+  await page.goto('/plate/2A12345');
   const main = page.getByRole('main');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(
     'This is not a Polish plate format.',

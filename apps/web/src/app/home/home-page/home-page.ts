@@ -1,15 +1,11 @@
 import { Router } from '@angular/router';
-import { NzFlexModule } from 'ng-zorro-antd/flex';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { NzFlexDirective } from 'ng-zorro-antd/flex';
 import { NzButtonComponent } from 'ng-zorro-antd/button';
+import { SearchOutline } from '@ant-design/icons-angular/icons';
 import { FormField, FormRoot, form } from '@angular/forms/signals';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import {
-  Component,
-  computed,
-  inject,
-  linkedSignal,
-  signal,
-} from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
 import {
   NzFormControlComponent,
   NzFormDirective,
@@ -17,51 +13,37 @@ import {
 } from 'ng-zorro-antd/form';
 
 import { search } from '../search';
-import { PLATE_ERROR_ID } from '../home.constants';
-import type { CandidatesView, SearchError } from '../home.types';
-import { LanguageService } from '../../language/language.service';
+import type { SearchError } from '../home.types';
+import { PLATE_ERROR_ID, PLATE_HINT_ID } from '../home.constants';
 import { isSearchError, searchErrorMessage } from '../search-error';
-import { candidatesHeading, voivodeshipLine } from '../candidates-messages';
-import { CandidatesListComponent } from '../candidates-list/candidates-list';
 import { PlateInputComponent } from '../../shared/plate/plate-input/plate-input';
 
 @Component({
   selector: 'app-home-page',
   imports: [
-    CandidatesListComponent,
     FormField,
     FormRoot,
     NzButtonComponent,
-    NzFlexModule,
+    NzFlexDirective,
     NzFormControlComponent,
     NzFormDirective,
     NzFormItemComponent,
+    NzIconDirective,
     PlateInputComponent,
     TranslocoPipe,
   ],
+  providers: [provideNzIconsPatch([SearchOutline])],
   templateUrl: './home-page.html',
   styleUrl: './home-page.less',
 })
 export class HomePage {
   private readonly router = inject(Router);
-  private readonly transloco = inject(TranslocoService);
-  protected readonly language = inject(LanguageService).language;
+
   protected readonly errorId = PLATE_ERROR_ID;
+  protected readonly hintId = PLATE_HINT_ID;
   protected readonly plate = signal('');
   protected readonly searchForm = form(this.plate, {
     submission: { action: async () => this.runSearch() },
-  });
-  protected readonly candidates = linkedSignal<
-    string,
-    CandidatesView | undefined
-  >({
-    source: this.plate,
-    computation: () => undefined,
-  });
-  // Cleared with candidates when the plate value changes (same linkedSignal source).
-  protected readonly announcement = linkedSignal<string, string>({
-    source: this.plate,
-    computation: () => '',
   });
   protected readonly error = computed(() => {
     for (const candidate of this.searchForm().errors()) {
@@ -71,6 +53,9 @@ export class HomePage {
     }
     return undefined;
   });
+  protected readonly describedBy = computed(() =>
+    this.error() === undefined ? this.hintId : `${this.errorId} ${this.hintId}`,
+  );
 
   private async runSearch(): Promise<SearchError | undefined> {
     const outcome = search(this.plate());
@@ -78,21 +63,8 @@ export class HomePage {
       case 'navigate':
         await this.router.navigate(['/plate', outcome.plate]);
         return undefined;
-      case 'candidates':
-        this.candidates.set(outcome.result);
-        this.announce(outcome.result);
-        return undefined;
       case 'error':
         return outcome.error;
     }
-  }
-
-  private announce(result: CandidatesView): void {
-    const language = this.language();
-    const message =
-      candidatesHeading(result, language) ?? voivodeshipLine(result, language);
-    this.announcement.set(
-      this.transloco.translate(message.key, message.params),
-    );
   }
 }

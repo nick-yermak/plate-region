@@ -1,0 +1,8 @@
+{
+  "county": {
+    "heading": {
+      "city": "{{name}}",
+      "land": "{{name}} county"
+    }
+  }
+}

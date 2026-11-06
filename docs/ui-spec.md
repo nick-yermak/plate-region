@@ -22,14 +22,12 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 ### Home — `/`
 
-- Heading: the question the app answers — "Where is this plate from?" / "Skąd jest ta tablica?" (D-53).
-- One centred column; the plate input, styled as a Polish plate, is the main element. Under it, a hint that the first letters are enough.
+- Heading: "Decode a Polish plate" / "Rozszyfruj polską tablicę" (D-53 Update #115).
+- The heading, the plate input with a square icon Search button beside it and the hint under them, centred horizontally and vertically (D-53 Update #115).
 - A photo button. On phones it opens the camera directly and is the primary action, placed before Search; elsewhere it opens a file picker and Search is primary.
 - Search runs on Enter or the Search button, not on every keystroke.
-- A complete plate navigates to the result page.
-- An incomplete plate does not navigate: the home page lists the regions it can belong to (`candidatesFor`, D-52). A county whose code equals the whole input is shown first, as the answer. County lines link to the voivodeship page (#93).
+- Every input except an empty one or one with characters not allowed on Polish plates navigates to the result page; those two stay errors under the plate (D-52 Update #115).
 - With the SVG map (#94), the result shows a small map with the voivodeship highlighted.
-- The empty state offers a few tappable examples (short codes and one full plate) from `plate-domain`.
 
 ### Result — `/plate/:plate`
 
@@ -37,6 +35,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - Shows: voivodeship and powiat, plate type, the powiat highlighted on the map of Poland, and a link to the voivodeship page that opens at the matching powiat.
 - Image: the photo, if the user took or uploaded one in this session; otherwise an SVG car with the plate drawn in its plate area. A shared link always shows the SVG car: photos never leave the device.
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
+- A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
 
 ### Voivodeship — `/voivodeship/:slug`
 

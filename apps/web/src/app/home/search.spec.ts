@@ -1,5 +1,3 @@
-import { candidatesFor } from '@plate-region/plate-domain';
-
 import { search } from './search';
 
 describe('search', () => {
@@ -29,19 +27,17 @@ describe('search', () => {
     });
   });
 
-  it('returns candidates for an incomplete plate', () => {
-    expect(search('DW')).toEqual({
-      kind: 'candidates',
-      result: candidatesFor('DW'),
-    });
-  });
-
-  it('reports a dead end as no-matching-format', () => {
-    expect(search('2A12345')).toEqual({
-      kind: 'error',
-      error: { kind: 'no-matching-format' },
-    });
-  });
+  it.each([
+    ['DW', 'DW'],
+    ['g d', 'G D'],
+    ['2A12345', '2A12345'],
+    ['H', 'H'],
+  ] as const)(
+    'navigates for short codes and dead ends: %s → %s',
+    (input, plate) => {
+      expect(search(input)).toEqual({ kind: 'navigate', plate });
+    },
+  );
 
   it('lists invalid characters', () => {
     expect(search('DW 1234Q')).toEqual({
@@ -54,13 +50,6 @@ describe('search', () => {
     expect(search(input)).toEqual({
       kind: 'error',
       error: { kind: 'empty' },
-    });
-  });
-
-  it('reports not-in-registry', () => {
-    expect(search('H')).toEqual({
-      kind: 'error',
-      error: { kind: 'not-in-registry' },
     });
   });
 

@@ -190,7 +190,9 @@ describe('ShellComponent', () => {
 
     const heading = fixture.debugElement.query(By.css('h1'));
     expect(heading).toBeTruthy();
-    expect(heading.nativeElement.textContent.trim()).toBe('Home');
+    expect(heading.nativeElement.textContent.trim()).toBe(
+      'Decode a Polish plate',
+    );
   });
 });
 

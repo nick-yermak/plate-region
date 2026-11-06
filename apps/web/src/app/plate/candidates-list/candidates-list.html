@@ -1,0 +1,45 @@
+@if (voivodeship(); as voivodeshipMessage) {
+  <p>{{ voivodeshipMessage.key | transloco: voivodeshipMessage.params }}</p>
+}
+@if (link(); as voivodeshipLink) {
+  @if (answerName(); as name) {
+    <p>
+      <a
+        [routerLink]="['/voivodeship', voivodeshipLink.slug]"
+        [fragment]="voivodeshipLink.fragment"
+      >
+        {{ 'plate.reading.countyLink' | transloco: { name } }}
+      </a>
+    </p>
+  }
+}
+@if (others(); as othersMessage) {
+  <h2>{{ othersMessage.key | transloco }}</h2>
+}
+@if (heading(); as headingMessage) {
+  <h2>{{ headingMessage.key | transloco: headingMessage.params }}</h2>
+}
+@if (counties().length > 0) {
+  <ul>
+    @for (entry of counties(); track entry.region2.name) {
+      <li>
+        <strong>{{ entry.codes.join(', ') }}</strong>
+        {{ entry.region2.name }}
+        <span class="candidates-kind"
+          >({{
+            (entry.region2.kind === 'city'
+              ? 'plate.kind.city'
+              : 'plate.kind.land'
+            ) | transloco
+          }})</span
+        >
+      </li>
+    }
+  </ul>
+}
+@if (hasWithoutRegion2()) {
+  <p>{{ 'plate.candidates.withoutRegion2' | transloco }}</p>
+}
+@if (hasNotInRegistry()) {
+  <p>{{ 'plate.candidates.notInRegistry' | transloco }}</p>
+}

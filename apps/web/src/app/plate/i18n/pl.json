@@ -1,9 +1,7 @@
 {
   "plate": {
     "heading": {
-      "voivodeship": "Województwo {{name}}",
-      "city": "{{name}}",
-      "land": "Powiat {{name}}"
+      "voivodeship": "Województwo {{name}}"
     },
     "messages": {
       "notInRegistry": "Tego wyróżnika nie ma w rejestrze.",
@@ -41,6 +39,18 @@
     "kind": {
       "city": "miasto na prawach powiatu",
       "land": "powiat"
+    },
+    "candidates": {
+      "voivodeship": "Województwo: {{name}}",
+      "heading": {
+        "one": "{{count}} możliwy powiat",
+        "few": "{{count}} możliwe powiaty",
+        "many": "{{count}} możliwych powiatów",
+        "other": "{{count}} możliwego powiatu"
+      },
+      "others": "Inne możliwe powiaty",
+      "withoutRegion2": "Możliwa też tablica tylko z wyróżnikiem województwa, bez powiatu.",
+      "notInRegistry": "Możliwy też wyróżnik powiatu, którego nie ma w obecnym rejestrze."
     },
     "types": {
       "ordinary": "zwyczajna",

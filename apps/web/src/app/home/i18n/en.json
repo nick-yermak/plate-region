@@ -1,34 +1,12 @@
 {
   "home": {
-    "title": "Home",
+    "title": "Decode a Polish plate",
     "plateNumber": "Licence plate number",
     "search": "Search",
+    "hint": "The first letters are enough — usually two or three.",
     "errors": {
       "empty": "Enter a plate number.",
-      "invalidCharacters": "Not allowed on Polish plates: {{characters}}",
-      "noMatchingFormat": "This is not a Polish plate format.",
-      "notInRegistry": "This code is not in the registry."
-    },
-    "candidates": {
-      "voivodeship": "Voivodeship: {{name}}",
-      "heading": {
-        "one": "{{count}} possible county",
-        "few": "{{count}} possible counties",
-        "many": "{{count}} possible counties",
-        "other": "{{count}} possible counties"
-      },
-      "more": {
-        "one": "and {{count}} more county — type more characters",
-        "few": "and {{count}} more counties — type more characters",
-        "many": "and {{count}} more counties — type more characters",
-        "other": "and {{count}} more counties — type more characters"
-      },
-      "kind": {
-        "city": "city with county rights",
-        "land": "county"
-      },
-      "withoutRegion2": "Also possible: a plate with the voivodeship code only, without a county.",
-      "notInRegistry": "Also possible: a county code that is not in the current registry."
+      "invalidCharacters": "Not allowed on Polish plates: {{characters}}"
     }
   }
 }
