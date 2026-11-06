@@ -11,7 +11,7 @@
 }
 
 // Plate + gap + square Search share one cqi; gap is --pr-padding-xs (D-53 Update #115).
-@plate-em: min(5rem, calc((100cqi - var(--pr-padding-xs)) * 114 / 634));
+@plate-em: min(7rem, calc((100cqi - var(--pr-padding-xs)) * 114 / 634));
 
 form.ant-form {
   display: block;
@@ -34,8 +34,13 @@ form.ant-form {
   width: 100%;
   position: relative;
   margin-bottom: 0;
-  // Reserve one line for an absolute error tip so the centred block does not jump.
-  padding-bottom: 1.5rem;
+  // Reserve one line for a 1rem tip (16 × 1.5715 ≈ 25.1 px) so the centred block does not jump.
+  padding-bottom: 1.575rem;
+}
+
+h1 {
+  // calc(): Less would fold `1rem + 4vw` to `5rem`.
+  font-size: clamp(1.75rem, calc(1rem + 4vw), 2.5rem);
 }
 
 app-plate-input {
@@ -58,7 +63,12 @@ button.search {
   }
 }
 
-.hint {
+.hint,
+#home-plate-error {
   margin: 0;
+  font-size: 1rem;
+}
+
+.hint {
   color: var(--pr-text-secondary);
 }
