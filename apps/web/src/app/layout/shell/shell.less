@@ -4,10 +4,13 @@ nz-layout {
 
 nz-content {
   padding: var(--pr-layout-header-padding);
+  // Top padding after the shorthand so it is not wiped (D-50 Update #122).
+  padding-top: var(--pr-content-padding-top);
 }
 
 @media (width < 768px) {
   nz-content {
-    padding: 0 var(--pr-padding-md);
+    // padding-inline only: a shorthand would reset padding-top (D-50 Update #122).
+    padding-inline: var(--pr-padding-md);
   }
 }

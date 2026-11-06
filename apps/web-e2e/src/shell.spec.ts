@@ -18,6 +18,72 @@ async function activeElementInOverlay(page: Page): Promise<boolean> {
   );
 }
 
+test('header-divider', { tag: ['@desktop', '@mobile'] }, async ({ page }) => {
+  const cases = [
+    {
+      colorScheme: 'light' as const,
+      bodyBg: lightBg,
+      divider: 'rgb(240, 240, 240)',
+    },
+    {
+      colorScheme: 'dark' as const,
+      bodyBg: darkBg,
+      divider: 'rgb(48, 48, 48)',
+    },
+  ];
+  for (const c of cases) {
+    await page.emulateMedia({ colorScheme: c.colorScheme });
+    await page.goto('/');
+    await expect.poll(() => bodyBackground(page)).toBe(c.bodyBg);
+
+    const banner = page.getByRole('banner');
+    const metrics = await banner.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        height: el.getBoundingClientRect().height,
+        borderBottomWidth: style.borderBottomWidth,
+        borderBottomColor: style.borderBottomColor,
+      };
+    });
+    expect(metrics.height).toBe(64);
+    expect(metrics.borderBottomWidth).toBe('1px');
+    expect(metrics.borderBottomColor).toBe(c.divider);
+  }
+});
+
+test(
+  'content-padding-top',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    for (const path of ['/', '/registry'] as const) {
+      await page.goto(path);
+      const main = page.getByRole('main');
+      await expect
+        .poll(() => main.evaluate((el) => getComputedStyle(el).paddingTop))
+        .toBe('24px');
+    }
+  },
+);
+
+test('header-menu-one-row', { tag: '@tablet' }, async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Polski' }).click();
+  await expect(
+    page.getByRole('banner').getByRole('link', { name: 'Rejestr' }),
+  ).toBeVisible();
+
+  const banner = page.getByRole('banner');
+  const items = banner.locator('.ant-menu-item');
+  await expect(items).toHaveCount(4);
+  const tops = await items.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().top),
+  );
+  expect(new Set(tops.map((t) => Math.round(t * 10) / 10)).size).toBe(1);
+  expect(await banner.evaluate((el) => el.getBoundingClientRect().height)).toBe(
+    64,
+  );
+});
+
 test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/');
   const banner = page.getByRole('banner');

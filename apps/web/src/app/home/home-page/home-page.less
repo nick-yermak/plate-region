@@ -5,7 +5,9 @@
 }
 
 .home {
-  min-height: calc(100dvh - var(--pr-layout-header-height));
+  min-height: calc(
+    100dvh - var(--pr-layout-header-height) - var(--pr-content-padding-top)
+  );
   width: 100%;
   text-align: center;
 }
