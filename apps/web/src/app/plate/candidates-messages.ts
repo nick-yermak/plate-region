@@ -2,15 +2,6 @@ import { pluralKey } from '../i18n/plural-key';
 import type { CandidatesView } from './plate.types';
 import type { Language } from '../i18n/language.types';
 import type { TranslatableMessage } from '../i18n/i18n.types';
-import { countyHeading } from '../shared/county/county-heading';
-
-export function answerHeading(
-  view: CandidatesView,
-): TranslatableMessage | undefined {
-  return view.answer === undefined
-    ? undefined
-    : countyHeading(view.answer.region2);
-}
 
 export function othersHeading(
   view: CandidatesView,
@@ -41,7 +32,10 @@ export function candidatesHeading(
 export function voivodeshipLine(
   view: CandidatesView,
   language: Language,
-): TranslatableMessage {
+): TranslatableMessage | undefined {
+  if (view.answer === undefined) {
+    return undefined;
+  }
   const name =
     language === 'pl' ? view.region1.name : view.region1.nameEn.value;
   return {

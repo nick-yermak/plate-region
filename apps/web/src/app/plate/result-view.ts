@@ -4,17 +4,25 @@ import {
   type Region2,
 } from '@plate-region/plate-data';
 import {
+  candidatesFor,
   normalisePlateInput,
   parsePlate,
   voivodeshipSlug,
   type PlateType,
 } from '@plate-region/plate-domain';
 
+import { candidatesView } from './candidates-view';
 import type { Language } from '../i18n/language.types';
 import { SERIES_HEADING_KEYS } from './plate.constants';
 import type { TranslatableMessage } from '../i18n/i18n.types';
 import { countyHeading } from '../shared/county/county-heading';
-import type { PowiatView, ReadingView, ResultView } from './plate.types';
+import type {
+  CandidatesView,
+  PowiatView,
+  ReadingView,
+  ResultView,
+  VoivodeshipLink,
+} from './plate.types';
 
 function voivodeshipDisplayName(region1: Region1, language: Language): string {
   return language === 'pl' ? region1.name : region1.nameEn.value;
@@ -169,16 +177,56 @@ export function resultView(plate: string, language: Language): ResultView {
           },
         };
       }
-      return {
-        kind: 'message',
-        heading: { key: 'plate.messages.noMatchingFormat' },
-      };
+      return candidatesOrMessage(plate, language);
     case 'empty':
       return {
         kind: 'message',
         heading: { key: 'plate.messages.empty' },
       };
   }
+}
+
+function candidatesOrMessage(plate: string, language: Language): ResultView {
+  const found = candidatesFor(plate);
+  if (found.status !== 'candidates') {
+    return {
+      kind: 'message',
+      heading: { key: 'plate.messages.noMatchingFormat' },
+    };
+  }
+  const normalised = normalisePlateInput(plate);
+  if (normalised.status === 'invalid') {
+    throw new Error(
+      'candidatesFor accepted input that normalisePlateInput rejects',
+    );
+  }
+  const candidates = candidatesView(found, normalised.compact);
+  return {
+    kind: 'candidates',
+    heading: candidatesPageHeading(candidates, language),
+    candidates,
+    link: candidatesLink(candidates),
+  };
+}
+
+function candidatesPageHeading(
+  view: CandidatesView,
+  language: Language,
+): TranslatableMessage {
+  if (view.answer !== undefined) {
+    return countyHeading(view.answer.region2);
+  }
+  return voivodeshipHeading(view.region1, language);
+}
+
+function candidatesLink(view: CandidatesView): VoivodeshipLink | undefined {
+  if (view.answer === undefined) {
+    return undefined;
+  }
+  return {
+    slug: voivodeshipSlug(view.region1),
+    fragment: fullCodes(view.region1, view.answer.region2)[0],
+  };
 }
 
 /** Normalised plate groups joined with spaces, or the raw input when normalisation fails. */

@@ -4,22 +4,9 @@
     "plateNumber": "Numer rejestracyjny",
     "search": "Szukaj",
     "hint": "Wystarczą pierwsze litery — zwykle dwie lub trzy.",
-    "examples": {
-      "label": "Przykłady"
-    },
     "errors": {
       "empty": "Wpisz numer rejestracyjny.",
-      "invalidCharacters": "Niedozwolone na polskich tablicach: {{characters}}",
-      "noMatchingFormat": "To nie jest format polskiej tablicy.",
-      "notInRegistry": "Tego wyróżnika nie ma w rejestrze."
-    },
-    "candidates": {
-      "more": {
-        "one": "i jeszcze {{count}} powiat — wpisz więcej znaków",
-        "few": "i jeszcze {{count}} powiaty — wpisz więcej znaków",
-        "many": "i jeszcze {{count}} powiatów — wpisz więcej znaków",
-        "other": "i jeszcze {{count}} powiatu — wpisz więcej znaków"
-      }
+      "invalidCharacters": "Niedozwolone na polskich tablicach: {{characters}}"
     }
   }
 }

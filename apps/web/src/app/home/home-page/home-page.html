@@ -1,46 +1,41 @@
-<div nz-flex nzVertical nzGap="large">
-  <div class="home-form" nz-flex nzVertical nzGap="middle" nzAlign="center">
-    <h1>{{ 'home.title' | transloco }}</h1>
-    <form nz-form class="pr-home-search" [formRoot]="searchForm">
-      <div class="search-row">
-        <nz-form-item>
-          <nz-form-control
-            nzDisableAutoTips
-            [nzErrorTip]="errorTip"
-            [nzExtra]="hintTip"
-          >
-            <div class="plate-wrap">
-              <app-plate-input
-                [formField]="searchForm"
-                [label]="'home.plateNumber' | transloco"
-                [describedBy]="describedBy()"
-              />
-            </div>
-          </nz-form-control>
-        </nz-form-item>
-        <button
-          nz-button
-          nzType="primary"
-          nzSize="large"
-          type="submit"
-          class="search"
-        >
-          {{ 'home.search' | transloco }}
-        </button>
-      </div>
-    </form>
-    <app-home-examples [examples]="examples" (pick)="pickExample($event)" />
-  </div>
-  @if (candidates(); as result) {
-    <app-candidates-list [result]="result" [language]="language()" />
-  }
+<div
+  class="home"
+  nz-flex
+  nzVertical
+  nzJustify="center"
+  nzAlign="center"
+  nzGap="middle"
+>
+  <h1>{{ 'home.title' | transloco }}</h1>
+  <form nz-form class="pr-home-search" [formRoot]="searchForm">
+    <nz-form-item>
+      <nz-form-control nzDisableAutoTips [nzErrorTip]="errorTip">
+        <div nz-flex nzVertical nzGap="small">
+          <div class="search-row">
+            <app-plate-input
+              [formField]="searchForm"
+              [label]="'home.plateNumber' | transloco"
+              [describedBy]="describedBy()"
+            />
+            <button
+              nz-button
+              nzType="primary"
+              nzSize="large"
+              type="submit"
+              class="search"
+              [attr.aria-label]="'home.search' | transloco"
+            >
+              <span nz-icon nzType="search" nzTheme="outline"></span>
+            </button>
+          </div>
+          <p class="hint" [id]="hintId">{{ 'home.hint' | transloco }}</p>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
 </div>
-<div class="cdk-visually-hidden" aria-live="polite">{{ announcement() }}</div>
 <ng-template #errorTip>
   @if (error(); as message) {
     <span [id]="errorId">{{ message.key | transloco: message.params }}</span>
   }
-</ng-template>
-<ng-template #hintTip>
-  <span [id]="hintId">{{ 'home.hint' | transloco }}</span>
 </ng-template>

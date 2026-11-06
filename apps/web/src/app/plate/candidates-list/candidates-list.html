@@ -1,16 +1,27 @@
-@if (answer(); as answerMessage) {
-  <h2>{{ answerMessage.key | transloco: answerMessage.params }}</h2>
+@if (voivodeship(); as voivodeshipMessage) {
+  <p>{{ voivodeshipMessage.key | transloco: voivodeshipMessage.params }}</p>
 }
-<p>{{ voivodeship().key | transloco: voivodeship().params }}</p>
+@if (link(); as voivodeshipLink) {
+  @if (answerName(); as name) {
+    <p>
+      <a
+        [routerLink]="['/voivodeship', voivodeshipLink.slug]"
+        [fragment]="voivodeshipLink.fragment"
+      >
+        {{ 'plate.reading.countyLink' | transloco: { name } }}
+      </a>
+    </p>
+  }
+}
 @if (others(); as othersMessage) {
   <h2>{{ othersMessage.key | transloco }}</h2>
 }
 @if (heading(); as headingMessage) {
   <h2>{{ headingMessage.key | transloco: headingMessage.params }}</h2>
 }
-@if (shown().length > 0) {
+@if (counties().length > 0) {
   <ul>
-    @for (entry of shown(); track entry.region2.name) {
+    @for (entry of counties(); track entry.region2.name) {
       <li>
         <strong>{{ entry.codes.join(', ') }}</strong>
         {{ entry.region2.name }}
@@ -25,11 +36,6 @@
       </li>
     }
   </ul>
-  @if (more(); as moreMessage) {
-    <p class="candidates-more">
-      {{ moreMessage.key | transloco: moreMessage.params }}
-    </p>
-  }
 }
 @if (hasWithoutRegion2()) {
   <p>{{ 'plate.candidates.withoutRegion2' | transloco }}</p>

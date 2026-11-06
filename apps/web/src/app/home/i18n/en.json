@@ -4,22 +4,9 @@
     "plateNumber": "Licence plate number",
     "search": "Search",
     "hint": "The first letters are enough — usually two or three.",
-    "examples": {
-      "label": "Examples"
-    },
     "errors": {
       "empty": "Enter a plate number.",
-      "invalidCharacters": "Not allowed on Polish plates: {{characters}}",
-      "noMatchingFormat": "This is not a Polish plate format.",
-      "notInRegistry": "This code is not in the registry."
-    },
-    "candidates": {
-      "more": {
-        "one": "and {{count}} more county — type more characters",
-        "few": "and {{count}} more counties — type more characters",
-        "many": "and {{count}} more counties — type more characters",
-        "other": "and {{count}} more counties — type more characters"
-      }
+      "invalidCharacters": "Not allowed on Polish plates: {{characters}}"
     }
   }
 }

@@ -4,28 +4,28 @@
   margin-inline: auto;
 }
 
-.home-form {
+.home {
+  min-height: calc(100dvh - var(--pr-layout-header-height));
   width: 100%;
   text-align: center;
 }
 
-// Same expression for the plate font-size and the Search height (J3).
-@plate-em: min(5rem, calc(100cqi * 114 / 520));
+// Plate + gap + square Search share one cqi; gap is --pr-padding-xs (D-53 Update #115).
+@plate-em: min(5rem, calc((100cqi - var(--pr-padding-xs)) * 114 / 634));
 
-// Form is the size container for Search; `.plate-wrap` for the plate.
-// `nz-form-item` is a custom element (default `display: inline`). A size
-// container has zero intrinsic width, so stacked widths need a definite block.
 form.ant-form {
-  container-type: inline-size;
   display: block;
   width: 100%;
 }
 
 .search-row {
+  container-type: inline-size;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--pr-padding-md);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--pr-padding-xs);
   width: 100%;
 }
 
@@ -33,46 +33,32 @@ form.ant-form {
   display: block;
   width: 100%;
   position: relative;
-  // Tips under the plate must not add a second gap before Search.
   margin-bottom: 0;
-  // Reserve one line for an absolute error tip so Search does not move (I1).
+  // Reserve one line for an absolute error tip so the centred block does not jump.
   padding-bottom: 1.5rem;
 }
 
-.plate-wrap {
-  container-type: inline-size;
-  width: 100%;
-}
-
 app-plate-input {
-  // The host is `width: fit-content` (shared plate-input); centre it when the wrap is full width.
-  margin-inline: auto;
   font-size: @plate-em;
 }
 
 button.search {
+  flex: none;
+  box-sizing: border-box;
+  width: @plate-em;
   height: @plate-em;
-  width: 100%;
+  padding: 0;
+  border-width: 0;
+  border-radius: calc(@plate-em * 10 / 114);
+  // White inset ring = plate body margin up to the outer edge of the black frame (D-51).
+  box-shadow: inset 0 0 0 calc(@plate-em * 4 / 114) #fff;
+
+  .anticon {
+    font-size: calc(@plate-em * 0.4);
+  }
 }
 
-// 32rem is `--pr-column-max-width`; 512 − 364.9 − 16 = 131 px for the button.
-@container (width >= 32rem) {
-  .search-row {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: flex-start;
-    justify-content: center;
-  }
-
-  .ant-form-item {
-    width: auto;
-  }
-
-  .plate-wrap {
-    width: calc(5rem * 520 / 114);
-  }
-
-  button.search {
-    width: auto;
-  }
+.hint {
+  margin: 0;
+  color: var(--pr-text-secondary);
 }

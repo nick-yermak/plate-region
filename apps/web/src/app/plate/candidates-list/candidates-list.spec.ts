@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
@@ -23,6 +24,7 @@ describe('CandidatesListComponent', () => {
         CandidatesListComponent,
         TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
       ],
+      providers: [provideRouter([])],
     }).compileComponents();
     TestBed.inject(TranslocoService).setActiveLang(language);
     const fixture = TestBed.createComponent(CandidatesListComponent);
