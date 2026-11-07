@@ -415,40 +415,20 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   expect(await outlineStyleOfActive(page)).toBe('none');
 });
 
-async function expectBrandOneLine(brandLink: Locator): Promise<void> {
-  const metrics = await brandLink.evaluate((link) => {
-    const img = link.querySelector('img');
-    if (!img) {
-      throw new Error('brand icon missing');
-    }
-    const imgBox = img.getBoundingClientRect();
-    const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
-    let textNode: Text | null = null;
-    while (walker.nextNode()) {
-      const node = walker.currentNode as Text;
-      if (node.textContent?.trim()) {
-        textNode = node;
-        break;
-      }
-    }
-    if (!textNode) {
-      throw new Error('brand text missing');
-    }
-    const range = document.createRange();
-    range.selectNodeContents(textNode);
-    const textBox = range.getBoundingClientRect();
-    return {
-      iconRight: imgBox.right,
-      textLeft: textBox.left,
-      iconCenterY: imgBox.top + imgBox.height / 2,
-      textCenterY: textBox.top + textBox.height / 2,
-    };
-  });
+async function expectBrandLogoBox(
+  brandLink: Locator,
+  banner: Locator,
+): Promise<void> {
+  const logo = brandLink.getByRole('img', { name: 'Tablicomat', exact: true });
+  await expect(logo).toBeVisible();
+  const logoBox = await boxOf(logo);
+  const bannerBox = await boxOf(banner);
+  expect(logoBox.width).toBe(135);
+  expect(logoBox.height).toBe(28);
   expect(
-    Math.abs(metrics.iconRight + 8 - metrics.textLeft),
-  ).toBeLessThanOrEqual(0.5);
-  expect(
-    Math.abs(metrics.iconCenterY - metrics.textCenterY),
+    Math.abs(
+      logoBox.y + logoBox.height / 2 - (bannerBox.y + bannerBox.height / 2),
+    ),
   ).toBeLessThanOrEqual(1);
 }
 
@@ -461,19 +441,19 @@ test('header-brand-accessible-name', { tag: '@mobile' }, async ({ page }) => {
   await expect(brandLink).toHaveCount(1);
 });
 
-test('header-brand-icon-decorative', { tag: '@mobile' }, async ({ page }) => {
+test('header-brand-logo-image', { tag: '@mobile' }, async ({ page }) => {
   await readyHome(page);
   const brandLink = page.getByRole('banner').getByRole('link', {
     name: 'Tablicomat',
     exact: true,
   });
-  const icon = brandLink.locator('img');
-  await expect(icon).toHaveCount(1);
-  await expect(brandLink.getByRole('img')).toHaveCount(0);
+  await expect(
+    brandLink.getByRole('img', { name: 'Tablicomat', exact: true }),
+  ).toHaveCount(1);
 });
 
 test(
-  'header-brand-one-line',
+  'header-brand-logo-box',
   { tag: ['@tablet', '@mobile'] },
   async ({ page }) => {
     await readyHome(page);
@@ -483,7 +463,7 @@ test(
       exact: true,
     });
     await expect(brandLink).toBeVisible();
-    await expectBrandOneLine(brandLink);
+    await expectBrandLogoBox(brandLink, banner);
 
     await banner.getByRole('button', { name: 'Polski' }).click();
     await expect(banner.getByRole('button', { name: 'English' })).toBeVisible();
@@ -492,11 +472,11 @@ test(
       exact: true,
     });
     await expect(brandLinkPl).toBeVisible();
-    await expectBrandOneLine(brandLinkPl);
+    await expectBrandLogoBox(brandLinkPl, banner);
   },
 );
 
-test('header-brand-one-line-desktop', { tag: '@desktop' }, async ({ page }) => {
+test('header-brand-logo-box-desktop', { tag: '@desktop' }, async ({ page }) => {
   await readyHome(page);
   const banner = page.getByRole('banner');
   const widths = [991, 992, 1280] as const;
@@ -508,7 +488,7 @@ test('header-brand-one-line-desktop', { tag: '@desktop' }, async ({ page }) => {
       exact: true,
     });
     await expect(brandLink).toBeVisible();
-    await expectBrandOneLine(brandLink);
+    await expectBrandLogoBox(brandLink, banner);
   }
 
   await banner.getByRole('button', { name: 'Polski' }).click();
@@ -521,6 +501,6 @@ test('header-brand-one-line-desktop', { tag: '@desktop' }, async ({ page }) => {
       exact: true,
     });
     await expect(brandLink).toBeVisible();
-    await expectBrandOneLine(brandLink);
+    await expectBrandLogoBox(brandLink, banner);
   }
 });

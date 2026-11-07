@@ -38,3 +38,11 @@ test('icon-files-served', { tag: '@desktop' }, async ({ request }) => {
     );
   }
 });
+
+test('logo-file-served', { tag: '@desktop' }, async ({ request }) => {
+  const response = await request.get('/logo.svg');
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type'] ?? '').toMatch(
+    /^image\/svg\+xml(;|$)/,
+  );
+});
