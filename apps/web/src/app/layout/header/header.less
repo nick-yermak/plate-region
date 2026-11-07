@@ -11,6 +11,12 @@
   justify-self: start;
 }
 
+// A block image has no line box, so the grid centres the logo in the 64 px
+// header instead of the text baseline placing it.
+.header-brand > img {
+  display: block;
+}
+
 // Three equal-side columns keep the menu centred; when one side needs more
 // than its share the menu shifts instead of being overlapped (D-50 Update #127).
 // Divider keeps the 64 px box because nz-header is border-box (D-50 Update #122).

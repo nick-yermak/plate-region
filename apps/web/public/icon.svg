@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Tablicomat icon: the left end of the logo on a square, hand-drawn geometry, 2026-11-07. Provenance and terms: docs/decisions.md D-55. -->
+  <rect x="1" y="1" width="30" height="30" rx="3" fill="#FFFFFF"/>
+  <path d="M16 1H4a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h12z" fill="#003399"/>
+  <path d="M16 26 10.101 16.769a7 7 0 1 1 11.798 0z" fill="#FFCC00" stroke="#1F1F1F" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="16" cy="13" r="3" fill="#FFFFFF" stroke="#1F1F1F" stroke-width="2"/>
+  <rect x="1" y="1" width="30" height="30" rx="3" fill="none" stroke="#1F1F1F" stroke-width="2"/>
+</svg>
