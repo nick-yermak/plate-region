@@ -171,9 +171,9 @@ test('header-threshold-fit-pl', { tag: '@desktop' }, async ({ page }) => {
   );
   expect(new Set(tops.map((t) => Math.round(t * 10) / 10)).size).toBe(1);
 
-  const brandBox = await boxOf(
-    banner.getByRole('link', { name: 'PlateRegion' }),
-  );
+  const brandLink = banner.getByRole('link', { name: 'Tablicomat' });
+  await expect(brandLink).toBeVisible();
+  const brandBox = await boxOf(brandLink);
   const navBox = await boxOf(nav);
   const englishBox = await boxOf(
     banner.getByRole('button', { name: 'English' }),
@@ -339,10 +339,11 @@ test('shell-drawer-reopen-focus', { tag: '@mobile' }, async ({ page }) => {
 
 test('shell-drawer-back-navigation', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/about');
-  await page
+  const brandLink = page
     .getByRole('banner')
-    .getByRole('link', { name: 'PlateRegion' })
-    .click();
+    .getByRole('link', { name: 'Tablicomat' });
+  await expect(brandLink).toBeVisible();
+  await brandLink.click();
   await expect(page).toHaveURL(/\/$/);
 
   await page.getByRole('button', { name: 'Menu' }).click();
@@ -388,7 +389,7 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/');
 
   const burger = page.getByRole('button', { name: 'Menu' });
-  // Mobile tab order: PlateRegion, Polski, theme toggle, Menu.
+  // Mobile tab order: Tablicomat, Polski, theme toggle, Menu.
   for (let i = 0; i < 4; i++) {
     await page.keyboard.press('Tab');
   }
@@ -412,4 +413,94 @@ test('shell-focus-visible', { tag: '@mobile' }, async ({ page }) => {
   await themeToggle.click();
   await expect(themeToggle).toBeFocused();
   expect(await outlineStyleOfActive(page)).toBe('none');
+});
+
+async function expectBrandLogoBox(
+  brandLink: Locator,
+  banner: Locator,
+): Promise<void> {
+  const logo = brandLink.getByRole('img', { name: 'Tablicomat', exact: true });
+  await expect(logo).toBeVisible();
+  const logoBox = await boxOf(logo);
+  const bannerBox = await boxOf(banner);
+  expect(logoBox.width).toBe(145);
+  expect(logoBox.height).toBe(30);
+  expect(
+    Math.abs(
+      logoBox.y + logoBox.height / 2 - (bannerBox.y + bannerBox.height / 2),
+    ),
+  ).toBeLessThanOrEqual(1);
+}
+
+test('header-brand-accessible-name', { tag: '@mobile' }, async ({ page }) => {
+  await readyHome(page);
+  const brandLink = page.getByRole('banner').getByRole('link', {
+    name: 'Tablicomat',
+    exact: true,
+  });
+  await expect(brandLink).toHaveCount(1);
+});
+
+test('header-brand-logo-image', { tag: '@mobile' }, async ({ page }) => {
+  await readyHome(page);
+  const brandLink = page.getByRole('banner').getByRole('link', {
+    name: 'Tablicomat',
+    exact: true,
+  });
+  await expect(
+    brandLink.getByRole('img', { name: 'Tablicomat', exact: true }),
+  ).toHaveCount(1);
+});
+
+test(
+  'header-brand-logo-box',
+  { tag: ['@tablet', '@mobile'] },
+  async ({ page }) => {
+    await readyHome(page);
+    const banner = page.getByRole('banner');
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandLogoBox(brandLink, banner);
+
+    await banner.getByRole('button', { name: 'Polski' }).click();
+    await expect(banner.getByRole('button', { name: 'English' })).toBeVisible();
+    const brandLinkPl = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLinkPl).toBeVisible();
+    await expectBrandLogoBox(brandLinkPl, banner);
+  },
+);
+
+test('header-brand-logo-box-desktop', { tag: '@desktop' }, async ({ page }) => {
+  await readyHome(page);
+  const banner = page.getByRole('banner');
+  const widths = [991, 992, 1280] as const;
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 800 });
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandLogoBox(brandLink, banner);
+  }
+
+  await banner.getByRole('button', { name: 'Polski' }).click();
+  await expect(banner.getByRole('button', { name: 'English' })).toBeVisible();
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 800 });
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    await expect(brandLink).toBeVisible();
+    await expectBrandLogoBox(brandLink, banner);
+  }
 });
