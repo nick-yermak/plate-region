@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 135 28" width="135" height="28">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 135 28" width="145" height="30">
   <!-- Tablicomat logo: hand-drawn geometry after a concept made in ChatGPT and refined in Google Gemini (Nano Banana), 2026-11-07; letters are DINish Condensed Medium v4.007 outlines (SIL OFL 1.1, fonts/dinish/OFL.txt). Provenance and terms: docs/decisions.md D-55. -->
   <rect x="1" y="1" width="133" height="26" rx="2" fill="#FFFFFF"/>
   <path d="M13 1H3a2 2 0 0 0-2 2v22a2 2 0 0 0 2 2H13z" fill="#003399"/>

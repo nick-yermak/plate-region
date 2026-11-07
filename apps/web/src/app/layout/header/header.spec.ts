@@ -66,8 +66,8 @@ describe('HeaderComponent', () => {
     expect(children).toHaveLength(1);
     expect(children[0].tagName).toBe('IMG');
     expect(children[0].getAttribute('src')).toBe('/logo.svg');
-    expect(children[0].getAttribute('width')).toBe('135');
-    expect(children[0].getAttribute('height')).toBe('28');
+    expect(children[0].getAttribute('width')).toBe('145');
+    expect(children[0].getAttribute('height')).toBe('30');
   });
 
   it('names the brand by the logo alt text', async () => {

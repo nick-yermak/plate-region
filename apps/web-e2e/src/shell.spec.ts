@@ -423,8 +423,8 @@ async function expectBrandLogoBox(
   await expect(logo).toBeVisible();
   const logoBox = await boxOf(logo);
   const bannerBox = await boxOf(banner);
-  expect(logoBox.width).toBe(135);
-  expect(logoBox.height).toBe(28);
+  expect(logoBox.width).toBe(145);
+  expect(logoBox.height).toBe(30);
   expect(
     Math.abs(
       logoBox.y + logoBox.height / 2 - (bannerBox.y + bannerBox.height / 2),
