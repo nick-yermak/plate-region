@@ -88,6 +88,15 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - `npx nx run web:serve-static` is a long-running server that prints little until it is stopped; run it in a separate terminal and do not replace it with another server.
 - Import NG-ZORRO and CDK pieces as standalone components or directives, not their `*Module`: a library module that is already in `main` keeps there whatever a lazy chunk uses from it, so module imports grow the initial bundle (D-52).
 
+## Working from a brief
+
+- A task prompt may be a brief from the mentor: decisions, facts with file and line, exact changes, tests with literal expectations, mutations, verbatim docs text, checks and commits. The brief is the approved plan required above: do not write a separate plan, and do not redesign, extend the scope or rename anything it names.
+- Run the brief's `Verify first` commands before editing. If an output differs from the brief, or the brief is not enough to continue, investigate only what is needed to state the facts (commands with file and line), then stop and report the facts and the options; do not pick a new approach yourself.
+- A size S brief runs to the final report without stopping. A size M brief stops once, after the new tests have run red, with the declared and the actual failures.
+- Text marked verbatim is inserted exactly as given, byte for byte.
+- Temporary diagnostics (`console.log`, printed probe values) are removed before committing.
+- The final report contains, in this order: the verify results; `git diff --stat origin/main`; each new test red then green by name; each mutation and its result; every check command with its exit code; commit hashes and subjects; deviations from the brief with the reason, or "none".
+
 ## Nx
 
 - Prefer `npx nx` for workspace tasks (`run`, `run-many`, `affected`, `g`) over calling the underlying tools directly.
