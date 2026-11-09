@@ -28,8 +28,11 @@ nz-header {
   border-bottom: 1px solid var(--pr-border-split);
 }
 
+// The grid row is 64px high; the 63px menu starts at its top, so it ends 1px
+// above the banner bottom and does not cover the divider (D-50 Update #132).
 .header-nav {
   grid-column: 2;
+  align-self: start;
 }
 
 .header-actions {

@@ -48,6 +48,22 @@ async function boxOf(locator: Locator): Promise<{
   return box;
 }
 
+const homeLinkName = { en: 'Home', pl: 'Strona główna' } as const;
+
+async function setLanguage(page: Page, language: 'en' | 'pl'): Promise<void> {
+  const toPolish = page.getByRole('button', { name: 'Polski' });
+  const toEnglish = page.getByRole('button', { name: 'English' });
+  if (language === 'pl') {
+    if (await toPolish.isVisible()) {
+      await toPolish.click();
+    }
+    await expect(toEnglish).toBeVisible();
+  } else if (await toEnglish.isVisible()) {
+    await toEnglish.click();
+    await expect(toPolish).toBeVisible();
+  }
+}
+
 async function expectMenuCentred(banner: Locator): Promise<void> {
   const nav = banner.getByRole('navigation');
   await expect(nav).toBeVisible();
@@ -102,6 +118,122 @@ test('header-divider', { tag: ['@desktop', '@mobile'] }, async ({ page }) => {
     expect(metrics.height).toBe(64);
     expect(metrics.borderBottomWidth).toBe('1px');
     expect(metrics.borderBottomColor).toBe(c.divider);
+  }
+});
+
+test('header-divider-under-menu', { tag: '@desktop' }, async ({ page }) => {
+  const cases: {
+    width: number;
+    language: 'en' | 'pl';
+    colorScheme: 'light' | 'dark';
+  }[] = [
+    { width: 992, language: 'en', colorScheme: 'light' },
+    { width: 992, language: 'pl', colorScheme: 'light' },
+    { width: 1280, language: 'en', colorScheme: 'light' },
+    { width: 1280, language: 'pl', colorScheme: 'light' },
+    { width: 1280, language: 'en', colorScheme: 'dark' },
+  ];
+
+  for (const c of cases) {
+    const label = `${c.width}px ${c.language} ${c.colorScheme}`;
+    await page.emulateMedia({ colorScheme: c.colorScheme });
+    await readyHome(page);
+    await page.setViewportSize({ width: c.width, height: 800 });
+    await setLanguage(page, c.language);
+
+    const banner = page.getByRole('banner');
+    const nav = banner.getByRole('navigation');
+    await expect(nav, label).toBeVisible();
+
+    const bannerBox = await boxOf(banner);
+    const bannerBottom = bannerBox.y + bannerBox.height;
+    const contentBottom = bannerBottom - 1;
+
+    // Horizontal nz-menu exposes native list/listitem, not menu/menuitem.
+    const menu = nav.getByRole('list');
+    const menuBox = await boxOf(menu);
+    expect
+      .soft(
+        menuBox.y + menuBox.height,
+        `${label} menu ul bottom ≤ ${contentBottom}`,
+      )
+      .toBeLessThanOrEqual(contentBottom);
+
+    const items = nav.getByRole('listitem');
+    const itemCount = await items.count();
+    for (let i = 0; i < itemCount; i++) {
+      const itemBox = await boxOf(items.nth(i));
+      expect
+        .soft(
+          itemBox.y + itemBox.height,
+          `${label} listitem[${i}] bottom ≤ ${contentBottom}`,
+        )
+        .toBeLessThanOrEqual(contentBottom);
+    }
+
+    const selected = nav.getByRole('listitem').filter({
+      has: page.getByRole('link', { name: homeLinkName[c.language] }),
+    });
+    await expect(selected, label).toBeVisible();
+    const selectedBox = await boxOf(selected);
+    expect
+      .soft(
+        selectedBox.y + selectedBox.height,
+        `${label} selected bottom === ${contentBottom}`,
+      )
+      .toBe(contentBottom);
+
+    const brandLink = banner.getByRole('link', {
+      name: 'Tablicomat',
+      exact: true,
+    });
+    const brandBox = await boxOf(brandLink);
+    const gapWidth = menuBox.x - (brandBox.x + brandBox.width);
+    expect(
+      gapWidth,
+      `${label} brand–menu gap ≥ 40px (got ${gapWidth})`,
+    ).toBeGreaterThanOrEqual(40);
+
+    const dividerY = bannerBottom - 1;
+    await page.mouse.move(0, 0);
+    const clipHeight = 1;
+    const clipWidth = 40;
+    const underMenu = await page.screenshot({
+      clip: {
+        x: Math.round(menuBox.x + menuBox.width / 2 - 20),
+        y: dividerY,
+        width: clipWidth,
+        height: clipHeight,
+      },
+    });
+    const underSelected = await page.screenshot({
+      clip: {
+        x: Math.round(selectedBox.x + selectedBox.width / 2 - 20),
+        y: dividerY,
+        width: clipWidth,
+        height: clipHeight,
+      },
+    });
+    const beside = await page.screenshot({
+      clip: {
+        x: Math.round((brandBox.x + brandBox.width + menuBox.x) / 2 - 20),
+        y: dividerY,
+        width: clipWidth,
+        height: clipHeight,
+      },
+    });
+    expect
+      .soft(
+        underMenu.equals(beside),
+        `${label} under-menu divider pixels === beside`,
+      )
+      .toBe(true);
+    expect
+      .soft(
+        underSelected.equals(beside),
+        `${label} under-selected divider pixels === beside`,
+      )
+      .toBe(true);
   }
 });
 
