@@ -56,6 +56,17 @@ test('result-share-reload', { tag: '@desktop' }, async ({ page }) => {
   ).toHaveAttribute('href', '/voivodeship/dolnoslaskie#DW');
 });
 
+test('result-warsaw-district', { tag: '@desktop' }, async ({ page }) => {
+  await page.goto('/plate/WE%2012345');
+  const main = page.getByRole('main');
+  await expect(
+    main.getByRole('term').filter({ hasText: 'District' }),
+  ).toBeVisible();
+  await expect(
+    main.getByRole('definition').filter({ hasText: 'Mokotów' }),
+  ).toBeVisible();
+});
+
 test('result-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/CGD12345');
   const main = page.getByRole('main');
