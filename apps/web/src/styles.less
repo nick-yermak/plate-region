@@ -1,3 +1,22 @@
+// Body font and its metric-matched fallback (D-56).
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/InterVariable.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 107.24%;
+  ascent-override: 90.33%;
+  descent-override: 22.49%;
+  line-gap-override: 0%;
+}
+
 h1 {
   line-height: 1.2;
   text-wrap: balance;
