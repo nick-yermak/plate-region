@@ -91,12 +91,28 @@ a:focus-visible {
   border-inline-end: 0;
 }
 
+// Header horizontal menu: inside nz-header it inherits the 64px line-height,
+// so with its 1px bottom border it is 65px and covers the divider
+// (D-50 Update #132). Specificity: the rule (0,3,0) beats
+// `.ant-layout-header .ant-menu` (0,2,0); the item rule (0,4,0) beats
+// `.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item` (0,3,0).
+.pr-header-nav .ant-menu.ant-menu-horizontal {
+  line-height: calc(var(--pr-layout-header-height) - 1px);
+  border-bottom: 0;
+
+  > .ant-menu-item {
+    top: 0;
+    margin-top: 0;
+  }
+}
+
 // Pending horizontal nav only — do not affect the loaded menu.
+// Pending items match the 63px content (D-50 Update #132).
 .pr-nav-menu-pending .ant-menu-horizontal {
   > .ant-menu-item {
     display: inline-flex;
     align-items: center;
-    height: var(--pr-layout-header-height);
+    height: calc(var(--pr-layout-header-height) - 1px);
   }
 
   .ant-menu-title-content {
