@@ -1,5 +1,26 @@
 {
   "voivodeship": {
-    "title": "Województwo"
+    "heading": "Województwo {{name}}",
+    "letters": "Wyróżniki zaczynają się od {{letters}}",
+    "counts": "{{counties}} · {{codes}}",
+    "counties": {
+      "one": "{{count}} powiat",
+      "few": "{{count}} powiaty",
+      "many": "{{count}} powiatów",
+      "other": "{{count}} powiatu"
+    },
+    "codes": {
+      "one": "{{count}} kod",
+      "few": "{{count}} kody",
+      "many": "{{count}} kodów",
+      "other": "{{count}} kodu"
+    },
+    "nav": {
+      "label": "Województwa"
+    },
+    "notFound": {
+      "heading": "Nie znaleziono województwa",
+      "backHome": "Wyszukaj inną tablicę"
+    }
   }
 }

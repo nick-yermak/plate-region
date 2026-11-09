@@ -1,0 +1,14 @@
+<nav [attr.aria-label]="'voivodeship.nav.label' | transloco">
+  <ul>
+    @for (link of links(); track link.slug) {
+      <li>
+        <a
+          [routerLink]="['/voivodeship', link.slug]"
+          routerLinkActive
+          ariaCurrentWhenActive="page"
+          >{{ link.name }}</a
+        >
+      </li>
+    }
+  </ul>
+</nav>

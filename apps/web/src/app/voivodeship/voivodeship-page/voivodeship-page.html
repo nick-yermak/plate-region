@@ -1,0 +1,14 @@
+@let page = view();
+@if (page.status === 'found') {
+  <nz-flex nzVertical nzGap="middle">
+    <h1>{{ heading()!.key | transloco: heading()!.params }}</h1>
+    <p>{{ letters()!.key | transloco: letters()!.params }}</p>
+    <p>{{ counts() }}</p>
+    <app-voivodeship-nav [links]="navLinks()" />
+    @for (county of page.counties; track county.region2.name) {
+      <app-voivodeship-county [county]="county" />
+    }
+  </nz-flex>
+} @else {
+  <app-voivodeship-not-found />
+}
