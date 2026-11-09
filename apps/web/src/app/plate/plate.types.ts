@@ -22,6 +22,7 @@ export interface ReadingView {
   readonly voivodeshipName: string;
   readonly typesLabelKey: 'plate.reading.type' | 'plate.reading.possibleTypes';
   readonly plateTypes: readonly [PlateType, ...PlateType[]];
+  readonly districts: readonly [string, ...string[]] | undefined;
   readonly link: VoivodeshipLink;
 }
 

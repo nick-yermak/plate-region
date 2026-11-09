@@ -2,6 +2,7 @@ import {
   fullCodes,
   type Region1,
   type Region2,
+  type UnofficialName,
 } from '@plate-region/plate-data';
 import {
   candidatesFor,
@@ -46,6 +47,7 @@ function withCountyReading(
   plateTypes: readonly [PlateType, ...PlateType[]],
   language: Language,
   captionKey: ReadingView['captionKey'],
+  districts: ReadingView['districts'],
 ): ReadingView {
   return {
     captionKey,
@@ -53,6 +55,7 @@ function withCountyReading(
     voivodeshipName: voivodeshipDisplayName(region1, language),
     typesLabelKey: typesLabelKey(plateTypes),
     plateTypes,
+    districts,
     link: {
       slug: voivodeshipSlug(region1),
       fragment: fullCodes(region1, region2)[0],
@@ -72,11 +75,22 @@ function withoutCountyReading(
     voivodeshipName: voivodeshipDisplayName(region1, language),
     typesLabelKey: typesLabelKey(plateTypes),
     plateTypes,
+    districts: undefined,
     link: {
       slug: voivodeshipSlug(region1),
       fragment: undefined,
     },
   };
+}
+
+function districtNames(
+  districts: readonly [UnofficialName, ...UnofficialName[]] | undefined,
+): ReadingView['districts'] {
+  if (districts === undefined) {
+    return undefined;
+  }
+  const [head, ...tail] = districts;
+  return [head.value, ...tail.map((district) => district.value)];
 }
 
 function voivodeshipHeading(
@@ -105,6 +119,7 @@ export function resultView(plate: string, language: Language): ResultView {
             result.plateTypes,
             language,
             undefined,
+            districtNames(result.districts),
           ),
         ],
       };
@@ -148,6 +163,7 @@ export function resultView(plate: string, language: Language): ResultView {
             result.withRegion2.plateTypes,
             language,
             'plate.reading.withCounty',
+            districtNames(result.withRegion2.districts),
           ),
           withoutCountyReading(
             result.region1,

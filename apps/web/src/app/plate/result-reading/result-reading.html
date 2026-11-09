@@ -12,6 +12,17 @@
       }}
     </dd>
   }
+  @if (reading().districts; as districts) {
+    <dt>
+      {{
+        (districts.length === 1
+          ? 'plate.reading.district'
+          : 'plate.reading.possibleDistricts'
+        ) | transloco
+      }}
+    </dt>
+    <dd>{{ districtsText() }}</dd>
+  }
   <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
   <dd>{{ reading().voivodeshipName }}</dd>
   <dt>{{ reading().typesLabelKey | transloco }}</dt>

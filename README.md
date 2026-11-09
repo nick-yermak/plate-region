@@ -123,6 +123,8 @@ Photos are processed only to read the plate and are never stored. Your region co
 
 Plate codes come from Annex 13 (the table of registration codes) to the Rozporządzenie Ministra Infrastruktury z dnia 8 listopada 2024 r. (Dz.U. 2024 poz. 1709), as amended by Dz.U. 2025 poz. 939 (§ 1 pkt 4) and Dz.U. 2026 poz. 891 (§ 1 pkt 9) — legal state as of 2026-10-05. Source scope and update policy: [D-26](docs/decisions.md).
 
+Warsaw districts on the result page are not in the act; they come from the unofficial sources listed in [D-57](docs/decisions.md).
+
 ## License
 
 [MIT](LICENSE)
