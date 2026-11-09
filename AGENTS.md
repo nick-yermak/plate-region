@@ -42,7 +42,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 
 ## Working rules
 
-- Do nothing without an explicit request. For anything larger than a small edit, propose a plan first and wait for approval.
+- Do nothing without an explicit request. Tasks normally come as a mentor brief (see "Working from a brief"). Without a brief, for anything larger than a small edit, propose a plan first and wait for approval.
 - Plan mode creates no files anywhere, including `/tmp`. A fact that needs a command is given as the command and marked unverified.
 - On the GitHub Projects board, only epics that have started have issues; later epics stay in `docs/backlog.md` (D-16). Do not create issues for them unless asked.
 - File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here. Multi-step workflows live in `.cursor/skills/` (D-25).
@@ -77,16 +77,23 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Nx `inputs` and `outputs`: list file globs explicitly — brace patterns such as `{en,pl}` are not expanded, so a changed file would not invalidate the cache.
 - A presentational component that hosts containers (theme switcher, language switch) receives them through content projection (`<ng-content />`), not by importing them (D-48).
 - One responsibility per component: a component renders one piece of UI or wires one feature. If describing it needs "and" (it shows a value and also edits it; it renders a control and also lays out the page around it), split it into sibling components, or into a container and presentational children. Signs to split: inputs or outputs that serve unrelated concerns, independent blocks in one template, a spec that needs unrelated setups for different tests (D-48).
-- Command output quoted as evidence (`grep`, `awk`, `sed`, test or coverage summaries, and similar) is quoted in full, exactly as printed — never shortened with `…`, elided rows or a summary. If it is too long for the report, write it to `tmp/<branch>-<name>.txt` together with the exact command that produced it, and give that path instead.
+- Evidence: quote only the lines that support a statement, exactly as printed, with the command or file and line they come from — never shortened with `…`, never a paraphrase presented as output. Output longer than about 20 lines goes to `tmp/<branch>-<name>.txt` together with the exact command that produced it; give that path instead.
 - The Cursor sandbox blocks some IPC and network calls and remaps home paths: Nx fails with unix-socket `EPERM`, `gh` fails with `graphql: Forbidden`, Playwright reports its browser as not installed. Report the exact error, then rerun the same command outside the sandbox; never run `playwright install` (or any other install) to work around it.
 - Outside the Cursor sandbox, Playwright still inherits the sandbox's `PLAYWRIGHT_BROWSERS_PATH`: prefix Playwright commands (e2e, probe and shots scripts) with `PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"`.
 - Run `git commit` outside the sandbox: inside it the commit hooks (`lint-staged`, `commitlint`) failed with an Nx unix-socket `EPERM` (#129).
 - Writes to external systems (`gh issue|pr create|edit|comment`, GitHub MCP writes, and similar) go through a checked file (D-22): for an edit, first fetch the current content to a file; write the new content to a file; check it with `test -s`; show it and its diff against the current content; wait for the user's confirmation; then write with `--body-file <file>` (or the MCP equivalent after the same show-and-confirm step). Chain every `gh` step with `&&` or run under `set -euo pipefail`; never pass content through a shell variable or `$(...)`.
 - When a report shows a diff, include new files: `git add -N <file>` before `git diff`, or `git diff --no-index /dev/null <file>` (D-22). Write the diff to `tmp/<branch>-step-<N>.diff` and give that path in the report instead of referring to chat output.
-- At the end of a task, ask whether anything should go into `AGENTS.md`.
 - Run only tools installed in the workspace. `npx <package>` for a package that is not in `package-lock.json` downloads it from the registry and bypasses dependency review; stop and ask instead.
 - `npx nx run web:serve-static` is a long-running server that prints little until it is stopped; run it in a separate terminal and do not replace it with another server.
 - Import NG-ZORRO and CDK pieces as standalone components or directives, not their `*Module`: a library module that is already in `main` keeps there whatever a lazy chunk uses from it, so module imports grow the initial bundle (D-52).
+
+## Token economy
+
+- Find with `grep -n`, then read the needed range with `sed -n 'X,Yp'`. Read a whole file only when it is short or most of it changes; do not re-read a file that is already in this chat and has not changed.
+- While working, run only the targeted checks (one spec with `--include`, one e2e with `-g <name>`). Run the full suites, `nx affected` and `format:check` once, after the last change.
+- Trim command output in the command itself (`tail -n 30`, `grep`, `--outputStyle=static`, `--reporter=line`); never paste whole logs into the chat.
+- No narration: between tool calls write at most one line; do not restate the brief, the plan or the diff. Reports are tables and numbers.
+- Prefer `gh … --json --jq` and shell commands over MCP calls whose responses are large.
 
 ## Working from a brief
 
