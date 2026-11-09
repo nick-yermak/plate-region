@@ -24,7 +24,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - Heading: "Decode a Polish plate" / "Rozszyfruj polską tablicę" (D-53 Update #115).
 - The heading, the plate input with a square icon Search button beside it and the hint under them, centred horizontally and vertically (D-53 Update #115).
-- A photo button. On phones it opens the camera directly and is the primary action, placed before Search; elsewhere it opens a file picker and Search is primary.
+- Photo (Epic 4, #92): a photo button that starts recognition and opens the result page; on phones it is the primary action, placed before Search. Home has no photo control in Epic 2 (D-53 Update #92).
 - Search runs on Enter or the Search button, not on every keystroke.
 - Every input except an empty one or one with characters not allowed on Polish plates navigates to the result page; those two stay errors under the plate (D-52 Update #115).
 - With the SVG map (#94), the result shows a small map with the voivodeship highlighted.
@@ -33,7 +33,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - The URL holds the plate, so the page can be shared.
 - Shows: voivodeship and powiat, plate type, the powiat highlighted on the map of Poland, and a link to the voivodeship page that opens at the matching powiat.
-- Image: the photo, if the user took or uploaded one in this session; otherwise an SVG car with the plate drawn in its plate area. A shared link always shows the SVG car: photos never leave the device.
+- Image: an SVG car with the plate drawn in its plate area. From Epic 4 (#92), a photo taken or uploaded in this session replaces the car until reload; a shared link always shows the SVG car: photos never leave the device (D-04 Update #92).
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
 - A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
 
@@ -71,5 +71,5 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 ## Testing
 
 - Unit tests (Vitest) and end-to-end tests (Playwright) are acceptance criteria of every UI issue, not separate tasks.
-- End-to-end techniques to cover: user journeys (search → result → voivodeship), mobile emulation and several screen sizes, photo upload and camera input, visual regression with screenshots.
+- End-to-end techniques to cover: user journeys (search → result → voivodeship), mobile emulation and several screen sizes, photo upload and camera input (Epic 4), visual regression with screenshots.
 - Visual regression baselines are taken and compared in one environment, the Playwright Docker image, both locally and in CI: screenshots differ between operating systems.

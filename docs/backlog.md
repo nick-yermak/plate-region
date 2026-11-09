@@ -61,7 +61,6 @@ Outcome: the first useful version — type or photograph a plate, see the region
 - [ ] i18n PL/EN with Transloco (D-09): runtime language switch, CLDR plural forms
 - [ ] Search form with Signal Forms: submit on Enter or button, navigate to the result page, list candidates for incomplete input
 - [ ] Result page: result card for every `ParseResult` variant, SVG car with the plate
-- [ ] Photo: upload and camera, preview, passed to the result page; no recognition (Epic 4)
 - [ ] Voivodeship page: powiats with codes and example plates
 - [ ] SVG map of Poland: first compare powiat geometry sources (OpenStreetMap, GUGiK PRG) on licence, simplified size and offline use, and measure how registry region2 codes map onto them; then voivodeship click-through and powiat highlight
 - [ ] Registry table: nz-table with filter, search and sorting by variant count; example plate in every row
@@ -91,7 +90,7 @@ Outcome: the app installs on a phone, works offline, and every region page is ge
 Outcome: a photo or camera frame becomes a plate string. Try locally in the browser first; on low confidence, fall back to a cloud vision model via a serverless function.
 
 - [ ] Build a test set: 30–50 of your own photos of Polish plates in different conditions (day, night, angle, dirt) with expected answers
-- [ ] Image capture: camera via `getUserMedia` and file upload, preview, cropping
+- [ ] Image capture (#92, moved from Epic 2): one file input with `capture="environment"`; the photo is held in memory until reload and replaces the SVG car on the result page (D-04 Update #92); cropping only if recognition needs it
 - [ ] Canvas preprocessing: greyscale, contrast, locating the plate rectangle
 - [ ] Local OCR (Tesseract.js) in a Web Worker, lazy-loaded via `@defer`, alphabet restricted to plate characters
 - [ ] Confidence metric: OCR confidence plus validation by the domain library (does the prefix exist)
