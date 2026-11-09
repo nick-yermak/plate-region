@@ -29,6 +29,8 @@
       "withCounty": "Odczyt z wyróżnikiem powiatu",
       "withoutCounty": "Odczyt bez wyróżnika powiatu",
       "county": "Powiat",
+      "district": "Dzielnica",
+      "possibleDistricts": "Możliwe dzielnice",
       "voivodeship": "Województwo",
       "type": "Rodzaj tablicy",
       "possibleTypes": "Możliwe rodzaje tablicy",

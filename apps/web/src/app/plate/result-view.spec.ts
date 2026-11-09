@@ -17,6 +17,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('D').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['ordinary'],
+          districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: 'DW' },
         },
       ],
@@ -38,6 +39,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('W').nameEn.value,
           typesLabelKey: 'plate.reading.possibleTypes',
           plateTypes: ['ordinary', 'vintage', 'temporary'],
+          districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
       ],
@@ -59,6 +61,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('W').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['vintage'],
+          districts: undefined,
           link: { slug: 'mazowieckie', fragment: 'WO' },
         },
         {
@@ -67,6 +70,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('W').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['individual'],
+          districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
       ],
@@ -88,6 +92,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('D').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['ordinary'],
+          districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: undefined },
         },
       ],
@@ -180,6 +185,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('D').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['ordinary'],
+          districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: 'DW' },
         },
       ],
@@ -201,6 +207,7 @@ describe('resultView', () => {
           voivodeshipName: voivodeship('W').name,
           typesLabelKey: 'plate.reading.possibleTypes',
           plateTypes: ['ordinary', 'vintage', 'temporary'],
+          districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
       ],
@@ -306,5 +313,50 @@ describe('resultView', () => {
     expect(view.candidates.counties).toHaveLength(1);
     expect(view.candidates.counties[0]?.codes).toEqual(['DWR']);
     expect(view.link).toBeUndefined();
+  });
+
+  it('resolved WE 12345 → reading districts Mokotów', () => {
+    const view = resultView('WE 12345', 'en');
+    expect(view.kind).toBe('readings');
+    if (view.kind !== 'readings') {
+      throw new Error('expected readings');
+    }
+    expect(view.readings[0].districts).toEqual(['Mokotów']);
+  });
+
+  it('resolved WW 12345 → three districts', () => {
+    const view = resultView('WW 12345', 'en');
+    expect(view.kind).toBe('readings');
+    if (view.kind !== 'readings') {
+      throw new Error('expected readings');
+    }
+    expect(view.readings[0].districts).toEqual([
+      'Rembertów',
+      'Wilanów',
+      'Włochy',
+    ]);
+  });
+
+  it('resolved DW 12345 → districts undefined', () => {
+    const view = resultView('DW 12345', 'en');
+    expect(view.kind).toBe('readings');
+    if (view.kind !== 'readings') {
+      throw new Error('expected readings');
+    }
+    expect(view.readings[0].districts).toBeUndefined();
+  });
+
+  it('ambiguous WIIKK12 → with-county Śródmieście, without-county undefined', () => {
+    const view = resultView('WIIKK12', 'en');
+    expect(view.kind).toBe('readings');
+    if (view.kind !== 'readings') {
+      throw new Error('expected readings');
+    }
+    expect(view.readings.length).toBe(2);
+    if (view.readings.length !== 2) {
+      throw new Error('expected two readings');
+    }
+    expect(view.readings[0].districts).toEqual(['Śródmieście']);
+    expect(view.readings[1].districts).toBeUndefined();
   });
 });

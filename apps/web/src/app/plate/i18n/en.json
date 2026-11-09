@@ -29,6 +29,8 @@
       "withCounty": "Read with a county code",
       "withoutCounty": "Read without a county code",
       "county": "County",
+      "district": "District",
+      "possibleDistricts": "Possible districts",
       "voivodeship": "Voivodeship",
       "type": "Plate type",
       "possibleTypes": "Possible plate types",

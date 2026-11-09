@@ -28,6 +28,16 @@ export class ResultReadingComponent {
     }).format(texts);
   });
 
+  protected readonly districtsText = computed(() => {
+    const districts = this.reading().districts;
+    if (districts === undefined) {
+      return '';
+    }
+    return new Intl.ListFormat(this.language(), {
+      type: 'disjunction',
+    }).format(districts);
+  });
+
   protected readonly linkKey = computed(() =>
     this.reading().link.fragment === undefined
       ? 'plate.reading.voivodeshipLink'

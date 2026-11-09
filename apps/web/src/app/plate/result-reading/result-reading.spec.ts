@@ -13,6 +13,7 @@ const cityReading: ReadingView = {
   voivodeshipName: 'Lower Silesian',
   typesLabelKey: 'plate.reading.type',
   plateTypes: ['ordinary'],
+  districts: undefined,
   link: { slug: 'dolnoslaskie', fragment: 'DW' },
 };
 
@@ -22,6 +23,7 @@ const voivodeshipOnlyReading: ReadingView = {
   voivodeshipName: 'Masovian',
   typesLabelKey: 'plate.reading.possibleTypes',
   plateTypes: ['ordinary', 'vintage', 'temporary'],
+  districts: undefined,
   link: { slug: 'mazowieckie', fragment: undefined },
 };
 
@@ -31,6 +33,7 @@ const captionedReading: ReadingView = {
   voivodeshipName: 'Masovian',
   typesLabelKey: 'plate.reading.type',
   plateTypes: ['vintage'],
+  districts: undefined,
   link: { slug: 'mazowieckie', fragment: 'WO' },
 };
 
@@ -138,6 +141,80 @@ describe('ResultReadingComponent', () => {
     const caption = fixture.nativeElement.querySelector('h2');
     expect(caption?.textContent?.trim()).toBe(
       testingText('en', 'plate.reading.withCounty'),
+    );
+  });
+
+  it('labels a single district', async () => {
+    const fixture = await render({
+      ...cityReading,
+      powiat: { name: 'm.st. Warszawa', kindKey: 'plate.kind.city' },
+      voivodeshipName: 'Masovian',
+      link: { slug: 'mazowieckie', fragment: 'WE' },
+      districts: ['Mokotów'],
+    });
+    expect(dtTexts(fixture.nativeElement)).toContain(
+      testingText('en', 'plate.reading.district'),
+    );
+    const districtIndex = dtTexts(fixture.nativeElement).indexOf(
+      testingText('en', 'plate.reading.district'),
+    );
+    expect(ddTexts(fixture.nativeElement)[districtIndex]).toBe('Mokotów');
+  });
+
+  it('joins several districts in English', async () => {
+    const fixture = await render({
+      ...cityReading,
+      powiat: { name: 'm.st. Warszawa', kindKey: 'plate.kind.city' },
+      voivodeshipName: 'Masovian',
+      link: { slug: 'mazowieckie', fragment: 'WW' },
+      districts: ['Rembertów', 'Wilanów', 'Włochy'],
+    });
+    expect(dtTexts(fixture.nativeElement)).toContain(
+      testingText('en', 'plate.reading.possibleDistricts'),
+    );
+    const districtIndex = dtTexts(fixture.nativeElement).indexOf(
+      testingText('en', 'plate.reading.possibleDistricts'),
+    );
+    expect(ddTexts(fixture.nativeElement)[districtIndex]).toBe(
+      'Rembertów, Wilanów, or Włochy',
+    );
+  });
+
+  it('joins several districts in Polish after a language switch', async () => {
+    const fixture = await render(
+      {
+        ...cityReading,
+        powiat: { name: 'm.st. Warszawa', kindKey: 'plate.kind.city' },
+        voivodeshipName: 'mazowieckie',
+        link: { slug: 'mazowieckie', fragment: 'WW' },
+        districts: ['Rembertów', 'Wilanów', 'Włochy'],
+      },
+      'en',
+    );
+    TestBed.inject(TranslocoService).setActiveLang('pl');
+    fixture.componentRef.setInput('language', 'pl');
+    await fixture.whenStable();
+    expect(dtTexts(fixture.nativeElement)).toContain(
+      testingText('pl', 'plate.reading.possibleDistricts'),
+    );
+    const districtIndex = dtTexts(fixture.nativeElement).indexOf(
+      testingText('pl', 'plate.reading.possibleDistricts'),
+    );
+    expect(ddTexts(fixture.nativeElement)[districtIndex]).toBe(
+      'Rembertów, Wilanów lub Włochy',
+    );
+  });
+
+  it('omits the district line when districts is undefined', async () => {
+    const fixture = await render({
+      ...cityReading,
+      districts: undefined,
+    });
+    expect(dtTexts(fixture.nativeElement)).not.toContain(
+      testingText('en', 'plate.reading.district'),
+    );
+    expect(dtTexts(fixture.nativeElement)).not.toContain(
+      testingText('en', 'plate.reading.possibleDistricts'),
     );
   });
 });
