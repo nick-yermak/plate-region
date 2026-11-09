@@ -33,6 +33,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - The URL holds the plate, so the page can be shared.
 - Shows: voivodeship and powiat, plate type, the powiat highlighted on the map of Poland, and a link to the voivodeship page that opens at the matching powiat.
+- For m.st. Warszawa with a five-character vehicle part, a District row (or Possible districts) follows the powiat; the names come from unofficial data (D-57).
 - Image: an SVG car with the plate drawn in its plate area. From Epic 4 (#92), a photo taken or uploaded in this session replaces the car until reload; a shared link always shows the SVG car: photos never leave the device (D-04 Update #92).
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
 - A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
