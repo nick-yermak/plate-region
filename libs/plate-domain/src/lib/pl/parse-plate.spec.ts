@@ -1,11 +1,20 @@
 import { fullCodes, registry } from '@plate-region/plate-data';
-import type { Region1, Region2 } from '@plate-region/plate-data';
+import type {
+  Region1,
+  Region2,
+  UnofficialName,
+} from '@plate-region/plate-data';
 
 import { parsePlate } from './parse-plate';
 import { PLATE_ALPHABET } from './alphabet';
 import type { PlateSeries } from './readings';
 import type { PlateTypes } from './plate-type';
 import type { ParseResult } from './parse-plate';
+
+const unofficial = (value: string): UnofficialName => ({
+  value,
+  origin: 'unofficial',
+});
 
 function region1ByName(name: string): Region1 {
   const found = registry.region1.find((r) => r.name === name);
@@ -29,12 +38,14 @@ const resolved = (
   region1: Region1,
   region2: Region2,
   plateTypes: PlateTypes,
+  districts?: readonly [UnofficialName, ...UnofficialName[]],
 ): Extract<ParseResult, { status: 'resolved' }> => ({
   status: 'resolved',
   country: 'PL',
   region1,
   region2,
   plateTypes,
+  ...(districts === undefined ? {} : { districts }),
 });
 
 const region1Only = (
@@ -49,7 +60,11 @@ const region1Only = (
 
 const ambiguous = (
   region1: Region1,
-  withRegion2: { region2: Region2; plateTypes: PlateTypes },
+  withRegion2: {
+    region2: Region2;
+    plateTypes: PlateTypes;
+    districts?: readonly [UnofficialName, ...UnofficialName[]];
+  },
   withoutPlateTypes: PlateTypes,
 ): Extract<ParseResult, { status: 'ambiguous' }> => ({
   status: 'ambiguous',
@@ -58,6 +73,9 @@ const ambiguous = (
   withRegion2: {
     region2: withRegion2.region2,
     plateTypes: withRegion2.plateTypes,
+    ...(withRegion2.districts === undefined
+      ? {}
+      : { districts: withRegion2.districts }),
   },
   withoutRegion2: { plateTypes: withoutPlateTypes },
 });
@@ -434,6 +452,7 @@ describe('parsePlate', () => {
           {
             region2: region2By('W', 'm.st. Warszawa'),
             plateTypes: ORDINARY,
+            districts: [unofficial('Śródmieście')],
           },
           INDIVIDUAL,
         ),
@@ -470,6 +489,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'm.st. Warszawa'),
           ORDINARY,
+          [unofficial('Śródmieście')],
         ),
         citation:
           'L2.2 resolved: WI122AC § 30 ust. 2 pkt 1 lit. a tiret 3 (R-24) (one-sub empty)',
@@ -633,8 +653,12 @@ describe('parsePlate', () => {
       const mazowieckie = region1ByName('mazowieckie');
       const fromWA = parsePlate('WA12345');
       const fromWY = parsePlate('WY12345');
-      expect(fromWA).toEqual(resolved(mazowieckie, warszawa, ORDINARY));
-      expect(fromWY).toEqual(resolved(mazowieckie, warszawa, ORDINARY));
+      expect(fromWA).toEqual(
+        resolved(mazowieckie, warszawa, ORDINARY, [unofficial('Białołęka')]),
+      );
+      expect(fromWY).toEqual(
+        resolved(mazowieckie, warszawa, ORDINARY, [unofficial('Wola')]),
+      );
       expect(fromWA.status === 'resolved' && fromWA.region2).toBe(warszawa);
       expect(fromWY.status === 'resolved' && fromWY.region2).toBe(warszawa);
     });

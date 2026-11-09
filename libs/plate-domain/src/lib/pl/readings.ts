@@ -24,6 +24,8 @@ export type Reading = {
   readonly ordinal: number;
   readonly region2: Region2 | undefined;
   readonly plateTypes: PlateTypes;
+  /** Characters after the distinguisher that the templates matched. */
+  readonly vehiclePart: string;
 };
 
 export interface Distinguisher {
@@ -321,16 +323,15 @@ export function completionsOf(compact: string): readonly Completion[] {
 export function readingsOf(compact: string): readonly Reading[] {
   const readings: Reading[] = [];
   for (const distinguisher of shorterDistinguishers(compact)) {
-    const plateTypes = plateTypesOf(
-      distinguisher.group,
-      compact.slice(distinguisher.code.length),
-    );
+    const vehiclePart = compact.slice(distinguisher.code.length);
+    const plateTypes = plateTypesOf(distinguisher.group, vehiclePart);
     if (plateTypes !== undefined) {
       readings.push({
         code: distinguisher.code,
         ordinal: distinguisher.ordinal,
         region2: distinguisher.region2,
         plateTypes,
+        vehiclePart,
       });
     }
   }

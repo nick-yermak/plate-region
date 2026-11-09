@@ -1,7 +1,13 @@
-import type { Country, Region1, Region2 } from '@plate-region/plate-data';
+import type {
+  Country,
+  Region1,
+  Region2,
+  UnofficialName,
+} from '@plate-region/plate-data';
 
 import type { PlateType } from './plate-type';
 import { mergePlateTypes } from './plate-type';
+import { districtsOf } from './warsaw-districts';
 import { normalisePlateInput } from './normalise-plate-input';
 import {
   region1ForFirstLetter,
@@ -20,12 +26,17 @@ import {
  */
 export type ParseResult =
   | {
-      /** Every valid reading names this region2. */
+      /**
+       * Every valid reading names this region2. For m.st. Warszawa with a
+       * five-character vehicle part, `districts` names the district or the
+       * candidates from unofficial data (D-57); absent otherwise.
+       */
       readonly status: 'resolved';
       readonly country: Country;
       readonly region1: Region1;
       readonly region2: Region2;
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
+      readonly districts?: readonly [UnofficialName, ...UnofficialName[]];
     }
   | {
       /**
@@ -43,7 +54,9 @@ export type ParseResult =
       /**
        * One reading names a region2 and another carries none; region1 is the same
        * in every reading (e.g. `WOO1A`). Arises only from look-alike characters
-       * (0/O, 1/I) at positions 2–3.
+       * (0/O, 1/I) at positions 2–3. For m.st. Warszawa with a five-character
+       * vehicle part, `withRegion2.districts` names the district or the
+       * candidates from unofficial data (D-57); absent otherwise.
        */
       readonly status: 'ambiguous';
       readonly country: Country;
@@ -51,6 +64,7 @@ export type ParseResult =
       readonly withRegion2: {
         readonly region2: Region2;
         readonly plateTypes: readonly [PlateType, ...PlateType[]];
+        readonly districts?: readonly [UnofficialName, ...UnofficialName[]];
       };
       readonly withoutRegion2: {
         readonly plateTypes: readonly [PlateType, ...PlateType[]];
@@ -129,6 +143,8 @@ function classify(
   const [withoutFirst, ...withoutRest] = readings.filter(
     (reading) => reading.region2 === undefined,
   );
+  const districts = districtsOf(first);
+
   if (withoutFirst === undefined) {
     return {
       status: 'resolved',
@@ -136,6 +152,7 @@ function classify(
       region1,
       region2: first.region2,
       plateTypes: all,
+      ...(districts === undefined ? {} : { districts }),
     };
   }
 
@@ -154,6 +171,7 @@ function classify(
     withRegion2: {
       region2: first.region2,
       plateTypes: mergePlateTypes(withHead, ...withTail),
+      ...(districts === undefined ? {} : { districts }),
     },
     withoutRegion2: {
       plateTypes: mergePlateTypes(withoutHead, ...withoutTail),
@@ -174,6 +192,9 @@ function classify(
  * plates I and O remain letters — § 32 ust. 2 (R-39).
  * A leading service or military distinguisher and one allowed letter add `series`
  * to `not-in-registry` (D-46); no look-alike reading applies there.
+ * For m.st. Warszawa with a five-character vehicle part, `resolved` and
+ * `ambiguous.withRegion2` carry `districts` from unofficial data (D-57); the key
+ * is absent otherwise.
  *
  * Result variants: {@link ParseResult}.
  */
