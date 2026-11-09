@@ -12,11 +12,7 @@ describe('VoivodeshipNav', () => {
         VoivodeshipNav,
         TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
       ],
-      providers: [
-        provideRouter([
-          { path: 'voivodeship/:slug', component: VoivodeshipNav },
-        ]),
-      ],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(VoivodeshipNav);
@@ -24,10 +20,14 @@ describe('VoivodeshipNav', () => {
       { slug: 'dolnoslaskie', name: 'Lower Silesian' },
       { slug: 'mazowieckie', name: 'Masovian' },
     ]);
+    fixture.componentRef.setInput('currentSlug', 'dolnoslaskie');
     await fixture.whenStable();
 
     const nav = fixture.nativeElement.querySelector('nav') as HTMLElement;
     expect(nav.getAttribute('aria-label')).toBeTruthy();
-    expect(nav.querySelectorAll('a')).toHaveLength(2);
+    const links = nav.querySelectorAll('a');
+    expect(links).toHaveLength(2);
+    expect(links[0].getAttribute('aria-current')).toBe('page');
+    expect(links[1].getAttribute('aria-current')).toBeNull();
   });
 });

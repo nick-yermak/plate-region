@@ -4,8 +4,7 @@
       <li>
         <a
           [routerLink]="['/voivodeship', link.slug]"
-          routerLinkActive
-          ariaCurrentWhenActive="page"
+          [attr.aria-current]="link.slug === currentSlug() ? 'page' : null"
           >{{ link.name }}</a
         >
       </li>

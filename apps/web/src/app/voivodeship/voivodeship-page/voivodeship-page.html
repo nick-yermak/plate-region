@@ -4,7 +4,7 @@
     <h1>{{ heading()!.key | transloco: heading()!.params }}</h1>
     <p>{{ letters()!.key | transloco: letters()!.params }}</p>
     <p>{{ counts() }}</p>
-    <app-voivodeship-nav [links]="navLinks()" />
+    <app-voivodeship-nav [links]="navLinks()" [currentSlug]="slug()" />
     @for (county of page.counties; track county.region2.name) {
       <app-voivodeship-county [county]="county" />
     }
