@@ -1,6 +1,15 @@
+import { DOCUMENT } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { NzFlexDirective } from 'ng-zorro-antd/flex';
-import { Component, computed, inject, input } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 
 import { voivodeshipView } from '../voivodeship-view';
 import { LanguageService } from '../../language/language.service';
@@ -27,7 +36,9 @@ import {
   styleUrl: './voivodeship-page.less',
 })
 export class VoivodeshipPage {
+  private readonly document = inject(DOCUMENT);
   private readonly languageService = inject(LanguageService);
+  private readonly route = inject(ActivatedRoute);
   private readonly transloco = inject(TranslocoService);
 
   readonly slug = input.required<string>();
@@ -64,4 +75,20 @@ export class VoivodeshipPage {
   protected readonly navLinks = computed(() =>
     voivodeshipNavLinks(this.language()),
   );
+
+  private readonly fragment = toSignal(this.route.fragment, {
+    initialValue: null as string | null,
+  });
+
+  constructor() {
+    afterRenderEffect(() => {
+      // Scroll here instead of withInMemoryScrolling: that feature costs every page ~6.7 kB for anchors only this page has (D-58).
+      const fragment = this.fragment();
+      this.view();
+      if (fragment === null || fragment === '') {
+        return;
+      }
+      this.document.getElementById(fragment)?.scrollIntoView();
+    });
+  }
 }

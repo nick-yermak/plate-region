@@ -47,6 +47,7 @@ test('voivodeship-slug-examples', { tag: '@desktop' }, async ({ page }) => {
 });
 
 test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
+  // Direct loads: the browser scrolls to the fragment once the element appears while the document is loading.
   await page.goto('/voivodeship/mazowieckie');
   const main = page.getByRole('main');
   const lastRow = main.locator('#AZY');
@@ -63,6 +64,25 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/\/voivodeship\/dolnoslaskie#DW$/);
   await expect(page.getByRole('main').locator('#DW')).toBeInViewport();
+
+  // In-app navigation to a row below the fold (żyrardowski first code WZY); the browser cannot do this alone.
+  await page.goto('/voivodeship/mazowieckie');
+  const firstCodeRow = page.getByRole('main').locator('#WZY');
+  await expect(firstCodeRow).toBeAttached();
+  await expect(firstCodeRow).not.toBeInViewport();
+  const plateText = (
+    await firstCodeRow.locator('app-plate').innerText()
+  ).trim();
+  await page.goto(`/plate/${encodeURIComponent(plateText)}`);
+  await expect(
+    page.getByRole('main').getByRole('heading', { level: 1 }),
+  ).toHaveText('żyrardowski county');
+  await page
+    .getByRole('main')
+    .getByRole('link', { name: /żyrardowski on the voivodeship page/i })
+    .click();
+  await expect(page).toHaveURL(/\/voivodeship\/mazowieckie#WZY$/);
+  await expect(page.getByRole('main').locator('#WZY')).toBeInViewport();
 });
 
 test('voivodeship-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
