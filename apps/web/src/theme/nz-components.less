@@ -9,6 +9,8 @@
 @import 'ng-zorro-antd/form/style/patch';
 // ng-zorro-antd 22.1.2 omits ./flex/style/* from package.json exports (unlike other components)
 @import '../../../../node_modules/ng-zorro-antd/flex/style/entry';
+@import 'ng-zorro-antd/table/style/entry';
+@import 'ng-zorro-antd/tabs/style/entry';
 
 // NG-ZORRO resets outline on buttons/drawer close; menu focus is on the li while focus lands on the inner link.
 .ant-btn:focus-visible,
@@ -123,4 +125,14 @@ a:focus-visible {
     line-height: normal;
     height: auto;
   }
+}
+
+// Voivodeship / registry code rows: :target fill.
+// Template-mode `nz-table` projects a bare `tbody` (no `.ant-table-tbody` class),
+// so the selector uses `.ant-table tbody`. Specificity (0,3,3): beats Ant cell
+// `.ant-table-tbody > tr > td` (0,1,2; table/style/index.less:41) and hover
+// `.ant-table-tbody > tr.ant-table-row:hover > td` (0,3,2; :149)
+// even when those Ant classes are present.
+.pr-codes-table .ant-table tbody > tr:target > td {
+  background: var(--pr-row-target-bg);
 }

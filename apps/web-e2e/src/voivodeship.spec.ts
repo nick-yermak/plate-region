@@ -1,18 +1,35 @@
 import { expect, test } from '@playwright/test';
 
 test('voivodeship-powiat-list', { tag: '@desktop' }, async ({ page }) => {
-  await page.goto('/voivodeship/dolnoslaskie');
+  await page.goto('/voivodeship/opolskie');
   const main = page.getByRole('main');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(
-    'Lower Silesian Voivodeship',
+    'Opole Voivodeship',
   );
-  const row = main.locator('#DW');
+  await expect(main.locator('tbody tr')).toHaveCount(13);
+
+  await page.goto('/voivodeship/dolnoslaskie');
+  const row = main.locator('tr#DW');
   await expect(row).toBeVisible();
   await expect(row).toContainText('DW');
+  await expect(row).toContainText('Wrocław');
   await expect(row.locator('app-plate')).toBeVisible();
   await expect(
-    main.getByRole('navigation').getByRole('link', { name: 'Lower Silesian' }),
+    main.getByRole('link', { name: 'Lower Silesian' }),
   ).toHaveAttribute('aria-current', 'page');
+});
+
+test('voivodeship-tabs', { tag: ['@desktop', '@mobile'] }, async ({ page }) => {
+  await page.goto('/voivodeship/lubuskie');
+  const main = page.getByRole('main');
+  const currentLink = main.getByRole('link', { name: 'Lubusz' });
+  await expect(currentLink).toHaveAttribute('aria-current', 'page');
+  const selectedTab = main.locator('[role="tab"][aria-selected="true"]');
+  await expect(selectedTab).toBeVisible();
+  await expect(selectedTab).toContainText('Lubusz');
+
+  await main.getByRole('link', { name: 'West Pomeranian' }).click();
+  await expect(page).toHaveURL(/\/voivodeship\/zachodniopomorskie$/);
 });
 
 test('voivodeship-slug-examples', { tag: '@desktop' }, async ({ page }) => {
@@ -94,7 +111,7 @@ test('voivodeship-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
   });
   expect(noHorizontalScroll).toBe(true);
 
-  const firstRow = main.locator('li[id]').first();
+  const firstRow = main.locator('tr[id]').first();
   await expect(firstRow).toBeVisible();
   const boxes = await firstRow.evaluate((row) => {
     const plate = row.querySelector('app-plate');

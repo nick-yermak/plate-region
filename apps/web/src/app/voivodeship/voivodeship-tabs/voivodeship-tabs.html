@@ -1,0 +1,13 @@
+<nz-tabs nzLinkRouter nzType="line" [nzLinkExact]="true">
+  @for (link of links(); track link.slug) {
+    <nz-tab>
+      <a
+        *nzTabLink
+        nz-tab-link
+        [routerLink]="['/voivodeship', link.slug]"
+        [attr.aria-current]="link.slug === currentSlug() ? 'page' : null"
+        >{{ link.label }}</a
+      >
+    </nz-tab>
+  }
+</nz-tabs>

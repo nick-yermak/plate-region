@@ -15,8 +15,10 @@
       "many": "{{count}} codes",
       "other": "{{count}} codes"
     },
-    "nav": {
-      "label": "Voivodeships"
+    "table": {
+      "code": "Code",
+      "county": "County",
+      "plate": "Example plate"
     },
     "notFound": {
       "heading": "Voivodeship not found",

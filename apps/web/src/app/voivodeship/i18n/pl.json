@@ -15,8 +15,10 @@
       "many": "{{count}} kodów",
       "other": "{{count}} kodu"
     },
-    "nav": {
-      "label": "Województwa"
+    "table": {
+      "code": "Wyróżnik",
+      "county": "Powiat",
+      "plate": "Przykładowa tablica"
     },
     "notFound": {
       "heading": "Nie znaleziono województwa",

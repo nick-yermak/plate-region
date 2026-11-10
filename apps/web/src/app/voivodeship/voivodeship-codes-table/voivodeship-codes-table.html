@@ -1,0 +1,24 @@
+<nz-table
+  [nzTemplateMode]="true"
+  [nzShowPagination]="false"
+  [nzFrontPagination]="false"
+>
+  <thead>
+    <tr>
+      <th>{{ 'voivodeship.table.code' | transloco }}</th>
+      <th>{{ 'voivodeship.table.county' | transloco }}</th>
+      <th>{{ 'voivodeship.table.plate' | transloco }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.code) {
+      <tr [id]="row.code">
+        <td>{{ row.code }}</td>
+        <td>{{ row.county }}</td>
+        <td class="plate-col">
+          <app-plate [plate]="row.plate" />
+        </td>
+      </tr>
+    }
+  </tbody>
+</nz-table>

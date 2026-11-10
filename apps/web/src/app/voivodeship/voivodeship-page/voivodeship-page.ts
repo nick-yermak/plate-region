@@ -13,9 +13,10 @@ import {
 
 import { voivodeshipView } from '../voivodeship-view';
 import { LanguageService } from '../../language/language.service';
-import { VoivodeshipNav } from '../voivodeship-nav/voivodeship-nav';
-import { VoivodeshipCounty } from '../voivodeship-county/voivodeship-county';
+import { countyHeading } from '../../shared/county/county-heading';
+import { VoivodeshipTabs } from '../voivodeship-tabs/voivodeship-tabs';
 import { VoivodeshipNotFound } from '../voivodeship-not-found/voivodeship-not-found';
+import { VoivodeshipCodesTable } from '../voivodeship-codes-table/voivodeship-codes-table';
 import {
   voivodeshipCountsLine,
   voivodeshipHeading,
@@ -28,9 +29,9 @@ import {
   imports: [
     NzFlexDirective,
     TranslocoPipe,
-    VoivodeshipCounty,
-    VoivodeshipNav,
+    VoivodeshipCodesTable,
     VoivodeshipNotFound,
+    VoivodeshipTabs,
   ],
   templateUrl: './voivodeship-page.html',
   styleUrl: './voivodeship-page.less',
@@ -72,9 +73,28 @@ export class VoivodeshipPage {
     );
   });
 
-  protected readonly navLinks = computed(() =>
-    voivodeshipNavLinks(this.language()),
+  protected readonly tabLinks = computed(() =>
+    voivodeshipNavLinks(this.language()).map((link) => ({
+      slug: link.slug,
+      label: link.name,
+    })),
   );
+
+  protected readonly rows = computed(() => {
+    const view = this.view();
+    if (view.status !== 'found') {
+      return [];
+    }
+    return view.counties.flatMap((county) => {
+      const heading = countyHeading(county.region2);
+      const countyLabel = this.transloco.translate(heading.key, heading.params);
+      return county.codes.map((entry) => ({
+        code: entry.code,
+        county: countyLabel,
+        plate: entry.plate,
+      }));
+    });
+  });
 
   private readonly fragment = toSignal(this.route.fragment, {
     initialValue: null as string | null,
@@ -88,7 +108,24 @@ export class VoivodeshipPage {
       if (fragment === null || fragment === '') {
         return;
       }
-      this.document.getElementById(fragment)?.scrollIntoView();
+      const row = this.document.getElementById(fragment);
+      // Angular recreates the row after the first :target resolution; re-apply the
+      // hash so the fill rule matches the live `tr` (measured in #93). Setting
+      // location.hash scrolls asynchronously — restore scrollY on the next frame so
+      // only scrollIntoView moves the page (M10).
+      const win = this.document.defaultView;
+      if (row !== null && !row.matches(':target') && win !== null) {
+        const { pathname, search } = win.location;
+        const scrollY = win.scrollY;
+        win.history.replaceState(null, '', `${pathname}${search}`);
+        win.location.hash = fragment;
+        win.requestAnimationFrame(() => {
+          win.scrollTo(0, scrollY);
+          this.document.getElementById(fragment)?.scrollIntoView();
+        });
+        return;
+      }
+      row?.scrollIntoView();
     });
   }
 }
