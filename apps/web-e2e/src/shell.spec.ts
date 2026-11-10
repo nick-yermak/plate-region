@@ -356,7 +356,7 @@ test('shell-desktop-nav', { tag: '@desktop' }, async ({ page }) => {
   const routes: { path: string; heading: string }[] = [
     { path: '/', heading: 'Decode a Polish plate' },
     { path: '/plate/WA12345', heading: 'm.st. Warszawa' },
-    { path: '/voivodeship/mazowieckie', heading: 'Voivodeship' },
+    { path: '/voivodeship/mazowieckie', heading: 'Masovian Voivodeship' },
     { path: '/registry', heading: 'Registry' },
     { path: '/charts', heading: 'Charts' },
     { path: '/about', heading: 'About' },

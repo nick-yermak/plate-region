@@ -1,5 +1,29 @@
 {
   "voivodeship": {
-    "title": "Voivodeship"
+    "heading": "{{name}} Voivodeship",
+    "letters": "Codes begin with {{letters}}",
+    "counts": "{{counties}} · {{codes}}",
+    "counties": {
+      "one": "{{count}} county",
+      "few": "{{count}} counties",
+      "many": "{{count}} counties",
+      "other": "{{count}} counties"
+    },
+    "codes": {
+      "one": "{{count}} code",
+      "few": "{{count}} codes",
+      "many": "{{count}} codes",
+      "other": "{{count}} codes"
+    },
+    "tabsLabel": "Voivodeships",
+    "table": {
+      "code": "Code",
+      "county": "County",
+      "plate": "Example plate"
+    },
+    "notFound": {
+      "heading": "Voivodeship not found",
+      "backHome": "Search for another plate"
+    }
   }
 }

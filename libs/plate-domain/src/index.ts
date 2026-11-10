@@ -9,6 +9,7 @@ export {
   variantCountsForCode,
   variantCountsForRegion1,
 } from './lib/pl/variant-counts';
+export { stableExamplePlateForCode } from './lib/pl/stable-example-plate';
 export { voivodeshipSlug } from './lib/pl/voivodeship-slug';
 export type { Candidate, CandidatesResult } from './lib/pl/candidates';
 export type { RandomSource } from './lib/pl/example-plate';

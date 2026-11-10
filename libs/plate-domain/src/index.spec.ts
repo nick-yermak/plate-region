@@ -8,6 +8,7 @@ describe('plate-domain public API', () => {
       'examplePlateForRegion1',
       'normalisePlateInput',
       'parsePlate',
+      'stableExamplePlateForCode',
       'variantCountsForCode',
       'variantCountsForRegion1',
       'voivodeshipSlug',

@@ -1,0 +1,26 @@
+@if (found(); as page) {
+  <nz-flex nzVertical nzGap="middle">
+    <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
+    <p>{{ page.letters.key | transloco: page.letters.params }}</p>
+    <p>
+      {{
+        page.counts.key
+          | transloco
+            : {
+                counties:
+                  (page.counts.counties.key
+                  | transloco: page.counts.counties.params),
+                codes:
+                  (page.counts.codes.key | transloco: page.counts.codes.params),
+              }
+      }}
+    </p>
+    <app-voivodeship-tabs [links]="page.tabLinks" [currentSlug]="slug()" />
+    <app-voivodeship-codes-table
+      [rows]="page.rows"
+      [targetCode]="page.targetCode"
+    />
+  </nz-flex>
+} @else {
+  <app-voivodeship-not-found />
+}
