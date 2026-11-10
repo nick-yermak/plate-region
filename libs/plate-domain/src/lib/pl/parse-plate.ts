@@ -36,6 +36,8 @@ export type ParseResult =
       readonly region1: Region1;
       readonly region2: Region2;
       readonly plateTypes: readonly [PlateType, ...PlateType[]];
+      /** Full code of the matched reading (D-27 Update #141). */
+      readonly code: string;
       readonly districts?: readonly [UnofficialName, ...UnofficialName[]];
     }
   | {
@@ -64,6 +66,8 @@ export type ParseResult =
       readonly withRegion2: {
         readonly region2: Region2;
         readonly plateTypes: readonly [PlateType, ...PlateType[]];
+        /** Full code of the matched reading with a region2 (D-27 Update #141). */
+        readonly code: string;
         readonly districts?: readonly [UnofficialName, ...UnofficialName[]];
       };
       readonly withoutRegion2: {
@@ -152,6 +156,7 @@ function classify(
       region1,
       region2: first.region2,
       plateTypes: all,
+      code: first.code,
       ...(districts === undefined ? {} : { districts }),
     };
   }
@@ -171,6 +176,7 @@ function classify(
     withRegion2: {
       region2: first.region2,
       plateTypes: mergePlateTypes(withHead, ...withTail),
+      code: first.code,
       ...(districts === undefined ? {} : { districts }),
     },
     withoutRegion2: {

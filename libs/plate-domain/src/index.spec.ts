@@ -12,6 +12,7 @@ describe('plate-domain public API', () => {
       'variantCountsForCode',
       'variantCountsForRegion1',
       'voivodeshipSlug',
+      'warsawDistrictsForCode',
     ]);
   });
 });

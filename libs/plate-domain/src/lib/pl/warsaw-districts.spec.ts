@@ -1,6 +1,9 @@
 import { registry, warsawDistricts } from '@plate-region/plate-data';
 
-import { warsawDistrictRowsByCode } from './warsaw-districts';
+import {
+  warsawDistrictRowsByCode,
+  warsawDistrictsForCode,
+} from './warsaw-districts';
 
 describe('warsawDistrictRowsByCode', () => {
   it('throws when the m.st. Warszawa region2 record is missing', () => {
@@ -27,5 +30,28 @@ describe('warsawDistrictRowsByCode', () => {
         warsawDistricts.rows.filter((row) => row.suffix !== 'A'),
       ),
     ).toThrow(/no Warsaw district row for suffix A/);
+  });
+});
+
+describe('warsawDistrictsForCode', () => {
+  it('WW and AW → Rembertów, Wilanów, Włochy', () => {
+    expect(warsawDistrictsForCode('WW')?.map((d) => d.value)).toEqual([
+      'Rembertów',
+      'Wilanów',
+      'Włochy',
+    ]);
+    expect(warsawDistrictsForCode('AW')?.map((d) => d.value)).toEqual([
+      'Rembertów',
+      'Wilanów',
+      'Włochy',
+    ]);
+  });
+
+  it('WA → Białołęka; DW and WZY → undefined', () => {
+    expect(warsawDistrictsForCode('WA')?.map((d) => d.value)).toEqual([
+      'Białołęka',
+    ]);
+    expect(warsawDistrictsForCode('DW')).toBeUndefined();
+    expect(warsawDistrictsForCode('WZY')).toBeUndefined();
   });
 });

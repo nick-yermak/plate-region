@@ -11,6 +11,7 @@ export {
 } from './lib/pl/variant-counts';
 export { stableExamplePlateForCode } from './lib/pl/stable-example-plate';
 export { voivodeshipSlug } from './lib/pl/voivodeship-slug';
+export { warsawDistrictsForCode } from './lib/pl/warsaw-districts';
 export type { Candidate, CandidatesResult } from './lib/pl/candidates';
 export type { RandomSource } from './lib/pl/example-plate';
 export type { NormalisedPlateInput } from './lib/pl/normalise-plate-input';
