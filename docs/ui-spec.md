@@ -43,10 +43,10 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - One page per voivodeship (16); any other slug shows a not-found message with a link home (D-58).
 - URL: the slug is the ASCII form of the Polish name (`mazowieckie`, `slaskie`, `warminsko-mazurskie`). Not by letter: some voivodeships have two letters.
 - Heading: the voivodeship name, then its letters and the counts of counties and codes.
-- A list of links to all 16 voivodeships, the text alternative to the map.
+- Tabs (`nz-tabs`) link all 16 voivodeships; the current one is selected.
 - The map of Poland with this voivodeship highlighted; clicking another voivodeship opens its page (#94).
-- Counties in registry order, each with one row per code: the code and an example plate shown with the plate component; the same code always shows the same plate (D-44 Update #93).
-- Each code row is an anchor (`#DW`); the result page links to the county's first code, and the page opens scrolled to that row, outlined.
+- An `nz-table` with one row per code: the code, the county and an example plate shown with the plate component; the same code always shows the same plate (D-44 Update #93).
+- Each code row is an anchor (`#DW`); the result page links to the county's first code, and the page opens scrolled to that row, highlighted.
 
 ### Registry — `/registry`
 
