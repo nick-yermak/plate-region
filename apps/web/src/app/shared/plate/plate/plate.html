@@ -1,1 +1,3 @@
-<app-plate-frame>{{ plate() }}</app-plate-frame>
+<app-plate-frame>
+  <span class="plate-chars" [style.--plate-fit]="fit()">{{ plate() }}</span>
+</app-plate-frame>

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { plateTextAndBoxRects, waitForPlateFont } from './support/plate';
+
 async function offendingPlateCodes(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [
@@ -183,4 +185,33 @@ test('voivodeship-codes-breakpoint', { tag: '@desktop' }, async ({ page }) => {
   await page.setViewportSize({ width: 431, height: 740 });
   await expect(main.locator('th.code-col')).toBeHidden();
   expect(await offendingPlateCodes(page)).toEqual([]);
+});
+
+test(
+  'voivodeship-plate-fit-nwe',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/voivodeship/warminsko-mazurskie');
+    const plate = page.locator('tr#NWE app-plate');
+    await expect(plate).toBeVisible();
+    await waitForPlateFont(page);
+    const { textLeft, textRight, boxLeft, boxRight } =
+      await plateTextAndBoxRects(plate);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
+    expect(textRight).toBeLessThanOrEqual(boxRight);
+  },
+);
+
+test('voivodeship-plate-fit-xmb-en', { tag: '@desktop' }, async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('pr-lang', 'en');
+  });
+  await page.goto('/voivodeship/pomorskie');
+  const plate = page.locator('tr#XMB app-plate');
+  await expect(plate).toBeVisible();
+  await waitForPlateFont(page);
+  const { textLeft, textRight, boxLeft, boxRight } =
+    await plateTextAndBoxRects(plate);
+  expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
+  expect(textRight).toBeLessThanOrEqual(boxRight);
 });

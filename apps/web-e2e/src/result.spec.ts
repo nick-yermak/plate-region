@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+import { plateTextAndBoxRects, waitForPlateFont } from './support/plate';
+
 test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
   const main = page.getByRole('main');
@@ -99,3 +101,18 @@ test('result-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
   expect(plate.x).toBeGreaterThanOrEqual(0);
   expect(plate.x + plate.width).toBeLessThanOrEqual(360);
 });
+
+test(
+  'result-plate-fit-dww',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/plate/DWW%20800WW');
+    const plate = page.locator('app-plate');
+    await expect(plate).toBeVisible();
+    await waitForPlateFont(page);
+    const { textLeft, textRight, boxLeft, boxRight } =
+      await plateTextAndBoxRects(plate);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
+    expect(textRight).toBeLessThanOrEqual(boxRight);
+  },
+);

@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
+import { plateFit } from '../plate-fit';
 import { PlateFrameComponent } from '../plate-frame/plate-frame';
 
 @Component({
@@ -10,4 +11,6 @@ import { PlateFrameComponent } from '../plate-frame/plate-frame';
 })
 export class PlateComponent {
   readonly plate = input.required<string>();
+
+  protected readonly fit = computed(() => plateFit(this.plate()));
 }
