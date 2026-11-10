@@ -44,8 +44,8 @@ const PLATE_CHAR_ADVANCE_MM: Readonly<Record<string, number>> = {
   ' ': 24.25,
 };
 
-/** 458 mm box minus 2 mm for kerning that widens, measured up to +1.1 mm. */
-export const PLATE_TEXT_FIT_MM = 456;
+/** 458 mm box minus 12 mm: kerning widens up to +1.1 mm, and Chromium on Linux renders the text wider than macOS (CI: NWE 383WR about 6 mm at the 160 px plate). */
+export const PLATE_TEXT_FIT_MM = 446;
 
 export function plateTextWidthMm(text: string): number {
   let width = 0;

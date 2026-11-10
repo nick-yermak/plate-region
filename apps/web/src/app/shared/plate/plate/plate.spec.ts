@@ -40,6 +40,6 @@ describe('PlateComponent', () => {
       Number.parseFloat(
         (chars as HTMLElement).style.getPropertyValue('--plate-fit'),
       ),
-    ).toBeCloseTo(0.8992, 4);
+    ).toBeCloseTo(0.8795, 4);
   });
 });

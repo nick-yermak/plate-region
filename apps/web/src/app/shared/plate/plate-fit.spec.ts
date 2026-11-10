@@ -10,19 +10,19 @@ describe('plate-fit', () => {
   });
 
   it('compresses NWE 383WR to fit the text box', () => {
-    expect(plateFit('NWE 383WR')).toBeCloseTo(0.8992, 4);
+    expect(plateFit('NWE 383WR')).toBeCloseTo(0.8795, 4);
   });
 
   it('compresses DWW 800WW to fit the text box', () => {
-    expect(plateFit('DWW 800WW')).toBeCloseTo(0.8173, 4);
+    expect(plateFit('DWW 800WW')).toBeCloseTo(0.7994, 4);
   });
 
   it('compresses VWW WV57 to fit the text box', () => {
-    expect(plateFit('VWW WV57')).toBeCloseTo(0.968, 3);
+    expect(plateFit('VWW WV57')).toBeCloseTo(0.947, 3);
   });
 
   it('measures lowercase input as uppercase', () => {
-    expect(plateFit('nwe 383wr')).toBeCloseTo(0.8992, 4);
+    expect(plateFit('nwe 383wr')).toBeCloseTo(0.8795, 4);
   });
 
   it('counts an unknown character as the widest glyph', () => {
