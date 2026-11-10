@@ -37,11 +37,11 @@ describe('VoivodeshipPage', () => {
   it('renders the stable example plate for #DW on dolnoslaskie', async () => {
     const fixture = await renderPage('dolnoslaskie');
     const row = fixture.nativeElement.querySelector(
-      'tr#DW',
+      'tr:has(#DW)',
     ) as HTMLElement | null;
     expect(row).not.toBeNull();
     const plate = fixture.debugElement
-      .query(By.css('tr#DW'))
+      .query(By.css('tr:has(#DW)'))
       ?.query(By.directive(PlateComponent))
       ?.injector.get(PlateComponent);
     expect(plate?.plate()).toBe(stableExamplePlateForCode('DW'));
@@ -50,7 +50,7 @@ describe('VoivodeshipPage', () => {
         'thead th',
       ) as NodeListOf<HTMLElement>),
     ].map((th) => th.textContent?.trim());
-    expect(headers).toEqual(['Code', 'County', 'Example plate']);
+    expect(headers).toEqual(['County', 'Codes', 'Example plate']);
   });
 
   it('shows not-found heading and a home link for foo', async () => {

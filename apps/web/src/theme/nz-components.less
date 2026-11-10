@@ -136,3 +136,17 @@ a:focus-visible {
 .pr-codes-table .ant-table .ant-table-tbody > tr.pr-row-target > td {
   background: var(--pr-row-target-bg);
 }
+
+// Tabs bar line: library uses @border-color-split on the nav ::before
+// (tabs/style/position.less). Specificity (0,2,1) for
+// `.ant-tabs-top > .ant-tabs-nav::before` / `> div > .ant-tabs-nav::before`.
+.ant-tabs-top > .ant-tabs-nav::before,
+.ant-tabs-top > div > .ant-tabs-nav::before {
+  border-bottom-color: var(--pr-border);
+}
+
+// Ink bar: library `.ant-tabs-ink-bar` (0,1,0) uses @tabs-ink-bar-color
+// (tabs/style/index.less).
+.ant-tabs-ink-bar {
+  background: var(--pr-tabs-ink);
+}

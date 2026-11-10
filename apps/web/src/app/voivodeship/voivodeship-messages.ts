@@ -25,6 +25,15 @@ export function voivodeshipDisplayName(
   return language === 'pl' ? region1.name : region1.nameEn.value;
 }
 
+export function formatDistrictList(
+  language: Language,
+  districts: readonly string[],
+): string {
+  return new Intl.ListFormat(language, { type: 'conjunction' }).format([
+    ...districts,
+  ]);
+}
+
 export function voivodeshipHeading(
   view: Extract<VoivodeshipView, { status: 'found' }>,
   language: Language,

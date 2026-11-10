@@ -17,8 +17,9 @@
     },
     "tabsLabel": "Województwa",
     "table": {
-      "code": "Wyróżnik",
       "county": "Powiat",
+      "codes": "Wyróżniki",
+      "countyWithDistricts": "{{county}} — {{districts}}",
       "plate": "Przykładowa tablica"
     },
     "notFound": {

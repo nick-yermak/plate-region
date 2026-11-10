@@ -36,9 +36,13 @@ export type CountyCandidate = Extract<
   { kind: 'region2' }
 >;
 
+export type AnswerCandidate = CountyCandidate & {
+  readonly code: string;
+};
+
 export type CandidatesView = {
   readonly region1: Region1;
-  readonly answer: CountyCandidate | undefined;
+  readonly answer: AnswerCandidate | undefined;
   readonly counties: readonly CountyCandidate[];
   readonly withoutRegion2: boolean;
   readonly notInRegistry: boolean;

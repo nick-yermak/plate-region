@@ -2,10 +2,16 @@
   display: block;
 }
 
-// Shrink code and plate columns to content; county takes the remaining width.
+// Shrink the plate column to content; county and codes take the remaining width.
 .shrink-col {
   width: 1%;
   white-space: nowrap;
+}
+
+// Let the plate header wrap so its min-content is the longest word, not the
+// whole phrase (measured at 360: pl "Przykładowa" 86.08 px, en "Example" 57.03).
+.plate-header {
+  white-space: normal;
 }
 
 .plate-col app-plate {
@@ -13,11 +19,15 @@
   font-size: 35.08px;
 }
 
-// Hide the code column below 432 px: widest Polish table content scrollWidth
-// was 400 px (pl /voivodeship/podlaskie, nzSize small) and page padding is
-// 2 × 16 = 32 px (host 328 at viewport 360), so 400 + 32 = 432.
-@media (max-width: 431px) {
-  .code-col {
-    display: none;
+// Below 424 px the plate shrinks to 96 px.
+// At 360 the table is 328 px. Widest unbreakable county word 128.75
+// ('wysokomazowiecki') and 'WWW,' 45.83, +4 % for Linux CI → 133.9 + 47.7,
+// cell padding 3 × 16 = 48: 229.6, so the plate ≤ 98.4 → 96 px
+// (font-size 96 × 114 / 520 = 21.05px). Plate header longest word pl 86.08 ≤ 96.
+// A 160 px plate needs a 389.6 px table → 421.6 px viewport → breakpoint 424
+// (D-58 Update #141).
+@media (max-width: 423px) {
+  .plate-col app-plate {
+    font-size: 21.05px;
   }
 }

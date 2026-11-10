@@ -32,7 +32,7 @@ export async function overflowingPlateTexts(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [
       ...document.querySelectorAll(
-        '[role="main"] tr[id] app-plate .plate-text',
+        '[role="main"] tbody tr app-plate .plate-text',
       ),
     ].flatMap((box) => {
       const range = document.createRange();
@@ -44,7 +44,10 @@ export async function overflowingPlateTexts(page: Page): Promise<string[]> {
       if (leftOverflow <= 0 && rightOverflow <= 0) {
         return [];
       }
-      const rowId = box.closest('tr')?.id ?? '?';
+      const tr = box.closest('tr');
+      const withId =
+        tr === null ? null : tr.matches('[id]') ? tr : tr.querySelector('[id]');
+      const rowId = withId?.id ?? '?';
       return [
         `${rowId} L${leftOverflow.toFixed(2)} R${rightOverflow.toFixed(2)}`,
       ];
