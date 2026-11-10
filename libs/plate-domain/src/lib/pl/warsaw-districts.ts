@@ -51,6 +51,16 @@ const BY_CODE: ReadonlyMap<string, WarsawDistrictRow> =
   );
 
 /**
+ * Districts of the `warsawDistricts` row for an m.st. Warszawa full code, or
+ * undefined for any other string (D-58 Update #141).
+ */
+export function warsawDistrictsForCode(
+  code: string,
+): readonly [UnofficialName, ...UnofficialName[]] | undefined {
+  return BY_CODE.get(code)?.districts;
+}
+
+/**
  * Unofficial district names for a Warszawa reading with a five-character vehicle
  * part, or undefined when the reading is out of scope (D-57).
  */

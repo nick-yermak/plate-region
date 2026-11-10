@@ -17,8 +17,9 @@
     },
     "tabsLabel": "Voivodeships",
     "table": {
-      "code": "Code",
       "county": "County",
+      "codes": "Codes",
+      "countyWithDistricts": "{{county}} — {{districts}}",
       "plate": "Example plate"
     },
     "notFound": {

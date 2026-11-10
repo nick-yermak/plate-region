@@ -49,15 +49,10 @@ describe('voivodeshipView', () => {
   });
 
   it('lists Wrocław codes for dolnoslaskie in registry order', () => {
-    const wroclaw = foundView('dolnoslaskie').counties.find(
-      (county) => county.region2.name === 'Wrocław',
+    const wroclaw = foundView('dolnoslaskie').rows.find(
+      (row) => row.region2.name === 'Wrocław',
     );
-    expect(wroclaw?.codes.map((entry) => entry.code)).toEqual([
-      'DW',
-      'DX',
-      'VW',
-      'VX',
-    ]);
+    expect(wroclaw?.codes).toEqual(['DW', 'DX', 'VW', 'VX']);
   });
 
   it('sums to 689 codes and 380 counties across the 16 slugs', () => {
@@ -70,5 +65,30 @@ describe('voivodeshipView', () => {
     }
     expect(codeCount).toBe(689);
     expect(countyCount).toBe(380);
+  });
+
+  it('mazowieckie rows are counties plus Warsaw district groups', () => {
+    const view = foundView('mazowieckie');
+    expect(view.rows).toHaveLength(view.countyCount + 14);
+    const wwAw = view.rows.find(
+      (row) =>
+        row.codes.length === 2 &&
+        row.codes[0] === 'WW' &&
+        row.codes[1] === 'AW',
+    );
+    expect(wwAw?.districts?.map((d) => d.value)).toEqual([
+      'Rembertów',
+      'Wilanów',
+      'Włochy',
+    ]);
+    expect(wwAw?.plate).toBe('WW 4PN15');
+  });
+
+  it('dolnoslaskie rows are one per county with Wrocław codes', () => {
+    const view = foundView('dolnoslaskie');
+    expect(view.rows).toHaveLength(30);
+    expect(view.codeCount).toBe(64);
+    const dwRow = view.rows.find((row) => row.codes.includes('DW'));
+    expect(dwRow?.codes).toEqual(['DW', 'DX', 'VW', 'VX']);
   });
 });

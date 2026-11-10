@@ -55,6 +55,7 @@ describe('examplePlateForCode', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'Kielce'),
       plateTypes: ['vintage'],
+      code: 'TK',
     });
   });
 
@@ -69,6 +70,7 @@ describe('examplePlateForCode', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'buski'),
       plateTypes: ['ordinary'],
+      code: 'TBU',
     });
   });
 
@@ -81,6 +83,7 @@ describe('examplePlateForCode', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'buski'),
       plateTypes: ['vintage'],
+      code: 'TBU',
     });
   });
 
@@ -103,6 +106,7 @@ describe('examplePlateForCode', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'buski'),
       plateTypes: ['ordinary'],
+      code: 'TBU',
     });
   });
 
@@ -129,6 +133,7 @@ describe('examplePlateForCode', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'Kielce'),
       plateTypes: ['ordinary'],
+      code: 'TK',
     });
   });
 
@@ -204,6 +209,7 @@ describe('examplePlateForRegion1', () => {
       region1: region1ByName('świętokrzyskie'),
       region2: region2By('T', 'włoszczowski'),
       plateTypes: ['vintage'],
+      code: 'TLW',
     });
   });
 
@@ -231,6 +237,7 @@ describe('examplePlateForRegion1', () => {
       region1: region1ByName('dolnośląskie'),
       region2: region2By('D', 'Wrocław'),
       plateTypes: ['vintage'],
+      code: 'DX',
     });
   });
 

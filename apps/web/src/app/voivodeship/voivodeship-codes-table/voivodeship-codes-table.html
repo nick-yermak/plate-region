@@ -6,18 +6,40 @@
 >
   <thead>
     <tr>
-      <th class="shrink-col code-col">
-        {{ 'voivodeship.table.code' | transloco }}
-      </th>
       <th>{{ 'voivodeship.table.county' | transloco }}</th>
-      <th class="shrink-col">{{ 'voivodeship.table.plate' | transloco }}</th>
+      <th>{{ 'voivodeship.table.codes' | transloco }}</th>
+      <th class="shrink-col plate-header">
+        {{ 'voivodeship.table.plate' | transloco }}
+      </th>
     </tr>
   </thead>
   <tbody>
-    @for (row of rows(); track row.code) {
-      <tr [id]="row.code" [class.pr-row-target]="row.code === targetCode()">
-        <td class="shrink-col code-col">{{ row.code }}</td>
-        <td>{{ row.county.key | transloco: row.county.params }}</td>
+    @for (row of rows(); track row.codes[0]) {
+      <tr
+        [class.pr-row-target]="
+          targetCode() !== null && row.codes.includes(targetCode()!)
+        "
+      >
+        <td>
+          @if (row.districts === null) {
+            {{ row.county.key | transloco: row.county.params }}
+          } @else {
+            {{
+              'voivodeship.table.countyWithDistricts'
+                | transloco
+                  : {
+                      county: (row.county.key | transloco: row.county.params),
+                      districts: row.districts,
+                    }
+            }}
+          }
+        </td>
+        <td>
+          @for (code of row.codes; track code; let last = $last) {
+            <a [id]="code" [routerLink]="['/plate', code]">{{ code }}</a
+            >{{ last ? '' : ', ' }}
+          }
+        </td>
         <td class="shrink-col plate-col">
           <app-plate [plate]="row.plate" />
         </td>

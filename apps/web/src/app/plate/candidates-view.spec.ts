@@ -65,4 +65,9 @@ describe('candidatesView', () => {
     expect(view('DAB').notInRegistry).toBe(true);
     expect(view('GD').notInRegistry).toBe(false);
   });
+
+  it('carries the compact that selected the answer as answer.code', () => {
+    // XMB reaches candidates-with-answer (codes ['XMB']; county also has GMB in the table).
+    expect(view('XMB').answer?.code).toBe('XMB');
+  });
 });

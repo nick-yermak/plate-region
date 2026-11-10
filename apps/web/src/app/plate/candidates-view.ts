@@ -1,4 +1,8 @@
-import type { CandidatesFound, CandidatesView } from './plate.types';
+import type {
+  AnswerCandidate,
+  CandidatesFound,
+  CandidatesView,
+} from './plate.types';
 
 export function candidatesView(
   result: CandidatesFound,
@@ -13,7 +17,8 @@ export function candidatesView(
     switch (entry.kind) {
       case 'region2':
         if (answer === undefined && entry.codes.includes(compact)) {
-          answer = entry;
+          const matched: AnswerCandidate = { ...entry, code: compact };
+          answer = matched;
         } else {
           counties.push(entry);
         }

@@ -24,6 +24,27 @@ describe('resultView', () => {
     });
   });
 
+  it('resolved WW12345 → mazowieckie fragment WW', () => {
+    const view = resultView('WW12345', 'en');
+    expect(view.kind).toBe('readings');
+    if (view.kind !== 'readings') {
+      throw new Error('expected readings');
+    }
+    expect(view.readings[0].link).toEqual({
+      slug: 'mazowieckie',
+      fragment: 'WW',
+    });
+  });
+
+  it('candidates WW → mazowieckie fragment WW', () => {
+    const view = resultView('WW', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.link).toEqual({ slug: 'mazowieckie', fragment: 'WW' });
+  });
+
   it('region1-only WA12 → voivodeship heading and possible types', () => {
     expect(resultView('WA12', 'en')).toEqual({
       kind: 'readings',
@@ -170,23 +191,23 @@ describe('resultView', () => {
     });
   });
 
-  it('resolved VX12345 → primary DW anchor', () => {
+  it('resolved VX12345 → city reading with VX anchor', () => {
     expect(resultView('VX12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
         key: 'county.heading.city',
-        params: { name: county('DW').name },
+        params: { name: county('VX').name },
       },
       noteKey: undefined,
       readings: [
         {
           captionKey: undefined,
-          powiat: { name: county('DW').name, kindKey: 'plate.kind.city' },
+          powiat: { name: county('VX').name, kindKey: 'plate.kind.city' },
           voivodeshipName: voivodeship('D').nameEn.value,
           typesLabelKey: 'plate.reading.type',
           plateTypes: ['ordinary'],
           districts: undefined,
-          link: { slug: 'dolnoslaskie', fragment: 'DW' },
+          link: { slug: 'dolnoslaskie', fragment: 'VX' },
         },
       ],
     });
@@ -253,7 +274,7 @@ describe('resultView', () => {
     ]);
   });
 
-  it('candidates VX → answer without counties, primary DW link', () => {
+  it('candidates VX → answer without counties, VX link', () => {
     const view = resultView('VX', 'en');
     expect(view.kind).toBe('candidates');
     if (view.kind !== 'candidates') {
@@ -265,7 +286,7 @@ describe('resultView', () => {
     });
     expect(view.candidates.counties).toEqual([]);
     expect(view.candidates.withoutRegion2).toBe(true);
-    expect(view.link).toEqual({ slug: 'dolnoslaskie', fragment: 'DW' });
+    expect(view.link).toEqual({ slug: 'dolnoslaskie', fragment: 'VX' });
   });
 
   it('candidates GK → voivodeship heading, three counties, no link', () => {

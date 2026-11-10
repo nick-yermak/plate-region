@@ -149,6 +149,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: wroclaw,
       plateTypes: ['ordinary'],
+      code: 'DW',
     });
   });
 
@@ -161,6 +162,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: wroclaw,
       plateTypes: ['ordinary'],
+      code: 'DW',
     });
   });
 
@@ -173,6 +175,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: wroclaw,
       plateTypes: ['ordinary'],
+      code: 'VW',
     });
   });
 
@@ -185,6 +188,7 @@ describe('parsePlate', () => {
       region1: opolskie,
       region2: opole,
       plateTypes: ['ordinary'],
+      code: 'OP',
     });
   });
 
@@ -205,6 +209,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: wroclaw,
       plateTypes: ['vintage'],
+      code: 'DW',
     });
   });
 
@@ -216,6 +221,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: wroclaw,
       plateTypes: ['vintage'],
+      code: 'DW',
     });
   });
 
@@ -227,6 +233,7 @@ describe('parsePlate', () => {
       region1: dolnoslaskie,
       region2: boleslawiecki,
       plateTypes: ['vintage'],
+      code: 'DBL',
     });
   });
 
@@ -240,6 +247,7 @@ describe('parsePlate', () => {
       region1: mazowieckie,
       region2: warszawa,
       plateTypes: ['ordinary'],
+      code: 'WA',
     });
   });
 
@@ -312,6 +320,7 @@ describe('parsePlate', () => {
       country: 'PL',
       region1: mazowieckie,
       withRegion2: {
+        code: 'WO',
         region2: ostroleka,
         plateTypes: ['vintage'],
       },

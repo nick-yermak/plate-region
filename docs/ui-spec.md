@@ -45,8 +45,8 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - Heading: the voivodeship name, then its letters and the counts of counties and codes.
 - Tabs (`nz-tabs`) link all 16 voivodeships; the current one is selected.
 - The map of Poland with this voivodeship highlighted; clicking another voivodeship opens its page (#94).
-- An `nz-table` with one row per code: the code, the county and an example plate shown with the plate component; the same code always shows the same plate (D-44 Update #93).
-- Each code row is an anchor (`#DW`); the result page links to the county's first code, and the page opens scrolled to that row, highlighted.
+- An `nz-table` with one row per county: the county, its codes and an example plate of its first code shown with the plate component; m.st. Warszawa has a row per district group (D-57); the same code always shows the same plate (D-44 Update #93).
+- Each code is a link to its result page and an anchor (`#DW`); the result page links to the plate's own code, and the page opens scrolled to the row holding it, highlighted.
 
 ### Registry — `/registry`
 

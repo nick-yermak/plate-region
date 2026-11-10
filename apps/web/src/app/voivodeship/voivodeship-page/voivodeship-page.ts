@@ -18,6 +18,7 @@ import { VoivodeshipTabs } from '../voivodeship-tabs/voivodeship-tabs';
 import { VoivodeshipNotFound } from '../voivodeship-not-found/voivodeship-not-found';
 import { VoivodeshipCodesTable } from '../voivodeship-codes-table/voivodeship-codes-table';
 import {
+  formatDistrictList,
   voivodeshipCountsMessage,
   voivodeshipHeading,
   voivodeshipLettersLine,
@@ -61,14 +62,18 @@ export class VoivodeshipPage {
         slug: link.slug,
         label: link.name,
       })),
-      rows: view.counties.flatMap((county) => {
-        const countyMessage = countyHeading(county.region2);
-        return county.codes.map((entry) => ({
-          code: entry.code,
-          county: countyMessage,
-          plate: entry.plate,
-        }));
-      }),
+      rows: view.rows.map((row) => ({
+        codes: row.codes,
+        county: countyHeading(row.region2),
+        districts:
+          row.districts === undefined
+            ? null
+            : formatDistrictList(
+                language,
+                row.districts.map((district) => district.value),
+              ),
+        plate: row.plate,
+      })),
       targetCode: this.fragment(),
     };
   });
@@ -85,7 +90,8 @@ export class VoivodeshipPage {
       if (fragment === null || fragment === '') {
         return;
       }
-      this.document.getElementById(fragment)?.scrollIntoView();
+      const el = this.document.getElementById(fragment);
+      (el?.closest('tr') ?? el)?.scrollIntoView();
     });
   }
 }

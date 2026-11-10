@@ -38,6 +38,7 @@ const resolved = (
   region1: Region1,
   region2: Region2,
   plateTypes: PlateTypes,
+  code: string,
   districts?: readonly [UnofficialName, ...UnofficialName[]],
 ): Extract<ParseResult, { status: 'resolved' }> => ({
   status: 'resolved',
@@ -45,6 +46,7 @@ const resolved = (
   region1,
   region2,
   plateTypes,
+  code,
   ...(districts === undefined ? {} : { districts }),
 });
 
@@ -63,6 +65,7 @@ const ambiguous = (
   withRegion2: {
     region2: Region2;
     plateTypes: PlateTypes;
+    code: string;
     districts?: readonly [UnofficialName, ...UnofficialName[]];
   },
   withoutPlateTypes: PlateTypes,
@@ -73,6 +76,7 @@ const ambiguous = (
   withRegion2: {
     region2: withRegion2.region2,
     plateTypes: withRegion2.plateTypes,
+    code: withRegion2.code,
     ...(withRegion2.districts === undefined
       ? {}
       : { districts: withRegion2.districts }),
@@ -129,6 +133,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           ORDINARY,
+          'DW',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 5 (R-27)',
       },
@@ -138,6 +143,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           ORDINARY,
+          'DW',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 8 (R-27)',
       },
@@ -147,6 +153,7 @@ describe('parsePlate', () => {
           region1ByName('małopolskie'),
           region2By('K', 'Kraków'),
           ORDINARY,
+          'KR',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 5 (R-27)',
       },
@@ -156,6 +163,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'Płock'),
           ORDINARY,
+          'WP',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 5 (R-27)',
       },
@@ -165,6 +173,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'wrocławski'),
           VINTAGE,
+          'DWR',
         ),
         citation: '§ 30 ust. 2 pkt 5 lit. b tiret 2 (R-31)',
       },
@@ -211,6 +220,7 @@ describe('parsePlate', () => {
           region1ByName('wielkopolskie'),
           region2By('P', 'Kalisz'),
           ORDINARY,
+          'PK',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24) (L1)',
       },
@@ -220,6 +230,7 @@ describe('parsePlate', () => {
           region1ByName('wielkopolskie'),
           region2By('P', 'Kalisz'),
           ORDINARY,
+          'PK',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24) (L2)',
       },
@@ -229,6 +240,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Sosnowiec'),
           ORDINARY,
+          'SO',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 1 (R-27)',
       },
@@ -243,6 +255,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Sosnowiec'),
           ORDINARY,
+          'SO',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
       },
@@ -257,6 +270,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Sosnowiec'),
           ORDINARY,
+          'SO',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 8 (R-27)',
       },
@@ -271,6 +285,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'ostrołęcki'),
           ORDINARY,
+          'WOS',
         ),
         citation:
           '§ 30 ust. 2 pkt 1 lit. b tiret 6 (R-25) / pkt 3 lit. b tiret 6 (R-28)',
@@ -286,6 +301,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'ostrołęcki'),
           VINTAGE,
+          'WOS',
         ),
         citation: '§ 30 ust. 2 pkt 5 lit. b tiret 1 (R-31)',
       },
@@ -300,6 +316,7 @@ describe('parsePlate', () => {
           region1ByName('lubelskie'),
           region2By('L', 'bialski'),
           ORDINARY,
+          'LBI',
         ),
         citation:
           '§ 30 ust. 2 pkt 1 lit. b tiret 2 (R-25) / pkt 3 lit. b tiret 2 (R-28)',
@@ -310,6 +327,7 @@ describe('parsePlate', () => {
           region1ByName('lubelskie'),
           region2By('L', 'Biała Podlaska'),
           ORDINARY,
+          'LB',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 3 (R-24)',
       },
@@ -319,6 +337,7 @@ describe('parsePlate', () => {
           region1ByName('lubuskie'),
           region2By('F', 'zielonogórski'),
           VINTAGE,
+          'FZI',
         ),
         citation: '§ 30 ust. 2 pkt 5 lit. b tiret 2 (R-31)',
       },
@@ -328,6 +347,7 @@ describe('parsePlate', () => {
           region1ByName('lubuskie'),
           region2By('F', 'Zielona Góra'),
           VINTAGE,
+          'FZ',
         ),
         citation: '§ 30 ust. 2 pkt 5 lit. a tiret 2 (R-30)',
       },
@@ -337,6 +357,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Siemianowice Śląskie'),
           ORDINARY,
+          'II',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
       },
@@ -356,6 +377,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           ORDINARY,
+          'DW',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
       },
@@ -365,6 +387,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'polkowicki'),
           ORDINARY,
+          'DPL',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. b tiret 7 (R-25)',
       },
@@ -374,6 +397,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'płocki'),
           ORDINARY,
+          'WPL',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. b tiret 7 (R-25)',
       },
@@ -413,6 +437,7 @@ describe('parsePlate', () => {
           {
             region2: region2By('W', 'Ostrołęka'),
             plateTypes: VINTAGE,
+            code: 'WO',
           },
           INDIVIDUAL,
         ),
@@ -426,6 +451,7 @@ describe('parsePlate', () => {
           {
             region2: region2By('W', 'm.st. Warszawa'),
             plateTypes: VINTAGE,
+            code: 'WI',
           },
           INDIVIDUAL,
         ),
@@ -439,6 +465,7 @@ describe('parsePlate', () => {
           {
             region2: region2By('W', 'm.st. Warszawa'),
             plateTypes: ORDINARY,
+            code: 'WI',
           },
           INDIVIDUAL,
         ),
@@ -452,6 +479,7 @@ describe('parsePlate', () => {
           {
             region2: region2By('W', 'm.st. Warszawa'),
             plateTypes: ORDINARY,
+            code: 'WI',
             districts: [unofficial('Śródmieście')],
           },
           INDIVIDUAL,
@@ -465,6 +493,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Sosnowiec'),
           ORDINARY,
+          'SO',
         ),
         citation:
           'L2.1 resolved: SO1234 § 30 ust. 2 pkt 3 lit. a tiret 1 (R-27) (S01234 is L2.2)',
@@ -475,6 +504,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wałbrzych'),
           VINTAGE,
+          'DB',
         ),
         citation: 'L2.1 resolved: § 30 ust. 2 pkt 5 lit. a tiret 2 (R-30)',
       },
@@ -489,6 +519,7 @@ describe('parsePlate', () => {
           region1ByName('mazowieckie'),
           region2By('W', 'm.st. Warszawa'),
           ORDINARY,
+          'WI',
           [unofficial('Śródmieście')],
         ),
         citation:
@@ -500,6 +531,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Sosnowiec'),
           VINTAGE,
+          'SO',
         ),
         citation:
           'L1c resolved: SO012 § 30 ust. 2 pkt 5 lit. a tiret 2 (R-30) (D-42)',
@@ -522,6 +554,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           VINTAGE,
+          'DW',
         ),
         citation:
           'L1c resolved: DW102 § 30 ust. 2 pkt 5 lit. a tiret 2 (R-30) (D-42)',
@@ -532,6 +565,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'oławski'),
           VINTAGE,
+          'DOA',
         ),
         citation:
           'L1c resolved: DOA21 § 30 ust. 2 pkt 5 lit. b tiret 2 (R-31) (D-42; beats L2.1 D0 individual)',
@@ -548,6 +582,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wałbrzych'),
           ORDINARY,
+          'DB',
         ),
         citation:
           'L1c resolved: DB A221 § 30 ust. 2 pkt 3 lit. a tiret 5 (R-27) (D-42)',
@@ -592,6 +627,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wałbrzych'),
           ORDINARY,
+          'DB',
         ),
         citation:
           'L2.1c resolved: DB1221 § 30 ust. 2 pkt 3 lit. a tiret 1 (R-27) (D-42)',
@@ -619,6 +655,7 @@ describe('parsePlate', () => {
           region1ByName('opolskie'),
           region2By('O', 'Opole'),
           ORDINARY,
+          'OP',
         ),
         citation:
           'first-position look-alike #35; § 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
@@ -629,6 +666,7 @@ describe('parsePlate', () => {
           region1ByName('śląskie'),
           region2By('S', 'Bielsko-Biała'),
           ORDINARY,
+          'IB',
         ),
         citation:
           'first-position look-alike → IB; § 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
@@ -654,10 +692,12 @@ describe('parsePlate', () => {
       const fromWA = parsePlate('WA12345');
       const fromWY = parsePlate('WY12345');
       expect(fromWA).toEqual(
-        resolved(mazowieckie, warszawa, ORDINARY, [unofficial('Białołęka')]),
+        resolved(mazowieckie, warszawa, ORDINARY, 'WA', [
+          unofficial('Białołęka'),
+        ]),
       );
       expect(fromWY).toEqual(
-        resolved(mazowieckie, warszawa, ORDINARY, [unofficial('Wola')]),
+        resolved(mazowieckie, warszawa, ORDINARY, 'WY', [unofficial('Wola')]),
       );
       expect(fromWA.status === 'resolved' && fromWA.region2).toBe(warszawa);
       expect(fromWY.status === 'resolved' && fromWY.region2).toBe(warszawa);
@@ -669,8 +709,12 @@ describe('parsePlate', () => {
       const mazowieckie = region1ByName('mazowieckie');
       const fromWPP = parsePlate('WPP12345');
       const fromWPS = parsePlate('WPS12345');
-      expect(fromWPP).toEqual(resolved(mazowieckie, pruszkowski, ORDINARY));
-      expect(fromWPS).toEqual(resolved(mazowieckie, pruszkowski, ORDINARY));
+      expect(fromWPP).toEqual(
+        resolved(mazowieckie, pruszkowski, ORDINARY, 'WPP'),
+      );
+      expect(fromWPS).toEqual(
+        resolved(mazowieckie, pruszkowski, ORDINARY, 'WPS'),
+      );
       expect(fromWPP.status === 'resolved' && fromWPP.region2).toBe(
         pruszkowski,
       );
@@ -764,6 +808,7 @@ describe('parsePlate', () => {
               result.status !== 'resolved' ||
               result.region1 !== region1 ||
               result.region2 !== region2 ||
+              result.code !== code ||
               result.plateTypes.join(',') !== 'ordinary'
             ) {
               violations.push(
@@ -888,6 +933,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           ORDINARY,
+          'DW',
         ),
         citation: '§ 30 ust. 2 pkt 1 lit. a tiret 1 (R-24)',
       },
@@ -898,6 +944,7 @@ describe('parsePlate', () => {
           region1ByName('małopolskie'),
           region2By('K', 'Kraków'),
           ORDINARY,
+          'KR',
         ),
         citation: '§ 30 ust. 2 pkt 3 lit. a tiret 5 (R-27)',
       },
@@ -926,6 +973,7 @@ describe('parsePlate', () => {
           region1ByName('dolnośląskie'),
           region2By('D', 'Wrocław'),
           ORDINARY,
+          'DW',
         ),
         citation:
           '§ 30 ust. 2 pkt 3 lit. a tiret 5 (R-27); group boundary unused (D-31)',
@@ -1097,6 +1145,34 @@ describe('parsePlate', () => {
         none: 1_470,
       });
       expect(violations).toEqual([]);
+    });
+  });
+
+  describe('matched code on resolved and ambiguous.withRegion2', () => {
+    it("parsePlate('WW12345') → resolved code WW", () => {
+      const result = parsePlate('WW12345');
+      expect(result).toMatchObject({ status: 'resolved', code: 'WW' });
+    });
+
+    it("parsePlate('DW 12345') → resolved code DW; AW12345 → AW", () => {
+      expect(parsePlate('DW 12345')).toMatchObject({
+        status: 'resolved',
+        code: 'DW',
+      });
+      expect(parsePlate('AW12345')).toMatchObject({
+        status: 'resolved',
+        code: 'AW',
+      });
+    });
+
+    it("parsePlate('WOO1A') → ambiguous.withRegion2 code WO", () => {
+      // Typed WOO1A; L2.1 swaps O↔0 at position 3 → WO01A; full code WO,
+      // vehicle part 01A (§ 30 ust. 2 pkt 5 lit. a tiret 1 / R-30).
+      const result = parsePlate('WOO1A');
+      expect(result).toMatchObject({
+        status: 'ambiguous',
+        withRegion2: { code: 'WO' },
+      });
     });
   });
 });

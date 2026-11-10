@@ -1,8 +1,7 @@
-import {
-  fullCodes,
-  type Region1,
-  type Region2,
-  type UnofficialName,
+import type {
+  Region1,
+  Region2,
+  UnofficialName,
 } from '@plate-region/plate-data';
 import {
   candidatesFor,
@@ -48,6 +47,7 @@ function withCountyReading(
   language: Language,
   captionKey: ReadingView['captionKey'],
   districts: ReadingView['districts'],
+  code: string,
 ): ReadingView {
   return {
     captionKey,
@@ -58,7 +58,7 @@ function withCountyReading(
     districts,
     link: {
       slug: voivodeshipSlug(region1),
-      fragment: fullCodes(region1, region2)[0],
+      fragment: code,
     },
   };
 }
@@ -120,6 +120,7 @@ export function resultView(plate: string, language: Language): ResultView {
             language,
             undefined,
             districtNames(result.districts),
+            result.code,
           ),
         ],
       };
@@ -164,6 +165,7 @@ export function resultView(plate: string, language: Language): ResultView {
             language,
             'plate.reading.withCounty',
             districtNames(result.withRegion2.districts),
+            result.withRegion2.code,
           ),
           withoutCountyReading(
             result.region1,
@@ -241,7 +243,7 @@ function candidatesLink(view: CandidatesView): VoivodeshipLink | undefined {
   }
   return {
     slug: voivodeshipSlug(view.region1),
-    fragment: fullCodes(view.region1, view.answer.region2)[0],
+    fragment: view.answer.code,
   };
 }
 

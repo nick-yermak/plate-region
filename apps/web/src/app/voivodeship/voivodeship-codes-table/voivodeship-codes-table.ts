@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import {
@@ -12,8 +13,9 @@ import { PlateComponent } from '../../shared/plate/plate/plate';
 import type { TranslatableMessage } from '../../i18n/i18n.types';
 
 export type VoivodeshipCodeRow = {
-  readonly code: string;
+  readonly codes: readonly [string, ...string[]];
   readonly county: TranslatableMessage;
+  readonly districts: string | null;
   readonly plate: string;
 };
 
@@ -26,6 +28,7 @@ export type VoivodeshipCodeRow = {
     NzTheadComponent,
     NzTrDirective,
     PlateComponent,
+    RouterLink,
     TranslocoPipe,
   ],
   templateUrl: './voivodeship-codes-table.html',
