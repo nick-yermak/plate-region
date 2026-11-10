@@ -1,5 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import {
+  overflowingPlateTexts,
+  plateTextAndBoxRects,
+  waitForPlateFont,
+} from './support/plate';
+
 async function offendingPlateCodes(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [
@@ -184,3 +190,66 @@ test('voivodeship-codes-breakpoint', { tag: '@desktop' }, async ({ page }) => {
   await expect(main.locator('th.code-col')).toBeHidden();
   expect(await offendingPlateCodes(page)).toEqual([]);
 });
+
+test(
+  'voivodeship-plate-fit-nwe',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/voivodeship/warminsko-mazurskie');
+    const plate = page.locator('tr#NWE app-plate');
+    await expect(plate).toBeVisible();
+    await waitForPlateFont(page);
+    const { textLeft, textRight, boxLeft, boxRight } =
+      await plateTextAndBoxRects(plate);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
+    expect(textRight).toBeLessThanOrEqual(boxRight);
+  },
+);
+
+test('voivodeship-plate-fit-xmb-en', { tag: '@desktop' }, async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('pr-lang', 'en');
+  });
+  await page.goto('/voivodeship/pomorskie');
+  const plate = page.locator('tr#XMB app-plate');
+  await expect(plate).toBeVisible();
+  await waitForPlateFont(page);
+  const { textLeft, textRight, boxLeft, boxRight } =
+    await plateTextAndBoxRects(plate);
+  expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
+  expect(textRight).toBeLessThanOrEqual(boxRight);
+});
+
+test(
+  'voivodeship-plate-fit-all',
+  { tag: ['@desktop', '@mobile'] },
+  async ({ page }) => {
+    await page.goto('/voivodeship/dolnoslaskie');
+    const main = page.getByRole('main');
+    await expect(main.locator('tr[id]').first()).toBeVisible();
+    await waitForPlateFont(page);
+    const hrefs = await main
+      .getByRole('navigation', { name: 'Voivodeships' })
+      .getByRole('link')
+      .evaluateAll((links) =>
+        links.map((link) => {
+          const href = (link as HTMLAnchorElement).getAttribute('href');
+          if (href === null) {
+            throw new Error('voivodeship tab link missing href');
+          }
+          return href;
+        }),
+      );
+    expect(hrefs).toHaveLength(16);
+    const offenders: string[] = [];
+    for (const href of hrefs) {
+      await page.goto(href);
+      await expect(main.locator('tr[id]').first()).toBeVisible();
+      await waitForPlateFont(page);
+      for (const entry of await overflowingPlateTexts(page)) {
+        offenders.push(`${href}: ${entry}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  },
+);

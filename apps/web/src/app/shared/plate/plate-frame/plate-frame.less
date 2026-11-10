@@ -66,7 +66,8 @@
   left: calc(47 * var(--plate-mm));
   display: flex;
   align-items: center;
-  justify-content: safe center;
+  // Plain centre: compressed text (plate-fit) is wider than the box before its transform, and safe would start-align it.
+  justify-content: center;
   box-sizing: border-box;
   width: calc(458 * var(--plate-mm));
   overflow: hidden;
@@ -75,7 +76,9 @@
   font-family: 'DINish Condensed', sans-serif;
   // Cap height 80 mm: 80 × 1024 / 707.
   font-size: calc(115.87 * var(--plate-mm));
-  font-variant-numeric: tabular-nums;
+  // Proportional default digits in every language: NG-ZORRO's global styles make numbers tabular, and DINish has tnum only outside PLK (see D-51).
+  font-variant-numeric: normal;
+  font-feature-settings: normal;
   line-height: 1;
   letter-spacing: calc(4 * var(--plate-mm));
   word-spacing: 0;

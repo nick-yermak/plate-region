@@ -27,4 +27,19 @@ describe('PlateComponent', () => {
     expect(root.querySelector('[role="img"]')).toBeNull();
     expect(root.querySelector('[aria-label]')).toBeNull();
   });
+
+  it('sets --plate-fit on the characters for an overflowing plate', async () => {
+    const fixture = TestBed.createComponent(PlateComponent);
+    fixture.componentRef.setInput('plate', 'NWE 383WR');
+    await fixture.whenStable();
+
+    const root: HTMLElement = fixture.nativeElement;
+    const chars = root.querySelector('span.plate-chars');
+    expect(chars).toBeInstanceOf(HTMLElement);
+    expect(
+      Number.parseFloat(
+        (chars as HTMLElement).style.getPropertyValue('--plate-fit'),
+      ),
+    ).toBeCloseTo(0.8795, 4);
+  });
 });
