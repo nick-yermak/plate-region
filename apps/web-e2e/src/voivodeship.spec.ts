@@ -1,16 +1,17 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-async function boxOf(locator: Locator): Promise<{
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}> {
-  const box = await locator.boundingBox();
-  if (!box) {
-    throw new Error('bounding box missing');
-  }
-  return box;
+async function offendingPlateCodes(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll('app-voivodeship-codes-table app-plate'),
+    ].flatMap((el) => {
+      const box = el.getBoundingClientRect();
+      const code = el.closest('tr')?.id ?? '?';
+      return box.left < -0.5 || box.right > window.innerWidth + 0.5
+        ? [code]
+        : [];
+    }),
+  );
 }
 
 test('voivodeship-powiat-list', { tag: '@desktop' }, async ({ page }) => {
@@ -115,8 +116,8 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
   await expect(page).toHaveURL(/\/voivodeship\/mazowieckie#WZY$/);
   await expect(page.getByRole('main').locator('#WZY')).toBeInViewport();
 
-  // Compare to the token, not the next row: Ant zebra stripes already differ
-  // between adjacent rows (#WZY vs #AZY), so a next-row check stays green without the fill (M11).
+  // The next row may carry Ant's hover background from the pointer position
+  // left by the click, so the cell is compared with the token.
   const { cellBg, token } = await page
     .locator('#WZY td')
     .first()
@@ -155,18 +156,31 @@ test('voivodeship-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
     return documentElement.scrollWidth <= documentElement.clientWidth;
   });
   expect(noHorizontalScroll).toBe(true);
+  await expect(main.locator('th.code-col')).toBeHidden();
+  expect(await offendingPlateCodes(page)).toEqual([]);
 
-  const firstRow = main.locator('tr[id]').first();
-  await expect(firstRow).toBeVisible();
-  const plate = firstRow.locator('app-plate');
-  const rowBox = await boxOf(firstRow);
-  const plateBox = await boxOf(plate);
-  expect(plateBox.x).toBeGreaterThanOrEqual(rowBox.x);
-  expect(plateBox.x + plateBox.width).toBeLessThanOrEqual(
-    rowBox.x + rowBox.width,
-  );
-  expect(plateBox.y).toBeGreaterThanOrEqual(rowBox.y);
-  expect(plateBox.y + plateBox.height).toBeLessThanOrEqual(
-    rowBox.y + rowBox.height,
-  );
+  await page
+    .getByRole('banner')
+    .getByRole('button', { name: 'Polski' })
+    .click();
+  await page.goto('/voivodeship/dolnoslaskie');
+  await expect(main.locator('th.code-col')).toBeHidden();
+  expect(await offendingPlateCodes(page)).toEqual([]);
+});
+
+// Breakpoint 432: widest pl table content scrollWidth 400 (podlaskie) + page padding 32.
+test('voivodeship-codes-breakpoint', { tag: '@desktop' }, async ({ page }) => {
+  await page.setViewportSize({ width: 432, height: 740 });
+  await page.goto('/voivodeship/podlaskie');
+  await page
+    .getByRole('banner')
+    .getByRole('button', { name: 'Polski' })
+    .click();
+  const main = page.getByRole('main');
+  await expect(main.locator('th.code-col')).toBeVisible();
+  expect(await offendingPlateCodes(page)).toEqual([]);
+
+  await page.setViewportSize({ width: 431, height: 740 });
+  await expect(main.locator('th.code-col')).toBeHidden();
+  expect(await offendingPlateCodes(page)).toEqual([]);
 });

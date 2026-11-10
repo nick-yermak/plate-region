@@ -12,3 +12,12 @@
   // 160 px plate width = 520/114 em → font-size 160 × 114 / 520.
   font-size: 35.08px;
 }
+
+// Hide the code column below 432 px: widest Polish table content scrollWidth
+// was 400 px (pl /voivodeship/podlaskie, nzSize small) and page padding is
+// 2 × 16 = 32 px (host 328 at viewport 360), so 400 + 32 = 432.
+@media (max-width: 431px) {
+  .code-col {
+    display: none;
+  }
+}
