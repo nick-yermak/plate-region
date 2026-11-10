@@ -12,6 +12,12 @@ export type VoivodeshipNavLink = {
   readonly name: string;
 };
 
+export type VoivodeshipCountsMessage = {
+  readonly key: 'voivodeship.counts';
+  readonly counties: TranslatableMessage;
+  readonly codes: TranslatableMessage;
+};
+
 export function voivodeshipDisplayName(
   region1: Region1,
   language: Language,
@@ -42,20 +48,21 @@ export function voivodeshipLettersLine(
   };
 }
 
-export function voivodeshipCountsLine(
+export function voivodeshipCountsMessage(
   view: Extract<VoivodeshipView, { status: 'found' }>,
   language: Language,
-  translate: (key: string, params: Record<string, string | number>) => string,
-): string {
-  const counties = translate(
-    pluralKey('voivodeship.counties', view.countyCount, language),
-    { count: view.countyCount },
-  );
-  const codes = translate(
-    pluralKey('voivodeship.codes', view.codeCount, language),
-    { count: view.codeCount },
-  );
-  return translate('voivodeship.counts', { counties, codes });
+): VoivodeshipCountsMessage {
+  return {
+    key: 'voivodeship.counts',
+    counties: {
+      key: pluralKey('voivodeship.counties', view.countyCount, language),
+      params: { count: view.countyCount },
+    },
+    codes: {
+      key: pluralKey('voivodeship.codes', view.codeCount, language),
+      params: { count: view.codeCount },
+    },
+  };
 }
 
 export function voivodeshipNavLinks(language: Language): VoivodeshipNavLink[] {

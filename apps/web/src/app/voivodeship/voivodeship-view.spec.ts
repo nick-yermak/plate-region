@@ -11,6 +11,14 @@ function region1ByName(name: string): Region1 {
   return found;
 }
 
+function foundView(slug: string) {
+  const view = voivodeshipView(slug);
+  if (view.status !== 'found') {
+    throw new Error(`expected found view for ${slug}`);
+  }
+  return view;
+}
+
 // Hand-written oracle (D-41 Update #91, ui-spec § Voivodeship); not computed by the code under test.
 const SLUGS: readonly { readonly name: string; readonly slug: string }[] = [
   { name: 'dolnośląskie', slug: 'dolnoslaskie' },
@@ -33,11 +41,7 @@ const SLUGS: readonly { readonly name: string; readonly slug: string }[] = [
 
 describe('voivodeshipView', () => {
   it.each(SLUGS)('$slug → found for $name', ({ name, slug }) => {
-    const view = voivodeshipView(slug);
-    expect(view.status).toBe('found');
-    if (view.status === 'found') {
-      expect(view.region1).toBe(region1ByName(name));
-    }
+    expect(foundView(slug).region1).toBe(region1ByName(name));
   });
 
   it.each(['foo', 'Mazowieckie', 'd'] as const)('%s → not-found', (slug) => {
@@ -45,12 +49,7 @@ describe('voivodeshipView', () => {
   });
 
   it('lists Wrocław codes for dolnoslaskie in registry order', () => {
-    const view = voivodeshipView('dolnoslaskie');
-    expect(view.status).toBe('found');
-    if (view.status !== 'found') {
-      return;
-    }
-    const wroclaw = view.counties.find(
+    const wroclaw = foundView('dolnoslaskie').counties.find(
       (county) => county.region2.name === 'Wrocław',
     );
     expect(wroclaw?.codes.map((entry) => entry.code)).toEqual([
@@ -65,12 +64,9 @@ describe('voivodeshipView', () => {
     let codeCount = 0;
     let countyCount = 0;
     for (const { slug } of SLUGS) {
-      const view = voivodeshipView(slug);
-      expect(view.status).toBe('found');
-      if (view.status === 'found') {
-        codeCount += view.codeCount;
-        countyCount += view.countyCount;
-      }
+      const view = foundView(slug);
+      codeCount += view.codeCount;
+      countyCount += view.countyCount;
     }
     expect(codeCount).toBe(689);
     expect(countyCount).toBe(380);

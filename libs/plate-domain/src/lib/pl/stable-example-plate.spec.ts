@@ -45,16 +45,9 @@ describe('stableExamplePlateForCode', () => {
       );
       for (const region2 of counties) {
         for (const code of fullCodes(region1, region2)) {
-          const plate = stableExamplePlateForCode(code);
-          expect(plate).toBeDefined();
-          if (plate === undefined) {
-            return;
-          }
-          const parsed = parsePlate(plate);
-          expect(parsed.status).toBe('resolved');
-          if (parsed.status === 'resolved') {
-            expect(parsed.region2).toBe(region2);
-          }
+          expect(
+            parsePlate(stableExamplePlateForCode(code) ?? ''),
+          ).toMatchObject({ status: 'resolved', region2 });
         }
       }
     },

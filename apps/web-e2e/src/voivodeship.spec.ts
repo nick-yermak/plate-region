@@ -1,4 +1,17 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
+
+async function boxOf(locator: Locator): Promise<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}> {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('bounding box missing');
+  }
+  return box;
+}
 
 test('voivodeship-powiat-list', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/voivodeship/opolskie');
@@ -22,13 +35,14 @@ test('voivodeship-powiat-list', { tag: '@desktop' }, async ({ page }) => {
 test('voivodeship-tabs', { tag: ['@desktop', '@mobile'] }, async ({ page }) => {
   await page.goto('/voivodeship/lubuskie');
   const main = page.getByRole('main');
-  const currentLink = main.getByRole('link', { name: 'Lubusz' });
+  const nav = main.getByRole('navigation', { name: 'Voivodeships' });
+  const currentLink = nav.getByRole('link', { name: 'Lubusz' });
   await expect(currentLink).toHaveAttribute('aria-current', 'page');
   const selectedTab = main.locator('[role="tab"][aria-selected="true"]');
   await expect(selectedTab).toBeVisible();
   await expect(selectedTab).toContainText('Lubusz');
 
-  await main.getByRole('link', { name: 'West Pomeranian' }).click();
+  await nav.getByRole('link', { name: 'West Pomeranian' }).click();
   await expect(page).toHaveURL(/\/voivodeship\/zachodniopomorskie$/);
 });
 
@@ -100,6 +114,37 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/\/voivodeship\/mazowieckie#WZY$/);
   await expect(page.getByRole('main').locator('#WZY')).toBeInViewport();
+
+  // Compare to the token, not the next row: Ant zebra stripes already differ
+  // between adjacent rows (#WZY vs #AZY), so a next-row check stays green without the fill (M11).
+  const { cellBg, token } = await page
+    .locator('#WZY td')
+    .first()
+    .evaluate((td) => {
+      const norm = (value) => value.replace(/\s+/g, '').replace(/,\./g, ',0.');
+      return {
+        cellBg: norm(getComputedStyle(td).backgroundColor),
+        token: norm(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--pr-row-target-bg')
+            .trim(),
+        ),
+      };
+    });
+  expect(cellBg).toBe(token);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/plate\//);
+});
+
+test('voivodeship-language-switch', { tag: '@desktop' }, async ({ page }) => {
+  await page.goto('/voivodeship/dolnoslaskie');
+  await page
+    .getByRole('banner')
+    .getByRole('button', { name: 'Polski' })
+    .click();
+  await expect(page.locator('tr#DBL')).toContainText('Powiat bolesławiecki');
+  await expect(page.getByRole('main')).toContainText('30 powiatów · 64 kody');
 });
 
 test('voivodeship-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
@@ -113,31 +158,15 @@ test('voivodeship-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
 
   const firstRow = main.locator('tr[id]').first();
   await expect(firstRow).toBeVisible();
-  const boxes = await firstRow.evaluate((row) => {
-    const plate = row.querySelector('app-plate');
-    if (plate === null) {
-      return null;
-    }
-    const rowBox = row.getBoundingClientRect();
-    const plateBox = plate.getBoundingClientRect();
-    return {
-      row: {
-        left: rowBox.left,
-        right: rowBox.right,
-        top: rowBox.top,
-        bottom: rowBox.bottom,
-      },
-      plate: {
-        left: plateBox.left,
-        right: plateBox.right,
-        top: plateBox.top,
-        bottom: plateBox.bottom,
-      },
-    };
-  });
-  expect(boxes).not.toBeNull();
-  expect(boxes!.plate.left).toBeGreaterThanOrEqual(boxes!.row.left);
-  expect(boxes!.plate.right).toBeLessThanOrEqual(boxes!.row.right);
-  expect(boxes!.plate.top).toBeGreaterThanOrEqual(boxes!.row.top);
-  expect(boxes!.plate.bottom).toBeLessThanOrEqual(boxes!.row.bottom);
+  const plate = firstRow.locator('app-plate');
+  const rowBox = await boxOf(firstRow);
+  const plateBox = await boxOf(plate);
+  expect(plateBox.x).toBeGreaterThanOrEqual(rowBox.x);
+  expect(plateBox.x + plateBox.width).toBeLessThanOrEqual(
+    rowBox.x + rowBox.width,
+  );
+  expect(plateBox.y).toBeGreaterThanOrEqual(rowBox.y);
+  expect(plateBox.y + plateBox.height).toBeLessThanOrEqual(
+    rowBox.y + rowBox.height,
+  );
 });

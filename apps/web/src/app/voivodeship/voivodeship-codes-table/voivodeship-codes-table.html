@@ -5,17 +5,17 @@
 >
   <thead>
     <tr>
-      <th>{{ 'voivodeship.table.code' | transloco }}</th>
+      <th class="shrink-col">{{ 'voivodeship.table.code' | transloco }}</th>
       <th>{{ 'voivodeship.table.county' | transloco }}</th>
-      <th>{{ 'voivodeship.table.plate' | transloco }}</th>
+      <th class="shrink-col">{{ 'voivodeship.table.plate' | transloco }}</th>
     </tr>
   </thead>
   <tbody>
     @for (row of rows(); track row.code) {
-      <tr [id]="row.code">
-        <td>{{ row.code }}</td>
-        <td>{{ row.county }}</td>
-        <td class="plate-col">
+      <tr [id]="row.code" [class.pr-row-target]="row.code === targetCode()">
+        <td class="shrink-col">{{ row.code }}</td>
+        <td>{{ row.county.key | transloco: row.county.params }}</td>
+        <td class="shrink-col plate-col">
           <app-plate [plate]="row.plate" />
         </td>
       </tr>

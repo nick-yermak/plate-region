@@ -127,12 +127,12 @@ a:focus-visible {
   }
 }
 
-// Voivodeship / registry code rows: :target fill.
-// Template-mode `nz-table` projects a bare `tbody` (no `.ant-table-tbody` class),
-// so the selector uses `.ant-table tbody`. Specificity (0,3,3): beats Ant cell
-// `.ant-table-tbody > tr > td` (0,1,2; table/style/index.less:41) and hover
-// `.ant-table-tbody > tr.ant-table-row:hover > td` (0,3,2; :149)
-// even when those Ant classes are present.
-.pr-codes-table .ant-table tbody > tr:target > td {
+// Voivodeship / registry code rows: target fill by state class.
+// Base `.pr-codes-table .ant-table-tbody > tr.pr-row-target > td` is (0,3,2),
+// equal to Ant hover `.ant-table-tbody > tr.ant-table-row:hover > td` (0,3,2;
+// table/style/index.less:149) and selected `.ant-table-tbody > tr.ant-table-row-selected > td`
+// (0,3,2; :155). Raising with `.ant-table` → (0,4,2) beats cell (0,1,2; :41),
+// hover and selected; selected:hover is also (0,4,2) and later in Ant — rare here.
+.pr-codes-table .ant-table .ant-table-tbody > tr.pr-row-target > td {
   background: var(--pr-row-target-bg);
 }

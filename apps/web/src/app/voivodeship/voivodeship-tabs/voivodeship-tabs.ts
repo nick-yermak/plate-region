@@ -1,5 +1,6 @@
 import { RouterLink } from '@angular/router';
 import { Component, input } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import {
   NzTabComponent,
   NzTabLinkDirective,
@@ -20,6 +21,7 @@ export type VoivodeshipTabLink = {
     NzTabLinkTemplateDirective,
     NzTabsComponent,
     RouterLink,
+    TranslocoPipe,
   ],
   templateUrl: './voivodeship-tabs.html',
   styleUrl: './voivodeship-tabs.less',

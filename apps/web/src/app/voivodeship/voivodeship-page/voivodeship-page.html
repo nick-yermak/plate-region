@@ -1,11 +1,25 @@
-@let page = view();
-@if (page.status === 'found') {
+@if (found(); as page) {
   <nz-flex nzVertical nzGap="middle">
-    <h1>{{ heading()!.key | transloco: heading()!.params }}</h1>
-    <p>{{ letters()!.key | transloco: letters()!.params }}</p>
-    <p>{{ counts() }}</p>
-    <app-voivodeship-tabs [links]="tabLinks()" [currentSlug]="slug()" />
-    <app-voivodeship-codes-table [rows]="rows()" />
+    <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
+    <p>{{ page.letters.key | transloco: page.letters.params }}</p>
+    <p>
+      {{
+        page.counts.key
+          | transloco
+            : {
+                counties:
+                  (page.counts.counties.key
+                  | transloco: page.counts.counties.params),
+                codes:
+                  (page.counts.codes.key | transloco: page.counts.codes.params),
+              }
+      }}
+    </p>
+    <app-voivodeship-tabs [links]="page.tabLinks" [currentSlug]="slug()" />
+    <app-voivodeship-codes-table
+      [rows]="page.rows"
+      [targetCode]="page.targetCode"
+    />
   </nz-flex>
 } @else {
   <app-voivodeship-not-found />

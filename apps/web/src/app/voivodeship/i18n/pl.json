@@ -15,6 +15,7 @@
       "many": "{{count}} kodów",
       "other": "{{count}} kodu"
     },
+    "tabsLabel": "Województwa",
     "table": {
       "code": "Wyróżnik",
       "county": "Powiat",

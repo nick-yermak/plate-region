@@ -15,6 +15,7 @@
       "many": "{{count}} codes",
       "other": "{{count}} codes"
     },
+    "tabsLabel": "Voivodeships",
     "table": {
       "code": "Code",
       "county": "County",
