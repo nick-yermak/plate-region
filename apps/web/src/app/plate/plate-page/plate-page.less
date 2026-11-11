@@ -1,3 +1,23 @@
 :host {
   display: block;
 }
+
+// Car viewBox 984 × 732 → 30rem car is 30rem * 732 / 984 = 357.07 px high;
+// 30rem + 16 + 357.07 = 853.07 px of content; 992 px is D-50's lg and leaves 892 px (D-54, D-61).
+.result-media {
+  display: grid;
+  row-gap: var(--pr-padding-md);
+}
+
+.map-box {
+  width: min(100%, calc(30rem * 732 / 984));
+  aspect-ratio: 1;
+}
+
+@media (width >= 992px) {
+  .result-media {
+    grid-template-columns: 30rem calc(30rem * 732 / 984);
+    column-gap: var(--pr-padding-md);
+    align-items: start;
+  }
+}

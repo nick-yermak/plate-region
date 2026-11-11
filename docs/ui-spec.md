@@ -27,14 +27,15 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - Photo (Epic 4, #92): a photo button that starts recognition and opens the result page; on phones it is the primary action, placed before Search. Home has no photo control in Epic 2 (D-53 Update #92).
 - Search runs on Enter or the Search button, not on every keystroke.
 - Every input except an empty one or one with characters not allowed on Polish plates navigates to the result page; those two stay errors under the plate (D-52 Update #115).
-- With the SVG map (#94), the result shows a small map with the voivodeship highlighted.
+- No map on home for now; a map on home is a Backlog follow-up (#148, D-53 Update #146).
 
 ### Result — `/plate/:plate`
 
 - The URL holds the plate, so the page can be shared.
-- Shows: voivodeship and powiat, plate type, the powiat highlighted on the map of Poland, and a link to the voivodeship page that opens at the matching powiat.
+- Shows: voivodeship and powiat, plate type, the county map of the voivodeship (or of Warsaw with its districts) with the powiat highlighted, and a link to the voivodeship page that opens at the matching powiat (D-61).
 - For m.st. Warszawa with a five-character vehicle part, a District row (or Possible districts) follows the powiat; the names come from unofficial data (D-57).
 - Image: an SVG car with the plate drawn in its plate area. From Epic 4 (#92), a photo taken or uploaded in this session replaces the car until reload; a shared link always shows the SVG car: photos never leave the device (D-04 Update #92).
+- Layout: from 992 px the car (30rem) and the map share one row at the car's height; below 992 px the map follows under the car (D-54 Update #146).
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
 - A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
 
@@ -44,7 +45,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - URL: the slug is the ASCII form of the Polish name (`mazowieckie`, `slaskie`, `warminsko-mazurskie`). Not by letter: some voivodeships have two letters.
 - Heading: the voivodeship name, then its letters and the counts of counties and codes.
 - Tabs (`nz-tabs`) link all 16 voivodeships; the current one is selected.
-- The map of Poland with this voivodeship highlighted; clicking another voivodeship opens its page (#94).
+- No map on this page yet: the county map opens from the table in a drawer (#150), and a map of Poland is a Backlog follow-up (#147).
 - An `nz-table` with one row per county: the county, its codes and an example plate of its first code shown with the plate component; m.st. Warszawa has a row per district group (D-57); the same code always shows the same plate (D-44 Update #93).
 - Each code is a link to its result page and an anchor (`#DW`); the result page links to the plate's own code, and the page opens scrolled to the row holding it, highlighted.
 
@@ -70,7 +71,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - Plate: read-only; renders a plate in the style of a real Polish plate (blue PL strip, plate font). Used on the result page over the SVG car, on the voivodeship page and in the registry table.
 - Plate input: the editable variant of the plate component, used on the home page.
-- Map: SVG map of Poland with voivodeship and powiat boundaries, drawn from bundled geometry (no map tiles, works offline). On the voivodeship page, clicking a voivodeship opens its page; on the result page, the plate's powiat is highlighted (scale and zoom to be decided during implementation).
+- Map: SVG county map of one voivodeship, or of Warsaw with its 18 districts, drawn from bundled geometry (D-60) with no requests beyond the app's own chunks; areas filled per result, a label where the code fits, and a tooltip with the county, its codes and a link to its row (D-61).
 
 ## Testing
 

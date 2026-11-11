@@ -1,0 +1,13 @@
+{
+  "map": {
+    "aria": {
+      "voivodeship": "Map: {{voivodeship}} Voivodeship",
+      "city": "Map: {{voivodeship}} Voivodeship. Highlighted: {{name}}",
+      "land": "Map: {{voivodeship}} Voivodeship. Highlighted: {{name}} county",
+      "warsaw": "Map: Warsaw. Highlighted: {{districts}}"
+    },
+    "district": "{{name}}, Warsaw",
+    "codes": "Codes: {{codes}}",
+    "tableLink": "Show on the voivodeship page"
+  }
+}

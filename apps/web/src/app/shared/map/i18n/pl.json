@@ -1,0 +1,13 @@
+{
+  "map": {
+    "aria": {
+      "voivodeship": "Mapa: województwo {{voivodeship}}",
+      "city": "Mapa: województwo {{voivodeship}}. Zaznaczono: {{name}}",
+      "land": "Mapa: województwo {{voivodeship}}. Zaznaczono: powiat {{name}}",
+      "warsaw": "Mapa: Warszawa. Zaznaczono: {{districts}}"
+    },
+    "district": "{{name}}, Warszawa",
+    "codes": "Wyróżniki: {{codes}}",
+    "tableLink": "Pokaż na stronie województwa"
+  }
+}

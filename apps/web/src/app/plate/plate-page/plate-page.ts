@@ -1,20 +1,38 @@
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NzFlexDirective } from 'ng-zorro-antd/flex';
-import { Component, computed, inject, input } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
+import type { LoadedMap } from '../plate.types';
 import { plateDisplayText, resultView } from '../result-view';
+import { loadResultMap, resultMapTarget } from '../result-map';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
 import { ResultReadingComponent } from '../result-reading/result-reading';
+import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
+import { voivodeshipMapView, warsawMapView } from '../../shared/map/map-view';
 import { CarIllustrationComponent } from '../car-illustration/car-illustration';
+
+function isWarsawLoaded(
+  loaded: LoadedMap,
+): loaded is Extract<LoadedMap, { target: { kind: 'warsaw' } }> {
+  return loaded.target.kind === 'warsaw';
+}
 
 @Component({
   selector: 'app-plate-page',
   imports: [
     CandidatesListComponent,
     CarIllustrationComponent,
+    CountyMapComponent,
     NzFlexDirective,
     PlateComponent,
     ResultReadingComponent,
@@ -36,4 +54,51 @@ export class PlatePage {
   );
 
   protected readonly plateText = computed(() => plateDisplayText(this.plate()));
+
+  protected readonly mapTarget = computed(() => resultMapTarget(this.plate()));
+
+  protected readonly mapView = computed(() => {
+    const loaded = this.loadedMap();
+    if (loaded === undefined || loaded.target !== this.mapTarget()) {
+      return undefined;
+    }
+    if (isWarsawLoaded(loaded)) {
+      return warsawMapView(
+        loaded.map,
+        loaded.target.region1,
+        loaded.target.districts,
+        this.language(),
+      );
+    }
+    return voivodeshipMapView(
+      loaded.map,
+      loaded.target.region1,
+      loaded.target.filled,
+      this.language(),
+    );
+  });
+
+  private readonly loadedMap = signal<LoadedMap | undefined>(undefined);
+
+  constructor() {
+    // Not resource(): its runtime joined a shared @angular/core chunk and grew the initial bundle (D-61).
+    effect((onCleanup) => {
+      const target = this.mapTarget();
+      if (target === undefined) {
+        return;
+      }
+      let current = true;
+      onCleanup(() => {
+        current = false;
+      });
+      loadResultMap(target).then(
+        (loaded) => {
+          if (current) {
+            this.loadedMap.set(loaded);
+          }
+        },
+        () => undefined,
+      );
+    });
+  }
 }
