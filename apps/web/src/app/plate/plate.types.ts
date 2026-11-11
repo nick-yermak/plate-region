@@ -1,7 +1,34 @@
-import type { Region1 } from '@plate-region/plate-data';
 import type { CandidatesResult, PlateType } from '@plate-region/plate-domain';
+import type {
+  CountyMap,
+  Region1,
+  Region2,
+  WarsawDistrictMap,
+} from '@plate-region/plate-data';
 
 import type { TranslatableMessage } from '../i18n/i18n.types';
+
+export type MapTarget =
+  | {
+      readonly kind: 'voivodeship';
+      readonly region1: Region1;
+      readonly filled: Region2 | undefined;
+    }
+  | {
+      readonly kind: 'warsaw';
+      readonly region1: Region1;
+      readonly districts: readonly [string, ...string[]];
+    };
+
+export type LoadedMap =
+  | {
+      readonly target: Extract<MapTarget, { kind: 'voivodeship' }>;
+      readonly map: CountyMap;
+    }
+  | {
+      readonly target: Extract<MapTarget, { kind: 'warsaw' }>;
+      readonly map: WarsawDistrictMap;
+    };
 
 export interface VoivodeshipLink {
   readonly slug: string;

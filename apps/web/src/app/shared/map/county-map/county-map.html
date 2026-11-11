@@ -1,0 +1,68 @@
+<svg
+  class="neighbours"
+  aria-hidden="true"
+  [attr.viewBox]="'0 0 ' + view().viewBox.width + ' ' + view().viewBox.height"
+>
+  @for (neighbour of view().neighbours; track $index) {
+    <path class="neighbour" [attr.d]="neighbour" />
+  }
+</svg>
+<svg
+  [attr.viewBox]="'0 0 ' + view().viewBox.width + ' ' + view().viewBox.height"
+  role="img"
+  [attr.aria-label]="view().ariaLabel.key | transloco: view().ariaLabel.params"
+  (click)="onSvgClick($event)"
+  (keyup.enter)="closeTooltip()"
+  (keyup.space)="closeTooltip()"
+>
+  @for (area of view().areas; track area.id) {
+    <path
+      class="area"
+      [class.area-filled]="area.filled"
+      [attr.data-id]="area.id"
+      [attr.d]="area.path"
+      (click)="toggleSelection(area.id, $event)"
+      (keyup.enter)="toggleSelection(area.id, $event)"
+      (keyup.space)="toggleSelection(area.id, $event)"
+      (pointerenter)="setHovered(area.id)"
+      (pointerleave)="setHovered(undefined)"
+    />
+  }
+  <path class="outline" [attr.d]="view().outline" />
+  @for (area of filledAreas(); track area.id) {
+    <path class="filled-outline" [attr.d]="area.path" />
+  }
+  @if (hoveredArea(); as hovered) {
+    <path class="hover-outline" [attr.d]="hovered.path" />
+  }
+  @for (area of visibleLabels(); track area.id) {
+    <text
+      [class.on-fill]="area.filled"
+      [attr.x]="area.label.x"
+      [attr.y]="area.label.baselineY"
+      [attr.font-size]="view().labelFontSize"
+    >
+      {{ area.label.text }}
+    </text>
+  }
+</svg>
+@if (selectedArea(); as area) {
+  <div
+    class="map-tooltip"
+    [class.above]="tooltipAbove()"
+    [style]="tooltipStyle()"
+  >
+    <p class="heading">
+      {{ area.heading.key | transloco: area.heading.params }}
+    </p>
+    <p>
+      {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
+    </p>
+    <a
+      [routerLink]="['/voivodeship', area.link.slug]"
+      [fragment]="area.link.fragment"
+    >
+      {{ 'map.tableLink' | transloco }}
+    </a>
+  </div>
+}

@@ -1,9 +1,18 @@
 @let page = view();
 <nz-flex nzVertical nzGap="middle">
   <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
-  <app-car-illustration>
-    <app-plate [plate]="plateText()" />
-  </app-car-illustration>
+  <div class="result-media">
+    <app-car-illustration>
+      <app-plate [plate]="plateText()" />
+    </app-car-illustration>
+    @if (mapTarget()) {
+      <nz-flex class="map-box" nzAlign="center" nzJustify="center">
+        @if (mapView(); as map) {
+          <app-county-map [view]="map" />
+        }
+      </nz-flex>
+    }
+  </div>
   @if (page.kind === 'readings') {
     @if (page.noteKey) {
       <p>{{ page.noteKey | transloco }}</p>
