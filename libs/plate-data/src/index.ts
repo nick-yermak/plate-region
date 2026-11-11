@@ -4,6 +4,7 @@ export {
   countyMapProvenance,
   loadWarsawDistrictMap,
 } from './lib/pl/maps/county-maps';
+export { loadCountryMap } from './lib/pl/maps/country-map';
 export { registry } from './lib/pl/registry';
 export { warsawDistricts } from './lib/pl/warsaw-districts';
 export type {
@@ -16,10 +17,13 @@ export type {
   UnofficialName,
 } from './lib/pl/model';
 export type {
+  CountryMap,
+  CountryMapCounty,
   CountyMap,
   CountyMapCounty,
   CountyMapProvenance,
   MapLabel,
+  MapPoint,
   MapViewBox,
   WarsawDistrictMap,
   WarsawDistrictMapDistrict,

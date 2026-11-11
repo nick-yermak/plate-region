@@ -1,4 +1,5 @@
 import { registry } from '../registry';
+import { loadCountryMap } from './country-map';
 import { warsawDistricts } from '../warsaw-districts';
 import { countyMapLoaders, loadWarsawDistrictMap } from './county-maps';
 import type { CountyMap, MapViewBox, WarsawDistrictMap } from './model';
@@ -92,9 +93,48 @@ function expectInsideViewBox(path: string, viewBox: MapViewBox): void {
   }
 }
 
+/** Distinct vertices: per ring, drop the closing duplicate when last equals first. */
+function ringVertexCount(path: string): number {
+  let total = 0;
+  for (const ringPath of path.match(/M[^M]*/g) ?? []) {
+    const points = decodePath(ringPath);
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (first === undefined || last === undefined) continue;
+    if (first[0] === last[0] && first[1] === last[1]) {
+      total += points.length - 1;
+    } else {
+      total += points.length;
+    }
+  }
+  return total;
+}
+
 const PATH_START = /^M/;
 const TERYT_COUNTY = /^\d{4}$/;
 const TERYT_WARSAW_DISTRICT = /^1465(0[2-9]|1\d)_8$/;
+
+/** Literal label points pin the row order of the stored map: a misplaced row would carry another county's point. */
+const CAPITAL_LABELS = [
+  ['D', 'W', 295, 590],
+  ['C', 'B', 396, 295],
+  ['C', 'T', 444, 310],
+  ['L', 'U', 808, 568],
+  ['F', 'G', 138, 344],
+  ['F', 'Z', 159, 460],
+  ['E', 'L', 524, 495],
+  ['K', 'R', 567, 753],
+  ['W', 'A', 665, 430],
+  ['O', 'P', 377, 659],
+  ['R', 'Z', 765, 751],
+  ['B', 'I', 848, 282],
+  ['G', 'D', 465, 101],
+  ['S', 'K', 480, 725],
+  ['T', 'K', 628, 629],
+  ['N', 'O', 607, 196],
+  ['P', 'O', 292, 403],
+  ['Z', 'S', 87, 236],
+] as const;
 
 describe('county maps', () => {
   it('has one loader per voivodeship, keyed by its primary letter', () => {
@@ -223,5 +263,72 @@ describe('county maps', () => {
       expect(district.label.y).toBeLessThanOrEqual(map.viewBox.height);
       expect(district.label.radius).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('country map', () => {
+  it('decodes the 380 counties in registry order', async () => {
+    const map = await loadCountryMap();
+    expect(map.counties).toHaveLength(380);
+    expect(map.counties.map((c) => c.region1Letter + c.firstSuffix)).toEqual(
+      registry.region2.map((r) => r.region1Letter + r.suffixes[0]),
+    );
+  });
+
+  it('keeps the label points of the 18 voivodeship capitals', async () => {
+    const map = await loadCountryMap();
+    expect(
+      CAPITAL_LABELS.map(([letter, suffix]) => {
+        const county = map.counties.find(
+          (c) => c.region1Letter === letter && c.firstSuffix === suffix,
+        );
+        return [letter, suffix, county?.label.x, county?.label.y];
+      }),
+    ).toEqual(CAPITAL_LABELS);
+  });
+
+  it('lists the 18 voivodeship capitals in registry order with their county label points', async () => {
+    const map = await loadCountryMap();
+    expect(
+      map.capitals.map((c) => [
+        c.region1Letter,
+        c.firstSuffix,
+        c.label.x,
+        c.label.y,
+      ]),
+    ).toEqual(CAPITAL_LABELS);
+  });
+
+  it('draws the outline, the borders and every county inside a 1000 by 938 view box', async () => {
+    const map = await loadCountryMap();
+    expect(map.viewBox).toEqual({ width: 1000, height: 938 });
+    expect(map.outline).toMatch(PATH_START);
+    expectInsideViewBox(map.outline, map.viewBox);
+    expect(map.borders).toMatch(PATH_START);
+    expectInsideViewBox(map.borders, map.viewBox);
+    for (const county of map.counties) {
+      expect(county.path).toMatch(PATH_START);
+      expectInsideViewBox(county.path, map.viewBox);
+      expect(county.label.x).toBeGreaterThanOrEqual(0);
+      expect(county.label.x).toBeLessThanOrEqual(1000);
+      expect(county.label.y).toBeGreaterThanOrEqual(0);
+      expect(county.label.y).toBeLessThanOrEqual(938);
+    }
+  });
+
+  it('stores integer label points', async () => {
+    const map = await loadCountryMap();
+    for (const county of map.counties) {
+      expect(county.label.x).toBe(Math.round(county.label.x));
+      expect(county.label.y).toBe(Math.round(county.label.y));
+    }
+  });
+
+  it('keeps at least 5 vertices per county', async () => {
+    const map = await loadCountryMap();
+    const fewest = Math.min(
+      ...map.counties.map((c) => ringVertexCount(c.path)),
+    );
+    expect(fewest).toBeGreaterThanOrEqual(5);
   });
 });

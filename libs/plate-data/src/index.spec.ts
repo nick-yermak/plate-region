@@ -6,6 +6,7 @@ describe('plate-data public API', () => {
       'countyMapLoaders',
       'countyMapProvenance',
       'fullCodes',
+      'loadCountryMap',
       'loadWarsawDistrictMap',
       'registry',
       'warsawDistricts',

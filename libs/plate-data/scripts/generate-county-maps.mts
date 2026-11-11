@@ -5,20 +5,17 @@
  *   node libs/plate-data/scripts/generate-county-maps.mts <unzipped PRG directory>
  */
 
-import { tmpdir } from 'node:os';
 import { createJiti } from 'jiti';
 import polylabel from 'polylabel';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { topology } from 'topojson-server';
 import { format, resolveConfig } from 'prettier';
-import { execFileSync } from 'node:child_process';
 import { read as readShapefile } from 'shapefile';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { presimplify, simplify } from 'topojson-simplify';
-import { feature as topoFeature, merge as topoMerge } from 'topojson-client';
 import { geoArea, geoIdentity, geoPath, geoTransverseMercator } from 'd3-geo';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import type {
   GeometryCollection,
   GeometryObject,
@@ -31,9 +28,15 @@ import type {
   Polygon,
   Position,
 } from 'geojson';
+import {
+  feature as topoFeature,
+  merge as topoMerge,
+  mesh as topoMesh,
+} from 'topojson-client';
 
 import type { Region1, Region2, Registry } from '../src/lib/pl/model.ts';
 import type {
+  CountryMapModule,
   CountyMap,
   CountyMapCounty,
   MapLabel,
@@ -46,7 +49,7 @@ const ROOT = resolve(SCRIPT_DIR, '../../..');
 const MAPS_DIR = resolve(SCRIPT_DIR, '../src/lib/pl/maps');
 const W = 1000;
 const M = 40;
-/** View-box units squared; chosen so every E1 voivodeship module fits the size budget. */
+/** View-box units squared; chosen so every voivodeship module fits the size budget. */
 const MIN_WEIGHT = 16;
 /**
  * Simplification weight for the Warsaw district module only. Chosen as the
@@ -55,7 +58,37 @@ const MIN_WEIGHT = 16;
 const WARSAW_MIN_WEIGHT = 4;
 const RAW_BUDGET = 40_000;
 const GZIP_BUDGET = 15_000;
+const COUNTRY_MIN_WEIGHT = 16;
+/** Planar area in view-box units² before simplification. */
+const SMALL_COUNTY_AREA = 200;
+const SMALL_COUNTY_WEIGHT = 2;
+const COUNTRY_MIN_VERTICES = 5;
+const COUNTRY_RAW_BUDGET = 60_000;
+const COUNTRY_GZIP_BUDGET = 20_000;
 const PATH_GRAMMAR = /^[Mlz\d -]+$/;
+
+/** Voivodeship capitals: TERYT county code → PRG name (Warszawa aliases as in matching). */
+const COUNTRY_CAPITALS: ReadonlyArray<readonly [teryt: string, name: string]> =
+  [
+    ['0264', 'Wrocław'],
+    ['0461', 'Bydgoszcz'],
+    ['0463', 'Toruń'],
+    ['0663', 'Lublin'],
+    ['0861', 'Gorzów Wielkopolski'],
+    ['0862', 'Zielona Góra'],
+    ['1061', 'Łódź'],
+    ['1261', 'Kraków'],
+    ['1465', 'Warszawa'],
+    ['1661', 'Opole'],
+    ['1863', 'Rzeszów'],
+    ['2061', 'Białystok'],
+    ['2261', 'Gdańsk'],
+    ['2469', 'Katowice'],
+    ['2661', 'Kielce'],
+    ['2862', 'Olsztyn'],
+    ['3064', 'Poznań'],
+    ['3262', 'Szczecin'],
+  ];
 
 /**
  * Registry name `m.st. Warszawa` is the only county whose PRG name differs
@@ -107,6 +140,8 @@ interface GeneratedModule {
   readonly source: string;
   readonly countiesOrDistricts: number;
   readonly pathVertices: number;
+  readonly rawBudget: number;
+  readonly gzipBudget: number;
 }
 
 type CountyTopology = Topology<{ counties: GeometryCollection }>;
@@ -209,7 +244,7 @@ function projectGeometry(
   };
 }
 
-/** E1 recording context; throws on unsupported drawing commands. */
+/** Recording context; throws on unsupported drawing commands. */
 class RelativePathContext {
   private rings: Point[][] = [];
   private current: Point[] | null = null;
@@ -340,7 +375,7 @@ type PathPoint = readonly [number, number];
 /** Same decoding as county-maps.spec.ts (without the Vitest expect). */
 function decodePath(path: string): PathPoint[] {
   if (!PATH_GRAMMAR.test(path)) {
-    fail(`path fails E1 grammar: ${path.slice(0, 40)}`);
+    fail(`path fails the path grammar: ${path.slice(0, 40)}`);
   }
   const points: PathPoint[] = [];
   let x = 0;
@@ -360,6 +395,23 @@ function decodePath(path: string): PathPoint[] {
     }
   }
   return points;
+}
+
+/** Distinct vertices: per ring, drop the closing duplicate when last equals first. */
+function ringVertexCount(path: string): number {
+  let total = 0;
+  for (const ringPath of path.match(/M[^M]*/g) ?? []) {
+    const points = decodePath(ringPath);
+    if (points.length === 0) continue;
+    const first = expectDefined(points[0], 'ring first');
+    const last = expectDefined(points[points.length - 1], 'ring last');
+    if (first[0] === last[0] && first[1] === last[1]) {
+      total += points.length - 1;
+    } else {
+      total += points.length;
+    }
+  }
+  return total;
 }
 
 function pathRings(path: string): PathPoint[][] {
@@ -543,6 +595,168 @@ function labelFor(geometry: Polygon | MultiPolygon): MapLabel {
     y: round1(result[1]),
     radius: round1(result.distance),
   };
+}
+
+/** Integer x/y only (no radius), for the country module. */
+function integerLabelFor(geometry: Polygon | MultiPolygon): {
+  readonly x: number;
+  readonly y: number;
+} {
+  const result = polylabel(
+    largestPolygonRings(geometry) as [number, number][][],
+    1,
+  );
+  return {
+    x: Math.round(result[0]),
+    y: Math.round(result[1]),
+  };
+}
+
+function geometryRings(geometry: Polygon | MultiPolygon): PathPoint[][] {
+  const polys =
+    geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+  const rings: PathPoint[][] = [];
+  for (const poly of polys) {
+    for (const ring of poly) {
+      rings.push(ring.map((p) => [p[0], p[1]] as PathPoint));
+    }
+  }
+  return rings;
+}
+
+/** Collect absolute arc indices from a TopoJSON geometry arcs tree. */
+function collectArcIndices(arcs: unknown): number[] {
+  const out: number[] = [];
+  const walk = (node: unknown): void => {
+    if (typeof node === 'number') {
+      out.push(node < 0 ? ~node : node);
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (const child of node) walk(child);
+    }
+  };
+  walk(arcs);
+  return out;
+}
+
+/**
+ * Boost arc point weights so simplify(W) keeps the same points as
+ * simplify(SMALL_COUNTY_WEIGHT) would: z' = z * (W / SMALL_COUNTY_WEIGHT).
+ * Endpoints (non-finite z) are left alone.
+ */
+function boostSmallCountyArc(
+  topo: CountyTopology,
+  arcIndex: number,
+  simplifyWeight: number,
+): void {
+  const factor = simplifyWeight / SMALL_COUNTY_WEIGHT;
+  const arc = expectDefined(topo.arcs[arcIndex], `arc ${arcIndex}`) as [
+    number,
+    number,
+    number?,
+  ][];
+  for (const p of arc) {
+    const z = p[2];
+    if (typeof z === 'number' && Number.isFinite(z)) {
+      p[2] = z * factor;
+    }
+  }
+}
+
+function shoelaceArea(rings: PathPoint[][]): number {
+  let area = 0;
+  for (const ring of rings) {
+    let a = 0;
+    for (let i = 0; i < ring.length; i++) {
+      const [x1, y1] = expectDefined(ring[i], 'shoelace a');
+      const [x2, y2] = expectDefined(ring[(i + 1) % ring.length], 'shoelace b');
+      a += x1 * y2 - x2 * y1;
+    }
+    area += Math.abs(a) / 2;
+  }
+  return area;
+}
+
+/** Relative encoding of open lines (the voivodeship border mesh). */
+function encodeOpenPath(
+  geometry: { type: string; coordinates: unknown } | null,
+  height: number,
+): string {
+  if (geometry === null) {
+    return '';
+  }
+  const parts: string[] = [];
+  let last: Point | null = null;
+  let current: Point[] | null = null;
+  const flush = (): void => {
+    if (current === null || current.length === 0) {
+      current = null;
+      last = null;
+      return;
+    }
+    const unique: Point[] = [];
+    for (const p of current) {
+      const prev = unique[unique.length - 1];
+      if (prev && prev[0] === p[0] && prev[1] === p[1]) continue;
+      unique.push(p);
+    }
+    if (unique.length >= 2) {
+      const start = expectDefined(unique[0], 'open start');
+      let s = `M${start[0]} ${start[1]}l`;
+      const deltas: number[] = [];
+      for (let i = 1; i < unique.length; i++) {
+        const [x, y] = expectDefined(unique[i], `open ${i}`);
+        const [px, py] = expectDefined(unique[i - 1], `open ${i - 1}`);
+        deltas.push(x - px, y - py);
+      }
+      for (let i = 0; i < deltas.length; i++) {
+        const n = expectDefined(deltas[i], `od ${i}`);
+        if (i > 0 && n >= 0) s += ' ';
+        s += String(n);
+      }
+      parts.push(s);
+    }
+    current = null;
+    last = null;
+  };
+  const ctx = {
+    moveTo(x: number, y: number): void {
+      flush();
+      const p: Point = [Math.round(x), Math.round(y)];
+      current = [p];
+      last = p;
+    },
+    lineTo(x: number, y: number): void {
+      if (current === null || last === null) fail('lineTo without moveTo');
+      const p: Point = [Math.round(x), Math.round(y)];
+      if (p[0] === last[0] && p[1] === last[1]) return;
+      current.push(p);
+      last = p;
+    },
+    closePath(): void {
+      fail('closePath is not expected in open lines');
+    },
+    beginPath(): void {
+      // GeoContext requires beginPath; open-line state is reset in moveTo.
+      return;
+    },
+    arc(): never {
+      fail('arc not supported');
+    },
+    rect(): never {
+      fail('rect not supported');
+    },
+  };
+  geoPath(
+    geoIdentity().clipExtent([
+      [0, 0],
+      [W, height],
+    ]),
+    ctx as never,
+  )(geometry as never);
+  flush();
+  return parts.join('');
 }
 
 async function readLayer(prgDir: string, base: string): Promise<PrgFeature[]> {
@@ -778,9 +992,30 @@ function serializeWarsawMap(map: WarsawDistrictMap): string {
   );
 }
 
+function serializeCountryMap(module: CountryMapModule): string {
+  const counties = module.counties
+    .map(([path, x, y]) => `    [${JSON.stringify(path)}, ${x}, ${y}]`)
+    .join(',\n');
+  const capitals = module.capitals
+    .map(
+      ([letter, suffix]) =>
+        `    [${JSON.stringify(letter)}, ${JSON.stringify(suffix)}]`,
+    )
+    .join(',\n');
+  return (
+    `{\n` +
+    `  viewBox: { width: ${module.viewBox.width}, height: ${module.viewBox.height} },\n` +
+    `  outline: ${JSON.stringify(module.outline)},\n` +
+    `  borders: ${JSON.stringify(module.borders)},\n` +
+    `  counties: [\n${counties}\n  ],\n` +
+    `  capitals: [\n${capitals}\n  ],\n` +
+    `}`
+  );
+}
+
 function moduleSource(
-  importType: 'CountyMap' | 'WarsawDistrictMap',
-  exportName: 'countyMap' | 'warsawDistrictMap',
+  importType: 'CountyMap' | 'WarsawDistrictMap' | 'CountryMapModule',
+  exportName: 'countyMap' | 'warsawDistrictMap' | 'countryMapModule',
   literal: string,
 ): string {
   return (
@@ -953,6 +1188,8 @@ function generateVoivodeshipModule(
     source: moduleSource('CountyMap', 'countyMap', serializeCountyMap(map)),
     countiesOrDistricts: countyRows.length,
     pathVertices,
+    rawBudget: RAW_BUDGET,
+    gzipBudget: GZIP_BUDGET,
   };
 }
 
@@ -1107,6 +1344,8 @@ function generateWarsawModule(
     ),
     countiesOrDistricts: districtRows.length,
     pathVertices,
+    rawBudget: RAW_BUDGET,
+    gzipBudget: GZIP_BUDGET,
     areaRatioBefore,
     areaRatioAfter,
     crossingCount,
@@ -1152,15 +1391,214 @@ async function writeFormatted(filePath: string, source: string): Promise<void> {
   writeFileSync(filePath, formatted, 'utf8');
 }
 
-function assertSourceBudget(fileName: string, source: string): void {
+function assertSourceBudget(
+  fileName: string,
+  source: string,
+  rawBudget: number,
+  gzipBudget: number,
+): void {
   const raw = Buffer.byteLength(source, 'utf8');
   const gzip = gzipSync(source, { level: 9 }).length;
-  if (raw > RAW_BUDGET) {
-    fail(`${fileName}: source raw ${raw} exceeds budget ${RAW_BUDGET}`);
+  if (raw > rawBudget) {
+    fail(`${fileName}: source raw ${raw} exceeds budget ${rawBudget}`);
   }
-  if (gzip > GZIP_BUDGET) {
-    fail(`${fileName}: source gzip ${gzip} exceeds budget ${GZIP_BUDGET}`);
+  if (gzip > gzipBudget) {
+    fail(`${fileName}: source gzip ${gzip} exceeds budget ${gzipBudget}`);
   }
+}
+
+function generateCountryModule(
+  counties: readonly MatchedCounty[],
+  region2: readonly Region2[],
+): GeneratedModule {
+  if (counties.length !== region2.length) {
+    fail(
+      `country map: matched ${counties.length} counties, registry has ${region2.length}`,
+    );
+  }
+
+  const target: FeatureCollection<Polygon | MultiPolygon> = {
+    type: 'FeatureCollection',
+    features: counties.map((c) => ({
+      type: 'Feature',
+      properties: { teryt: c.teryt },
+      geometry: c.geometry,
+    })),
+  };
+  const { projection, height } = fitProjection(target);
+
+  const projectedCounties: FeatureCollection<Polygon | MultiPolygon> = {
+    type: 'FeatureCollection',
+    features: counties.map((c) => ({
+      type: 'Feature',
+      properties: {
+        teryt: c.teryt,
+        region1Letter: c.region1Letter,
+        firstSuffix: c.firstSuffix,
+      },
+      geometry: projectGeometry(c.geometry, projection),
+    })),
+  };
+
+  const smallTeryt = new Set<string>();
+  for (let i = 0; i < counties.length; i++) {
+    const feat = expectDefined(projectedCounties.features[i], 'proj feat');
+    const area = shoelaceArea(geometryRings(feat.geometry));
+    if (area < SMALL_COUNTY_AREA) {
+      smallTeryt.add(expectDefined(counties[i], 'county').teryt);
+    }
+  }
+
+  const topo = presimplify(
+    topology({ counties: projectedCounties }) as never,
+  ) as CountyTopology;
+  const protectedArcs = new Set<number>();
+  for (const geom of topo.objects.counties.geometries) {
+    const props = geom.properties as { teryt: string };
+    if (!smallTeryt.has(props.teryt)) continue;
+    if (!('arcs' in geom) || geom.arcs == null) continue;
+    for (const ai of collectArcIndices(geom.arcs)) {
+      protectedArcs.add(ai);
+    }
+  }
+  for (const ai of protectedArcs) {
+    boostSmallCountyArc(topo, ai, COUNTRY_MIN_WEIGHT);
+  }
+  const simplifiedTopo = simplify(
+    topo as never,
+    COUNTRY_MIN_WEIGHT,
+  ) as CountyTopology;
+
+  const byTeryt = new Map<string, GeometryObject>();
+  for (const geom of simplifiedTopo.objects.counties.geometries) {
+    const props = geom.properties as { teryt: string };
+    byTeryt.set(props.teryt, geom);
+  }
+
+  const matchedById = new Map(
+    counties.map((c) => [`${c.region1Letter}\0${c.firstSuffix}`, c]),
+  );
+
+  let pathVertices = 0;
+  const countyRows: CountryMapModule['counties'][number][] = [];
+  const crossingUnits: { name: string; path: string }[] = [];
+  for (const r2 of region2) {
+    const matched = expectDefined(
+      matchedById.get(`${r2.region1Letter}\0${r2.suffixes[0]}`),
+      `matched county for ${r2.region1Letter}${r2.suffixes[0]}`,
+    );
+    const geom = expectDefined(
+      byTeryt.get(matched.teryt),
+      `topology geometry for ${matched.teryt}`,
+    );
+    const simplified = geomFromTopo(simplifiedTopo, geom);
+    const encoded = encodePath(simplified, height);
+    const code = `${matched.region1Letter}${matched.firstSuffix}`;
+    const path = assertPathNonEmpty(
+      encoded.path,
+      simplified,
+      `county ${code} (${matched.teryt})`,
+    );
+    const vertices = ringVertexCount(path);
+    if (vertices < COUNTRY_MIN_VERTICES) {
+      fail(
+        `country map county ${code} has ${vertices} vertices, need at least ${COUNTRY_MIN_VERTICES}`,
+      );
+    }
+    pathVertices += vertices;
+    const label = integerLabelFor(expectDefined(simplified, matched.teryt));
+    countyRows.push([path, label.x, label.y]);
+    crossingUnits.push({ name: code, path });
+  }
+
+  assertNoPathCrossings('country-map-data.ts', crossingUnits);
+
+  const allGeoms = region2.map((r2) => {
+    const matched = expectDefined(
+      matchedById.get(`${r2.region1Letter}\0${r2.suffixes[0]}`),
+      `own county ${r2.region1Letter}${r2.suffixes[0]}`,
+    );
+    return expectDefined(byTeryt.get(matched.teryt), matched.teryt);
+  });
+  const outlineGeom = mergePolygons(simplifiedTopo, allGeoms);
+  const outlineEncoded = encodePath(outlineGeom, height);
+  const outline = assertPathNonEmpty(
+    outlineEncoded.path,
+    outlineGeom,
+    'outline of Poland',
+  );
+  pathVertices += outlineEncoded.vertices;
+
+  const meshGeom = topoMesh(
+    simplifiedTopo,
+    simplifiedTopo.objects.counties,
+    (a, b) =>
+      a !== b &&
+      (a as { properties?: { region1Letter?: string } }).properties
+        ?.region1Letter !==
+        (b as { properties?: { region1Letter?: string } }).properties
+          ?.region1Letter,
+  );
+  const borders = encodeOpenPath(meshGeom as never, height);
+  if (borders === '') {
+    fail('empty borders path for country map');
+  }
+
+  const aliasToRegistry = new Map(NAME_ALIASES.map((a) => [a.prg, a.registry]));
+  const capitalsWithIndex: Array<{
+    index: number;
+    pair: readonly [string, string];
+  }> = [];
+  for (const [teryt, tableName] of COUNTRY_CAPITALS) {
+    const matches = counties.filter((c) => c.teryt === teryt);
+    if (matches.length !== 1) {
+      fail(
+        `capital ${teryt}: expected 1 matched county, got ${matches.length}`,
+      );
+    }
+    const matched = expectDefined(matches[0], teryt);
+    const registryName = aliasToRegistry.get(tableName) ?? tableName;
+    if (matched.kind !== 'city' || matched.name !== registryName) {
+      fail(
+        `capital ${teryt}: expected city ${registryName}, got ${matched.kind} ${matched.name}`,
+      );
+    }
+    const index = region2.findIndex(
+      (r) =>
+        r.region1Letter === matched.region1Letter &&
+        r.suffixes[0] === matched.firstSuffix,
+    );
+    if (index < 0) {
+      fail(`capital ${teryt} not in registry.region2`);
+    }
+    capitalsWithIndex.push({
+      index,
+      pair: [matched.region1Letter, matched.firstSuffix],
+    });
+  }
+  capitalsWithIndex.sort((a, b) => a.index - b.index);
+  const capitals = capitalsWithIndex.map((c) => c.pair);
+
+  const module: CountryMapModule = {
+    viewBox: { width: W, height },
+    outline,
+    borders,
+    counties: countyRows,
+    capitals,
+  };
+
+  return {
+    fileName: 'country-map-data.ts',
+    source: moduleSource(
+      'CountryMapModule',
+      'countryMapModule',
+      serializeCountryMap(module),
+    ),
+    countiesOrDistricts: countyRows.length,
+    pathVertices,
+    rawBudget: COUNTRY_RAW_BUDGET,
+    gzipBudget: COUNTRY_GZIP_BUDGET,
+  };
 }
 
 async function main(): Promise<void> {
@@ -1183,49 +1621,6 @@ async function main(): Promise<void> {
   const counties = matchCounties(a01, a02, registry.region1, registry.region2);
   const districts = matchDistricts(a05, warsawDistricts);
 
-  if (process.argv[3] === '--measure-warsaw') {
-    const measureDir = mkdtempSync(join(tmpdir(), '94-warsaw-w-'));
-    writeFileSync(
-      join(measureDir, 'model.ts'),
-      [
-        'export interface MapLabel { readonly x: number; readonly y: number; readonly radius: number }',
-        'export interface MapViewBox { readonly width: number; readonly height: number }',
-        'export interface WarsawDistrictMapDistrict { readonly name: string; readonly teryt: string; readonly path: string; readonly label: MapLabel }',
-        'export interface WarsawDistrictMap { readonly viewBox: MapViewBox; readonly outline: string; readonly districts: readonly WarsawDistrictMapDistrict[]; readonly neighbours: readonly string[] }',
-        '',
-      ].join('\n'),
-      'utf8',
-    );
-    process.stderr.write('weight\tcrossings\tesbuild_raw\tesbuild_gzip\n');
-    for (const weight of [16, 8, 4, 2] as const) {
-      const warsaw = generateWarsawModule(counties, districts, weight, {
-        assertCrossings: false,
-      });
-      const tsPath = join(measureDir, warsaw.fileName);
-      writeFileSync(tsPath, warsaw.source, 'utf8');
-      const outPath = join(measureDir, 'warsaw.js');
-      execFileSync(
-        'npx',
-        [
-          '--no-install',
-          'esbuild',
-          tsPath,
-          '--bundle',
-          '--minify',
-          '--format=esm',
-          `--outfile=${outPath}`,
-        ],
-        { stdio: ['ignore', 'pipe', 'pipe'] },
-      );
-      const rawBuf = readFileSync(outPath);
-      const gzipLen = gzipSync(rawBuf, { level: 9 }).length;
-      process.stderr.write(
-        `${weight}\t${warsaw.crossingCount}\t${rawBuf.length}\t${gzipLen}\n`,
-      );
-    }
-    return;
-  }
-
   const letters = registry.region1.map((r) => r.letters[0]);
   const modules: GeneratedModule[] = [];
   for (const letter of letters) {
@@ -1233,10 +1628,12 @@ async function main(): Promise<void> {
   }
   const warsaw = generateWarsawModule(counties, districts, WARSAW_MIN_WEIGHT);
   modules.push(warsaw);
+  const country = generateCountryModule(counties, registry.region2);
+  modules.push(country);
 
   mkdirSync(MAPS_DIR, { recursive: true });
   for (const mod of modules) {
-    assertSourceBudget(mod.fileName, mod.source);
+    assertSourceBudget(mod.fileName, mod.source, mod.rawBudget, mod.gzipBudget);
     await writeFormatted(join(MAPS_DIR, mod.fileName), mod.source);
   }
   await writeFormatted(
@@ -1245,7 +1642,7 @@ async function main(): Promise<void> {
   );
 
   process.stderr.write(
-    `wrote ${modules.length} modules with MIN_WEIGHT=${MIN_WEIGHT} (E1)\n`,
+    `wrote ${modules.length} modules with MIN_WEIGHT=${MIN_WEIGHT}\n`,
   );
   process.stderr.write(
     `Warsaw area ratio districts/1465 before=${warsaw.areaRatioBefore} after=${warsaw.areaRatioAfter}\n`,
@@ -1257,12 +1654,6 @@ async function main(): Promise<void> {
       `  ${mod.fileName}: source raw=${raw} gzip=${gzip} n=${mod.countiesOrDistricts} verts=${mod.pathVertices}\n`,
     );
   }
-
-  writeFileSync(
-    join(ROOT, 'tmp/94-c11.txt'),
-    `areaRatioBefore=${warsaw.areaRatioBefore}\nareaRatioAfter=${warsaw.areaRatioAfter}\n`,
-    'utf8',
-  );
 }
 
 await main();
