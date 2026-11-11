@@ -1,4 +1,9 @@
 export { fullCodes } from './lib/pl/full-codes';
+export {
+  countyMapLoaders,
+  countyMapProvenance,
+  loadWarsawDistrictMap,
+} from './lib/pl/maps/county-maps';
 export { registry } from './lib/pl/registry';
 export { warsawDistricts } from './lib/pl/warsaw-districts';
 export type {
@@ -10,6 +15,15 @@ export type {
   Source,
   UnofficialName,
 } from './lib/pl/model';
+export type {
+  CountyMap,
+  CountyMapCounty,
+  CountyMapProvenance,
+  MapLabel,
+  MapViewBox,
+  WarsawDistrictMap,
+  WarsawDistrictMapDistrict,
+} from './lib/pl/maps/model';
 export type {
   WarsawDistrictRow,
   WarsawDistrictRule,
