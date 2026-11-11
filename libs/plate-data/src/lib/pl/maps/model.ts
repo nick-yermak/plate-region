@@ -34,6 +34,47 @@ export interface CountyMap {
   readonly neighbours: readonly string[];
 }
 
+/** A label anchor in view box units. */
+export interface MapPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** One county of the map of Poland. */
+export interface CountryMapCounty {
+  /** Registry identity (D-07): the region1 primary letter and the first suffix. */
+  readonly region1Letter: string;
+  readonly firstSuffix: string;
+  /** SVG path data in view box units. */
+  readonly path: string;
+  readonly label: MapPoint;
+}
+
+/** Map of Poland with all counties. */
+export interface CountryMap {
+  readonly viewBox: MapViewBox;
+  /** Outline of the country. */
+  readonly outline: string;
+  /** Borders between voivodeships, each drawn once, as open lines. */
+  readonly borders: string;
+  /** In registry order. */
+  readonly counties: readonly CountryMapCounty[];
+  /** The 18 voivodeship capitals, as rows of `counties`, in registry order. */
+  readonly capitals: readonly CountryMapCounty[];
+}
+
+/** Stored form of the map of Poland: county rows by index of `registry.region2`. */
+export interface CountryMapModule {
+  readonly viewBox: MapViewBox;
+  readonly outline: string;
+  readonly borders: string;
+  readonly counties: readonly (readonly [path: string, x: number, y: number])[];
+  readonly capitals: readonly (readonly [
+    region1Letter: string,
+    firstSuffix: string,
+  ])[];
+}
+
 /** One district of the Warsaw map. */
 export interface WarsawDistrictMapDistrict {
   /** PRG name without " - dzielnica"; equals a district name of D-57. */
