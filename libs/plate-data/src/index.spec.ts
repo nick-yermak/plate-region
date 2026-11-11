@@ -5,6 +5,7 @@ describe('plate-data public API', () => {
     expect(Object.keys(api).sort()).toEqual([
       'countyMapLoaders',
       'countyMapProvenance',
+      'countyMapWaterProvenance',
       'fullCodes',
       'loadCountryMap',
       'loadWarsawDistrictMap',

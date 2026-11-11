@@ -2,7 +2,7 @@
  * Generate county and Warsaw-district map modules from GUGiK PRG shapefiles.
  *
  * Usage:
- *   node libs/plate-data/scripts/generate-county-maps.mts <unzipped PRG directory>
+ *   node libs/plate-data/scripts/generate-county-maps.mts <unzipped PRG directory> <directory with W03_Morskie_wody_wewnetrzne.shp>
  */
 
 import { createJiti } from 'jiti';
@@ -15,12 +15,23 @@ import { read as readShapefile } from 'shapefile';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { presimplify, simplify } from 'topojson-simplify';
-import { geoArea, geoIdentity, geoPath, geoTransverseMercator } from 'd3-geo';
+import GeoJSONReader from 'jsts/org/locationtech/jts/io/GeoJSONReader.js';
+import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter.js';
+import BufferOp from 'jsts/org/locationtech/jts/operation/buffer/BufferOp.js';
+import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
+import OverlayOp from 'jsts/org/locationtech/jts/operation/overlay/OverlayOp.js';
 import type {
   GeometryCollection,
   GeometryObject,
   Topology,
 } from 'topojson-specification';
+import {
+  geoArea,
+  geoIdentity,
+  geoLength,
+  geoPath,
+  geoTransverseMercator,
+} from 'd3-geo';
 import type {
   Feature,
   FeatureCollection,
@@ -66,6 +77,18 @@ const COUNTRY_MIN_VERTICES = 5;
 const COUNTRY_RAW_BUDGET = 60_000;
 const COUNTRY_GZIP_BUDGET = 20_000;
 const PATH_GRAMMAR = /^[Mlz\d -]+$/;
+
+/** Smallest opening that left no path crossing after Visvalingam in any module. */
+const OPEN_RADIUS_M = 400;
+/** Islands below this draw as specks of 1–3 px after Visvalingam. */
+const MIN_PART_KM2 = 5;
+/** Drop ribbon-like leftovers whose 4πA/P² falls below this. */
+const MIN_PART_COMPACTNESS = 0.05;
+/** Keep the original geometry object when the relative area change is noise. */
+const AREA_EPS = 1e-9;
+/** Mean Earth radius (km) for steradian → km² and radian → km on the sphere. */
+const EARTH_RADIUS_KM = 6371.0088;
+const EARTH_R2 = EARTH_RADIUS_KM * EARTH_RADIUS_KM;
 
 /** Voivodeship capitals: TERYT county code → PRG name (Warszawa aliases as in matching). */
 const COUNTRY_CAPITALS: ReadonlyArray<readonly [teryt: string, name: string]> =
@@ -154,6 +177,259 @@ type Point = readonly [number, number];
 
 function fail(message: string): never {
   throw new Error(message);
+}
+
+type PcGeom = [number, number][][][];
+
+function toPcGeom(geometry: Polygon | MultiPolygon): PcGeom {
+  return (
+    geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+  ) as PcGeom;
+}
+
+function geomFromPc(coords: PcGeom): MultiPolygon {
+  return { type: 'MultiPolygon', coordinates: coords };
+}
+
+function partMetrics(poly: [number, number][][]): {
+  fixed: [number, number][][];
+  areaKm2: number;
+  perimeterKm: number;
+  compactness: number;
+  areaSr: number;
+} {
+  const feature = {
+    type: 'Feature' as const,
+    properties: {},
+    geometry: { type: 'Polygon' as const, coordinates: poly },
+  };
+  const areaSr = geoArea(feature);
+  const areaKm2 = areaSr * EARTH_R2;
+  const perimeterKm = geoLength(feature) * EARTH_RADIUS_KM;
+  const compactness =
+    perimeterKm === 0
+      ? 0
+      : (4 * Math.PI * areaKm2) / (perimeterKm * perimeterKm);
+  return { fixed: poly, areaKm2, perimeterKm, compactness, areaSr };
+}
+
+function metreProjection() {
+  return geoTransverseMercator()
+    .rotate([-19, 0])
+    .scale(6_371_008.8)
+    .translate([0, 0]);
+}
+
+function projectLonLatGeometry(
+  geometry: Polygon | MultiPolygon,
+  projection: (coords: [number, number]) => [number, number] | null,
+): Polygon | MultiPolygon {
+  const mapPos = (position: Position): Position => {
+    const p = projection([position[0], position[1]]);
+    if (p === null) fail(`projection null for ${position[0]}, ${position[1]}`);
+    return p;
+  };
+  if (geometry.type === 'Polygon') {
+    return {
+      type: 'Polygon',
+      coordinates: geometry.coordinates.map((ring) => ring.map(mapPos)),
+    };
+  }
+  return {
+    type: 'MultiPolygon',
+    coordinates: geometry.coordinates.map((poly) =>
+      poly.map((ring) => ring.map(mapPos)),
+    ),
+  };
+}
+
+function invertProjectedGeometry(
+  geometry: Polygon | MultiPolygon,
+  projection: {
+    invert: (p: [number, number]) => [number, number] | null;
+  },
+): Polygon | MultiPolygon {
+  const mapPos = (position: Position): Position => {
+    const p = projection.invert([position[0], position[1]]);
+    if (p === null) fail(`invert null for ${position[0]}, ${position[1]}`);
+    return p;
+  };
+  if (geometry.type === 'Polygon') {
+    return {
+      type: 'Polygon',
+      coordinates: geometry.coordinates.map((ring) => ring.map(mapPos)),
+    };
+  }
+  return {
+    type: 'MultiPolygon',
+    coordinates: geometry.coordinates.map((poly) =>
+      poly.map((ring) => ring.map(mapPos)),
+    ),
+  };
+}
+
+function asMultiPolygon(geometry: Polygon | MultiPolygon | null): MultiPolygon {
+  if (geometry === null) fail('expected geometry, got null');
+  if (geometry.type === 'MultiPolygon') return geometry;
+  if (geometry.type === 'Polygon') {
+    return { type: 'MultiPolygon', coordinates: [geometry.coordinates] };
+  }
+  fail(`unexpected geometry type ${(geometry as { type: string }).type}`);
+}
+
+function differenceJsts(
+  county: Polygon | MultiPolygon,
+  water: Polygon | MultiPolygon,
+): PcGeom {
+  const reader = new GeoJSONReader(new GeometryFactory());
+  const writer = new GeoJSONWriter();
+  try {
+    const a = reader.read(county);
+    const b = reader.read(water);
+    const diff = OverlayOp.difference(a, b);
+    if (diff == null) return [];
+    const written = writer.write(diff);
+    if (written == null) return [];
+    const type = (written as { type?: string }).type;
+    if (type === 'GeometryCollection') {
+      const geoms = (written as { geometries: Array<Polygon | MultiPolygon> })
+        .geometries;
+      const polys: PcGeom = [];
+      for (const g of geoms) {
+        if (g.type === 'Polygon' || g.type === 'MultiPolygon') {
+          polys.push(...toPcGeom(g));
+        }
+      }
+      return polys;
+    }
+    if (type === 'Polygon' || type === 'MultiPolygon') {
+      return toPcGeom(written as Polygon | MultiPolygon);
+    }
+    return [];
+  } catch (err) {
+    const message =
+      err instanceof Error ? (err.stack ?? err.message) : String(err);
+    fail(`jsts difference failed: ${message}`);
+  }
+}
+
+async function readWater(dir: string): Promise<MultiPolygon> {
+  const features = await readLayer(dir, 'W03_Morskie_wody_wewnetrzne');
+  if (features.length !== 1) {
+    fail(`W03 expected 1 feature, got ${features.length}`);
+  }
+  const feature = expectDefined(features[0], 'W03 feature');
+  if (feature.geometry === null) fail('W03 has null geometry');
+  return asMultiPolygon(feature.geometry);
+}
+
+function openWater(geometry: MultiPolygon): MultiPolygon {
+  const projection = metreProjection();
+  const projected = projectLonLatGeometry(geometry, projection);
+  const reader = new GeoJSONReader(new GeometryFactory());
+  const writer = new GeoJSONWriter();
+  try {
+    const planar = reader.read(projected);
+    const eroded = BufferOp.bufferOp(planar, -OPEN_RADIUS_M);
+    const opened = BufferOp.bufferOp(eroded, OPEN_RADIUS_M);
+    const openedPlanar = writer.write(opened);
+    if (
+      openedPlanar == null ||
+      (openedPlanar as { type?: string }).type === 'Point'
+    ) {
+      fail(`opening at r=${OPEN_RADIUS_M} produced empty/non-polygon geometry`);
+    }
+    const openedLonLat = invertProjectedGeometry(
+      openedPlanar as Polygon | MultiPolygon,
+      projection as {
+        invert: (p: [number, number]) => [number, number] | null;
+      },
+    );
+    return asMultiPolygon(openedLonLat);
+  } catch (err) {
+    const message =
+      err instanceof Error ? (err.stack ?? err.message) : String(err);
+    fail(`jsts morphological opening failed: ${message}`);
+  }
+}
+
+function clipCountiesToLand(
+  counties: readonly MatchedCounty[],
+  water: MultiPolygon,
+): { counties: MatchedCounty[]; clipped: number } {
+  const out: MatchedCounty[] = [];
+  let clipped = 0;
+
+  for (const c of counties) {
+    const beforeSr = geoArea({
+      type: 'Feature',
+      properties: {},
+      geometry: c.geometry,
+    });
+    const rawDiff = differenceJsts(c.geometry, water);
+    if (rawDiff.length === 0) {
+      fail(`clipping removed all geometry for ${c.teryt}`);
+    }
+
+    const provisionalSr = geoArea({
+      type: 'Feature',
+      properties: {},
+      geometry: geomFromPc(rawDiff),
+    });
+    const provisionalRel =
+      beforeSr === 0 ? 0 : Math.abs(provisionalSr - beforeSr) / beforeSr;
+    if (provisionalRel < AREA_EPS) {
+      out.push(c);
+      continue;
+    }
+
+    const keptRaw: PcGeom = [];
+    for (const poly of rawDiff) {
+      const m = partMetrics(poly);
+      if (m.areaKm2 >= MIN_PART_KM2 && m.compactness >= MIN_PART_COMPACTNESS) {
+        keptRaw.push(poly);
+      }
+    }
+    if (keptRaw.length === 0) {
+      fail(
+        `all parts dropped after filter for ${c.teryt} (${c.region1Letter}${c.firstSuffix})`,
+      );
+    }
+
+    for (let i = 0; i < keptRaw.length; i++) {
+      const sr = geoArea({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: expectDefined(keptRaw[i], `kept part ${i}`),
+        },
+      });
+      if (sr >= 0.01) {
+        fail(
+          `winding guard failed after filter for ${c.teryt} part ${i}: geoArea=${sr}`,
+        );
+      }
+    }
+    const newGeom = geomFromPc(keptRaw);
+    const afterSr = geoArea({
+      type: 'Feature',
+      properties: {},
+      geometry: newGeom,
+    });
+    const rel = beforeSr === 0 ? 0 : Math.abs(afterSr - beforeSr) / beforeSr;
+    if (rel < AREA_EPS) {
+      out.push(c);
+      continue;
+    }
+    clipped += 1;
+    out.push({ ...c, geometry: newGeom });
+  }
+
+  if (clipped === 0) {
+    fail('no county changed after clipping+filter');
+  }
+  return { counties: out, clipped };
 }
 
 function expectDefined<T>(value: T | undefined | null, expected: string): T {
@@ -569,6 +845,27 @@ function assertNoPathCrossings(
   );
 }
 
+/** Planar area of one polygon: |outer| minus |holes| (view-box units²). */
+function planarPolygonArea(polygon: number[][][]): number {
+  let area = 0;
+  for (let i = 0; i < polygon.length; i++) {
+    const ring = expectDefined(polygon[i], `polygon ring ${i}`);
+    let a = 0;
+    for (let j = 0; j < ring.length; j++) {
+      const [x1, y1] = expectDefined(ring[j], 'planar a') as [number, number];
+      const [x2, y2] = expectDefined(
+        ring[(j + 1) % ring.length],
+        'planar b',
+      ) as [number, number];
+      a += x1 * y2 - x2 * y1;
+    }
+    const ringArea = Math.abs(a) / 2;
+    if (i === 0) area = ringArea;
+    else area -= ringArea;
+  }
+  return Math.max(area, 0);
+}
+
 function largestPolygonRings(geometry: Polygon | MultiPolygon): number[][][] {
   if (geometry.type === 'Polygon') {
     return geometry.coordinates as number[][][];
@@ -576,7 +873,7 @@ function largestPolygonRings(geometry: Polygon | MultiPolygon): number[][][] {
   let best = geometry.coordinates[0] as number[][][];
   let bestArea = -1;
   for (const polygon of geometry.coordinates) {
-    const area = Math.abs(geoArea({ type: 'Polygon', coordinates: polygon }));
+    const area = planarPolygonArea(polygon as number[][][]);
     if (area > bestArea) {
       bestArea = area;
       best = polygon as number[][][];
@@ -1373,6 +1670,14 @@ function loadersSource(letters: readonly string[]): string {
     `  sha256:\n` +
     `    'e8699acc51377e267ecad6ceda02e35d9a1d42abb64551852d33757b2bc2ec5f',\n` +
     `} as const satisfies CountyMapProvenance;\n\n` +
+    `export const countyMapWaterProvenance = {\n` +
+    `  title:\n` +
+    `    'GUGiK, Państwowy Rejestr Granic — granice specjalne (morskie wody wewnętrzne)',\n` +
+    `  url: 'https://opendata.geoportal.gov.pl/prg/granice/00_granice_specjalne_shp.zip',\n` +
+    `  downloaded: '2026-11-11',\n` +
+    `  sha256:\n` +
+    `    '5d9281ada2a70e259cf67e4847a9df69e4f91c2705f9f65ff04c1f96c07817af',\n` +
+    `} as const satisfies CountyMapProvenance;\n\n` +
     `export const countyMapLoaders: Readonly<\n` +
     `  Record<string, () => Promise<CountyMap>>\n` +
     `> = {\n${entries}\n};\n\n` +
@@ -1603,12 +1908,14 @@ function generateCountryModule(
 
 async function main(): Promise<void> {
   const prgDirArg = process.argv[2];
-  if (prgDirArg === undefined) {
+  const waterDirArg = process.argv[3];
+  if (prgDirArg === undefined || waterDirArg === undefined) {
     fail(
-      'usage: node libs/plate-data/scripts/generate-county-maps.mts <unzipped PRG directory>',
+      'usage: node libs/plate-data/scripts/generate-county-maps.mts <unzipped PRG directory> <directory with W03_Morskie_wody_wewnetrzne.shp>',
     );
   }
   const prgDir = resolve(prgDirArg);
+  const waterDir = resolve(waterDirArg);
 
   if (typeof geoPath().digits !== 'function') {
     fail(`geoPath().digits is ${typeof geoPath().digits}, expected function`);
@@ -1618,7 +1925,12 @@ async function main(): Promise<void> {
   const a01 = await readLayer(prgDir, 'A01_Granice_wojewodztw');
   const a02 = await readLayer(prgDir, 'A02_Granice_powiatow');
   const a05 = await readLayer(prgDir, 'A05_Granice_jednostek_ewidencyjnych');
-  const counties = matchCounties(a01, a02, registry.region1, registry.region2);
+  const matched = matchCounties(a01, a02, registry.region1, registry.region2);
+  const water = openWater(await readWater(waterDir));
+  const { counties, clipped } = clipCountiesToLand(matched, water);
+  process.stderr.write(
+    `clipped ${clipped} counties to land (opening ${OPEN_RADIUS_M} m)\n`,
+  );
   const districts = matchDistricts(a05, warsawDistricts);
 
   const letters = registry.region1.map((r) => r.letters[0]);
