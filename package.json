@@ -64,6 +64,7 @@
     "eslint-plugin-playwright": "^1.6.2",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
+    "jsts": "^2.12.1",
     "less": "^4.9.1",
     "lint-staged": "^17.6.0",
     "nx": "23.3.1",

@@ -11,6 +11,14 @@ export const countyMapProvenance = {
   sha256: 'e8699acc51377e267ecad6ceda02e35d9a1d42abb64551852d33757b2bc2ec5f',
 } as const satisfies CountyMapProvenance;
 
+export const countyMapWaterProvenance = {
+  title:
+    'GUGiK, Państwowy Rejestr Granic — granice specjalne (morskie wody wewnętrzne)',
+  url: 'https://opendata.geoportal.gov.pl/prg/granice/00_granice_specjalne_shp.zip',
+  downloaded: '2026-11-11',
+  sha256: '5d9281ada2a70e259cf67e4847a9df69e4f91c2705f9f65ff04c1f96c07817af',
+} as const satisfies CountyMapProvenance;
+
 export const countyMapLoaders: Readonly<
   Record<string, () => Promise<CountyMap>>
 > = {

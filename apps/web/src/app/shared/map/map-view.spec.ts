@@ -27,19 +27,19 @@ function region2ByName(name: string, region1Letter: string): Region2 {
 }
 
 describe('map-view', () => {
-  it('labels 247 of the 380 counties', async () => {
+  it('labels 248 of the 380 counties', async () => {
     const expected: Record<string, number> = {
       D: 17,
-      C: 16,
+      C: 17,
       L: 18,
       F: 12,
       E: 19,
-      K: 19,
+      K: 20,
       W: 10,
       O: 11,
       R: 19,
       B: 14,
-      G: 18,
+      G: 17,
       S: 13,
       T: 14,
       N: 17,

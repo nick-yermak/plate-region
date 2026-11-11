@@ -93,6 +93,151 @@ function expectInsideViewBox(path: string, viewBox: MapViewBox): void {
   }
 }
 
+/** Absolute path area: |Σ per-ring shoelace|, rings split by `M`. */
+function pathArea(path: string): number {
+  let total = 0;
+  for (const ringPath of path.match(/M[^M]*/g) ?? []) {
+    const points = decodePath(ringPath);
+    let sum = 0;
+    for (let i = 0; i < points.length; i++) {
+      const [x1, y1] = points[i] as [number, number];
+      const [x2, y2] = points[(i + 1) % points.length] as [number, number];
+      sum += x1 * y2 - x2 * y1;
+    }
+    total += sum / 2;
+  }
+  return Math.abs(total);
+}
+
+function pathRingsAbsolute(
+  path: string,
+): Array<Array<readonly [number, number]>> {
+  const rings: Array<Array<readonly [number, number]>> = [];
+  for (const ringPath of path.match(/M[^M]*/g) ?? []) {
+    const points = decodePath(ringPath);
+    if (points.length < 3) continue;
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (
+      first !== undefined &&
+      last !== undefined &&
+      first[0] === last[0] &&
+      first[1] === last[1]
+    ) {
+      points.pop();
+    }
+    if (points.length >= 3) rings.push(points);
+  }
+  return rings;
+}
+
+function signedShoelace(
+  ring: ReadonlyArray<readonly [number, number]>,
+): number {
+  let sum = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const [x1, y1] = ring[i] as [number, number];
+    const [x2, y2] = ring[(i + 1) % ring.length] as [number, number];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return sum / 2;
+}
+
+function outerRingsOf(
+  rings: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+): Array<ReadonlyArray<readonly [number, number]>> {
+  let dominantSign = 0;
+  let largestAbs = -1;
+  for (const ring of rings) {
+    const area = signedShoelace(ring);
+    const abs = Math.abs(area);
+    if (abs > largestAbs) {
+      largestAbs = abs;
+      dominantSign = Math.sign(area);
+    }
+  }
+  return rings.filter(
+    (ring) => Math.sign(signedShoelace(ring)) === dominantSign,
+  );
+}
+
+function pointInRing(
+  point: readonly [number, number],
+  ring: ReadonlyArray<readonly [number, number]>,
+): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i] as [number, number];
+    const [xj, yj] = ring[j] as [number, number];
+    const crosses =
+      yi > point[1] !== yj > point[1] &&
+      point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi) + xi;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+function labelOnNonLargestOuterRatio(
+  path: string,
+  label: { readonly x: number; readonly y: number },
+): number | undefined {
+  const outers = outerRingsOf(pathRingsAbsolute(path));
+  if (outers.length <= 1) return undefined;
+  let maxAbs = 0;
+  let labelAbs = 0;
+  let found = false;
+  for (const ring of outers) {
+    const abs = Math.abs(signedShoelace(ring));
+    if (abs > maxAbs) maxAbs = abs;
+    if (pointInRing([label.x, label.y], ring)) {
+      labelAbs = abs;
+      found = true;
+    }
+  }
+  if (!found || maxAbs === 0) return undefined;
+  const ratio = labelAbs / maxAbs;
+  if (ratio >= 1) return undefined;
+  return Math.round(ratio * 10_000) / 10_000;
+}
+
+async function multiPartLabelsOffLargest(): Promise<Record<string, number>> {
+  const misses: Record<string, number> = {};
+  const record = (
+    map: string,
+    code: string,
+    ratio: number | undefined,
+  ): void => {
+    if (ratio === undefined) return;
+    misses[`${map}:${code}`] = ratio;
+  };
+  for (const { letter, map } of await loadAllCountyMaps()) {
+    for (const county of map.counties) {
+      record(
+        letter,
+        county.region1Letter + county.firstSuffix,
+        labelOnNonLargestOuterRatio(county.path, county.label),
+      );
+    }
+  }
+  const warsaw = await loadWarsawMap();
+  for (const district of warsaw.districts) {
+    record(
+      'W-districts',
+      district.name,
+      labelOnNonLargestOuterRatio(district.path, district.label),
+    );
+  }
+  const country = await loadCountryMap();
+  for (const county of country.counties) {
+    record(
+      'country',
+      county.region1Letter + county.firstSuffix,
+      labelOnNonLargestOuterRatio(county.path, county.label),
+    );
+  }
+  return misses;
+}
+
 /** Distinct vertices: per ring, drop the closing duplicate when last equals first. */
 function ringVertexCount(path: string): number {
   let total = 0;
@@ -128,7 +273,7 @@ const CAPITAL_LABELS = [
   ['O', 'P', 377, 659],
   ['R', 'Z', 765, 751],
   ['B', 'I', 848, 282],
-  ['G', 'D', 465, 101],
+  ['G', 'D', 445, 112],
   ['S', 'K', 480, 725],
   ['T', 'K', 628, 629],
   ['N', 'O', 607, 196],
@@ -223,6 +368,28 @@ describe('county maps', () => {
         expect(county.label.radius).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('puts the label of every multi-part county on its largest part', async () => {
+    expect(await multiPartLabelsOffLargest()).toEqual({});
+  });
+
+  it('removes the internal sea waters from the coastal counties of Pomeranian', async () => {
+    const map = await countyMapLoaders['G']();
+    const byCode = new Map(
+      map.counties.map((c) => [`${c.region1Letter}${c.firstSuffix}`, c]),
+    );
+    const gka = byCode.get('GKA');
+    if (gka === undefined) throw new Error('GKA missing');
+    const base = pathArea(gka.path);
+    const ratios = Object.fromEntries(
+      (['GKS', 'GPU', 'GD', 'GA'] as const).map((code) => {
+        const county = byCode.get(code);
+        if (county === undefined) throw new Error(`${code} missing`);
+        return [code, Math.round((pathArea(county.path) / base) * 100) / 100];
+      }),
+    );
+    expect(ratios).toEqual({ GKS: 1.04, GPU: 0.52, GD: 0.24, GA: 0.12 });
   });
 
   it('maps the 18 Warsaw districts named in D-57', async () => {

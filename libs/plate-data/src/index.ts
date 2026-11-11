@@ -2,6 +2,7 @@ export { fullCodes } from './lib/pl/full-codes';
 export {
   countyMapLoaders,
   countyMapProvenance,
+  countyMapWaterProvenance,
   loadWarsawDistrictMap,
 } from './lib/pl/maps/county-maps';
 export { loadCountryMap } from './lib/pl/maps/country-map';
