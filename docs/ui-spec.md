@@ -32,7 +32,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 ### Result — `/plate/:plate`
 
 - The URL holds the plate, so the page can be shared.
-- Shows: the plate on a car (D-54); the reading — voivodeship, county, district and plate type, or two readings when the characters allow both (D-54); a button that opens the voivodeship map in a dialog (D-54 Update #161, D-61 Update #161); a link to the voivodeship page at the matching code (D-54 Update #141); a card with the voivodeship and five of its codes; and the map of Poland with the voivodeship tinted and the county marked (D-64).
+- Shows: the plate on a car (D-54); the reading — voivodeship, county, district and plate type, or two readings when the characters allow both (D-54); a button that opens the voivodeship map in a dialog (D-54 Update #161, D-61 Update #161); a link to the voivodeship page at the matching code (D-54 Update #141); a card with the voivodeship and five of its codes; and the map of Poland with the voivodeship tinted and clickable, the county ringed, and the 18 capitals marked, labelled "Seat (CODE)" like the county (D-64 Update #161).
 - For m.st. Warszawa with a five-character vehicle part, a District row (or Possible districts) follows the powiat; the names come from unofficial data (D-57).
 - Image: an SVG car with the plate drawn in its plate area. From Epic 4 (#92), a photo taken or uploaded in this session replaces the car until reload; a shared link always shows the SVG car: photos never leave the device (D-04 Update #92).
 - Layout: cards (D-67). From 1200 px two columns, 5:6: the car card and the voivodeship card on the left, the map card on the right; below 1200 px one column of at most 40rem in the same order. In the car card the reading sits beside the car once the card is 33rem wide, else under it. Below 768 px the map keeps its 328 px width at 360 px (D-54 Update #161).
@@ -71,7 +71,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 
 - Plate: read-only; renders a plate in the style of a real Polish plate (blue PL strip, plate font). Used on the result page over the SVG car, on the voivodeship page and in the registry table.
 - Plate input: the editable variant of the plate component, used on the home page.
-- Map: SVG county map of one voivodeship, or of Warsaw with its 18 districts, drawn from bundled geometry (D-60) with no requests beyond the app's own chunks; areas filled per result, a label where the code fits, and a tooltip with the county, its codes and a link to its row (D-61). The map of Poland (D-62) uses the same component: the voivodeship tinted, the powiat filled and ringed with its code above the ring, the codes of the voivodeship capitals, and the same tooltip (D-64).
+- Map: SVG county map of one voivodeship, or of Warsaw with its 18 districts, drawn from bundled geometry (D-60) with no requests beyond the app's own chunks; areas filled per result, a label where the code fits, and a tooltip with the county, its codes and a link to its row (D-61). The map of Poland (D-62) uses the same component without county interaction: faint county lines, the voivodeship outlines, the voivodeship tinted as one button that opens the dialog, the powiat filled and ringed, and "Seat (CODE)" labels with markers for the 18 capitals (D-64 Update #161).
 
 ## Testing
 
