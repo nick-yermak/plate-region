@@ -1,5 +1,6 @@
 import type { CandidatesResult, PlateType } from '@plate-region/plate-domain';
 import type {
+  CountryMap,
   CountyMap,
   Region1,
   Region2,
@@ -18,16 +19,19 @@ export type MapTarget =
       readonly kind: 'warsaw';
       readonly region1: Region1;
       readonly districts: readonly [string, ...string[]];
+      readonly filled: Region2;
     };
 
 export type LoadedMap =
   | {
       readonly target: Extract<MapTarget, { kind: 'voivodeship' }>;
       readonly map: CountyMap;
+      readonly country: CountryMap;
     }
   | {
       readonly target: Extract<MapTarget, { kind: 'warsaw' }>;
       readonly map: WarsawDistrictMap;
+      readonly country: CountryMap;
     };
 
 export interface VoivodeshipLink {

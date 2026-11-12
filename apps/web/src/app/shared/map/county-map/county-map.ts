@@ -58,9 +58,32 @@ export class CountyMapComponent {
     this.view().areas.filter((area) => area.filled),
   );
 
-  protected readonly visibleLabels = computed(() =>
-    this.view().areas.filter((area) => area.label.visible),
-  );
+  protected readonly overlayLabels = computed(() => {
+    const { width, height } = this.view().viewBox;
+    return this.view()
+      .areas.filter((area) => area.label.visible)
+      .map((area) => ({
+        id: area.id,
+        text: area.label.text,
+        x: `${(area.label.x / width) * 100}%`,
+        y: `${(area.label.y / height) * 100}%`,
+        filled: area.filled,
+        wideOnly: area.label.wideOnly,
+        aboveMarker: area.label.aboveMarker,
+      }));
+  });
+
+  protected readonly markerPosition = computed(() => {
+    const marker = this.view().marker;
+    if (marker === undefined) {
+      return undefined;
+    }
+    const { width, height } = this.view().viewBox;
+    return {
+      cx: `${(marker.x / width) * 100}%`,
+      cy: `${(marker.y / height) * 100}%`,
+    };
+  });
 
   protected readonly hostWidth = computed(() => {
     const { width, height } = this.view().viewBox;

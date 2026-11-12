@@ -2,6 +2,12 @@ export const LABEL_FONT_PX = 11;
 export const REFERENCE_MAP_SIZE_PX = 328;
 export const INTER_UNITS_PER_EM = 2048;
 export const INTER_CAP_HEIGHT = 1490;
+export const LABEL_HALO_PX = 3;
+export const MARKER_RADIUS_PX = 7;
+export const MARKER_STROKE_PX = 2;
+export const MARKER_HALO_PX = 4;
+// Radius 7 + half the 4 px halo = 9 px edge, + 3 px gap.
+export const MARKER_LABEL_BASELINE_PX = 12;
 
 // Advance widths of InterVariable.woff2 instanced at wght 600 (fontTools), units per em 2048.
 export const INTER_600_ADVANCES: Readonly<Record<string, number>> = {
@@ -40,11 +46,10 @@ export function labelFontSize(viewBoxHeight: number): number {
   );
 }
 
-export function labelFits(
-  code: string,
-  radius: number,
-  fontSize: number,
-): boolean {
+export function labelSizeEm(code: string): {
+  width: number;
+  height: number;
+} {
   let sum = 0;
   for (const ch of code) {
     const advance = INTER_600_ADVANCES[ch];
@@ -53,7 +58,17 @@ export function labelFits(
     }
     sum += advance;
   }
-  const width = (sum / INTER_UNITS_PER_EM) * fontSize;
-  const height = (INTER_CAP_HEIGHT / INTER_UNITS_PER_EM) * fontSize;
-  return Math.hypot(width / 2, height / 2) <= radius;
+  return {
+    width: sum / INTER_UNITS_PER_EM,
+    height: INTER_CAP_HEIGHT / INTER_UNITS_PER_EM,
+  };
+}
+
+export function labelFits(
+  code: string,
+  radius: number,
+  fontSize: number,
+): boolean {
+  const { width, height } = labelSizeEm(code);
+  return Math.hypot((width * fontSize) / 2, (height * fontSize) / 2) <= radius;
 }

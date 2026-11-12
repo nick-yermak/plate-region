@@ -12,14 +12,18 @@ import {
 
 import type { LoadedMap } from '../plate.types';
 import { plateDisplayText, resultView } from '../result-view';
-import { loadResultMap, resultMapTarget } from '../result-map';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
+import { RESULT_MAP_LOADER, resultMapTarget } from '../result-map';
 import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
-import { voivodeshipMapView, warsawMapView } from '../../shared/map/map-view';
 import { CarIllustrationComponent } from '../car-illustration/car-illustration';
+import {
+  countryMapView,
+  voivodeshipMapView,
+  warsawMapView,
+} from '../../shared/map/map-view';
 
 function isWarsawLoaded(
   loaded: LoadedMap,
@@ -44,6 +48,7 @@ function isWarsawLoaded(
 })
 export class PlatePage {
   private readonly languageService = inject(LanguageService);
+  private readonly loadMap = inject(RESULT_MAP_LOADER);
 
   readonly plate = input.required<string>();
 
@@ -78,6 +83,19 @@ export class PlatePage {
     );
   });
 
+  protected readonly countryView = computed(() => {
+    const loaded = this.loadedMap();
+    if (loaded === undefined || loaded.target !== this.mapTarget()) {
+      return undefined;
+    }
+    return countryMapView(
+      loaded.country,
+      loaded.target.region1,
+      loaded.target.filled,
+      this.language(),
+    );
+  });
+
   private readonly loadedMap = signal<LoadedMap | undefined>(undefined);
 
   constructor() {
@@ -91,7 +109,7 @@ export class PlatePage {
       onCleanup(() => {
         current = false;
       });
-      loadResultMap(target).then(
+      this.loadMap(target).then(
         (loaded) => {
           if (current) {
             this.loadedMap.set(loaded);

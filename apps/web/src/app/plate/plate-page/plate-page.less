@@ -14,6 +14,12 @@
   aspect-ratio: 1;
 }
 
+// The country view box (D-62), reserved while loading.
+.country-map-box {
+  width: min(100%, 650px);
+  aspect-ratio: 1000 / 938;
+}
+
 @media (width >= 992px) {
   .result-media {
     grid-template-columns: 30rem calc(30rem * 732 / 984);

@@ -29,4 +29,11 @@
   } @else {
     <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
   }
+  @if (mapTarget()) {
+    <div class="country-map-box">
+      @if (countryView(); as country) {
+        <app-county-map [view]="country" />
+      }
+    </div>
+  }
 </nz-flex>

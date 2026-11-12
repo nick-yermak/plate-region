@@ -1,3 +1,5 @@
+import { InjectionToken } from '@angular/core';
+
 import {
   candidatesFor,
   normalisePlateInput,
@@ -5,7 +7,9 @@ import {
 } from '@plate-region/plate-domain';
 import {
   countyMapLoaders,
+  loadCountryMap,
   loadWarsawDistrictMap,
+  type CountryMap,
   type CountyMap,
   type UnofficialName,
   type WarsawDistrictMap,
@@ -34,6 +38,7 @@ export function resultMapTarget(plate: string): MapTarget | undefined {
           kind: 'warsaw',
           region1: result.region1,
           districts,
+          filled: result.region2,
         };
       }
       return {
@@ -82,14 +87,26 @@ function candidatesMapTarget(plate: string): MapTarget | undefined {
 
 export async function loadResultMap(target: MapTarget): Promise<LoadedMap> {
   if (target.kind === 'warsaw') {
-    const map: WarsawDistrictMap = await loadWarsawDistrictMap();
-    return { target, map };
+    const [map, country]: [WarsawDistrictMap, CountryMap] = await Promise.all([
+      loadWarsawDistrictMap(),
+      loadCountryMap(),
+    ]);
+    return { target, map, country };
   }
   const letter = target.region1.letters[0];
   const load = countyMapLoaders[letter];
   if (load === undefined) {
     throw new Error(`no county map loader for ${letter}`);
   }
-  const map: CountyMap = await load();
-  return { target, map };
+  const [map, country]: [CountyMap, CountryMap] = await Promise.all([
+    load(),
+    loadCountryMap(),
+  ]);
+  return { target, map, country };
 }
+
+// A token so specs can hold a load without mocking the module (the Angular unit-test builder rejects `vi.mock` of relative imports).
+export const RESULT_MAP_LOADER = new InjectionToken<typeof loadResultMap>(
+  'RESULT_MAP_LOADER',
+  { providedIn: 'root', factory: () => loadResultMap },
+);

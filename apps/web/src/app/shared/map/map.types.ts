@@ -9,9 +9,11 @@ export interface MapLink {
 
 export interface MapAreaLabel {
   readonly x: number;
-  readonly baselineY: number;
+  readonly y: number;
   readonly text: string;
   readonly visible: boolean;
+  readonly wideOnly: boolean;
+  readonly aboveMarker: boolean;
 }
 
 export interface MapArea {
@@ -19,6 +21,7 @@ export interface MapArea {
   readonly id: string;
   readonly path: string;
   readonly filled: boolean;
+  readonly tinted: boolean;
   /** Label point and tooltip anchor. */
   readonly anchor: { readonly x: number; readonly y: number };
   readonly label: MapAreaLabel;
@@ -32,6 +35,8 @@ export interface MapView {
   readonly outline: string;
   readonly neighbours: readonly string[];
   readonly areas: readonly MapArea[];
-  readonly labelFontSize: number;
+  readonly borders?: string;
+  readonly labelHalo: boolean;
+  readonly marker?: { readonly x: number; readonly y: number };
   readonly ariaLabel: TranslatableMessage;
 }
