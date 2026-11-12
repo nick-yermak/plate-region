@@ -1,0 +1,18 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  background: var(--pr-surface);
+  border: 1px solid var(--pr-border-split);
+  border-radius: var(--pr-border-radius);
+  padding: var(--pr-padding-md);
+}
+
+:host.card-info {
+  background: var(--pr-row-target-bg);
+}
+
+@media (width >= 768px) {
+  :host {
+    padding: var(--pr-padding-lg);
+  }
+}

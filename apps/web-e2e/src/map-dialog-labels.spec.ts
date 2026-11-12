@@ -7,7 +7,7 @@ import {
 
 async function openDialogForPlate(page: Page, plate: string): Promise<void> {
   await page.goto(`/plate/${encodeURIComponent(plate)}`);
-  const button = page.locator('.map-box .map-dialog-open');
+  const button = page.locator('button.map-dialog-open');
   await expect(button).toBeVisible();
   await page.evaluate(() => document.fonts.load('600 12px Inter'));
   await page.evaluate(() => document.fonts.ready);

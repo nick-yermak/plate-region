@@ -255,38 +255,92 @@ describe('PlatePage', () => {
     });
   });
 
-  it('puts the map dialog button in the car row instead of the voivodeship map', async () => {
-    const withCounty = await renderPage('GMB 12345');
+  it('lays out the car, voivodeship and map cards for DW 12345', async () => {
+    const fixture = await renderPage('DW 12345');
     await vi.waitFor(() => {
       expect(
-        withCounty.nativeElement.querySelector(
-          '.country-map-box app-county-map',
-        ),
+        fixture.nativeElement.querySelector('.country-map-box app-county-map'),
       ).not.toBeNull();
     });
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('h1')?.textContent?.trim()).toBe('Wrocław');
+    const carCard = root.querySelector('app-card');
+    expect(carCard?.querySelector('app-car-illustration')).not.toBeNull();
+    expect(carCard?.querySelector('app-result-reading')).not.toBeNull();
+    const mapButton = root.querySelector(
+      'app-map-dialog-open-button button.map-dialog-open.ant-btn-primary',
+    );
+    expect(mapButton?.getAttribute('type')).toBe('button');
+    expect(mapButton?.textContent?.replace(/\s+/g, ' ').trim()).toContain(
+      'Show the county on the map',
+    );
+    const voivodeshipHeading = [
+      ...root.querySelectorAll('app-voivodeship-card h2'),
+    ].find((node) => node.textContent?.includes('Lower Silesian Voivodeship'));
+    expect(voivodeshipHeading).not.toBeUndefined();
+    expect(root.querySelector('app-card.card-info')).not.toBeNull();
+    expect(root.querySelector('app-voivodeship-card')?.textContent).toContain(
+      'DW',
+    );
     expect(
-      withCounty.nativeElement.querySelector('.map-box app-county-map'),
-    ).toBeNull();
-    expect(
-      withCounty.nativeElement
-        .querySelector('.map-box .map-dialog-open')
-        ?.textContent?.trim(),
-    ).toBe('Show the county on the map');
+      [...root.querySelectorAll('h2')].some(
+        (node) => node.textContent?.trim() === 'Poland – voivodeships',
+      ),
+    ).toBe(true);
+  });
 
-    await TestBed.resetTestingModule();
-    const withoutCounty = await renderPage('G 12345');
+  it('hides the voivodeship card, map card and map button for HA 12345', async () => {
+    const fixture = await renderPage('HA12345');
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('app-card')).toHaveLength(1);
+    expect(root.querySelector('app-voivodeship-card')).toBeNull();
+    expect(root.querySelector('.country-map-box')).toBeNull();
+    expect(root.querySelector('.map-dialog-open')).toBeNull();
+  });
+
+  it('shows two reading links and one map button for the ambiguous example', async () => {
+    const fixture = await renderPage('WOO1A');
+    const root = fixture.nativeElement as HTMLElement;
+    const links = root.querySelectorAll('app-result-reading a.ant-btn');
+    expect(links).toHaveLength(2);
+    expect(root.querySelectorAll('app-voivodeship-card')).toHaveLength(1);
+    const mapButtons = root.querySelectorAll('app-map-dialog-open-button');
+    expect(mapButtons).toHaveLength(1);
+    const lastReading = root.querySelectorAll('app-result-reading')[1];
+    const mapButton = mapButtons[0];
+    expect(lastReading).toBeTruthy();
+    expect(mapButton).toBeTruthy();
+    if (!lastReading || !mapButton) {
+      return;
+    }
+    expect(
+      lastReading.compareDocumentPosition(mapButton) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('shows the voivodeship card and map button for GD candidates', async () => {
+    const fixture = await renderPage('GD');
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('app-voivodeship-card')).not.toBeNull();
+    expect(root.querySelector('button.map-dialog-open')).not.toBeNull();
+  });
+
+  it('labels the map button for a voivodeship-only plate', async () => {
+    const fixture = await renderPage('G 12345');
     await vi.waitFor(() => {
       expect(
-        withoutCounty.nativeElement.querySelector(
-          '.country-map-box app-county-map',
-        ),
+        fixture.nativeElement.querySelector('.country-map-box app-county-map'),
       ).not.toBeNull();
     });
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('app-voivodeship-card')).not.toBeNull();
     expect(
-      withoutCounty.nativeElement
-        .querySelector('.map-box .map-dialog-open')
-        ?.textContent?.trim(),
-    ).toBe('Show the voivodeship on the map');
+      root
+        .querySelector('button.map-dialog-open')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim(),
+    ).toContain('Show the voivodeship on the map');
   });
 
   it('renders no dialog component before the first map button press', async () => {
@@ -300,7 +354,7 @@ describe('PlatePage', () => {
       fixture.nativeElement.querySelector('app-voivodeship-map-dialog'),
     ).toBeNull();
     const button = fixture.nativeElement.querySelector(
-      '.map-box .map-dialog-open',
+      'button.map-dialog-open',
     ) as HTMLButtonElement | null;
     expect(button).not.toBeNull();
     button?.click();

@@ -105,18 +105,20 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
     ['J', '22 możliwe powiaty'],
   ] as const) {
     await page.goto(`/plate/${input}`);
-    await expect(main.getByRole('heading', { level: 2 })).toHaveText(text);
+    await expect(
+      main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
+    ).toHaveText(text);
   }
 
   await page.getByRole('button', { name: 'English' }).click();
   await page.goto('/plate/GW');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    '1 possible county',
-  );
+  await expect(
+    main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
+  ).toHaveText('1 possible county');
   await page.goto('/plate/GK');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    '3 possible counties',
-  );
+  await expect(
+    main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
+  ).toHaveText('3 possible counties');
 });
 
 test('i18n-active-dictionary-once', { tag: '@desktop' }, async ({ page }) => {

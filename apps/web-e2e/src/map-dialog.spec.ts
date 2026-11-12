@@ -17,7 +17,7 @@ async function boxOf(locator: Locator): Promise<{
 }
 
 async function openMapDialog(page: Page): Promise<Locator> {
-  const button = page.locator('.map-box .map-dialog-open');
+  const button = page.locator('button.map-dialog-open');
   await expect(button).toBeVisible();
   await button.click();
   const dialog = page.locator('.pr-voivodeship-map-dialog-wrap .ant-modal');
@@ -44,7 +44,7 @@ function dialogMargins(
 
 test('map-dialog-desktop', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/GMB%2012345');
-  const button = page.locator('.map-box .map-dialog-open');
+  const button = page.locator('button.map-dialog-open');
   await expect(button).toBeVisible();
   await button.focus();
   const dialog = await openMapDialog(page);
@@ -82,7 +82,7 @@ test('map-dialog-tablet', { tag: '@tablet' }, async ({ page }) => {
 
 test('map-dialog-mobile', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/GMB%2012345');
-  const button = page.locator('.map-box .map-dialog-open');
+  const button = page.locator('button.map-dialog-open');
   await button.tap();
   const dialog = page.locator('.ant-modal').first();
   await expect(dialog).toBeVisible();
@@ -102,7 +102,7 @@ test('map-dialog-mobile', { tag: '@mobile' }, async ({ page }) => {
   await expect(panel.locator('.heading')).not.toHaveText(before);
 
   await page.goto(`/plate/${encodeURIComponent(TALLEST_MODULE_PLATE)}`);
-  await page.locator('.map-box .map-dialog-open').tap();
+  await page.locator('button.map-dialog-open').tap();
   const tallDialog = page.locator('.ant-modal').first();
   await expect(tallDialog).toBeVisible();
   const tallBox = await boxOf(tallDialog);

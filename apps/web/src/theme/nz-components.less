@@ -47,6 +47,27 @@
   }
 }
 
+// Library primary fails WCAG AA on white in default/hover (light) and default/active (dark).
+// Theme files set @pr-btn-primary-*: light @blue-7/8/9, dark @blue-5/4/3 (darker on hover/active).
+.ant-btn-primary {
+  color: #fff;
+  background: @pr-btn-primary-bg;
+  border-color: @pr-btn-primary-bg;
+
+  &:not([disabled]):hover,
+  &:not([disabled]):focus {
+    color: #fff;
+    background: @pr-btn-primary-hover;
+    border-color: @pr-btn-primary-hover;
+  }
+
+  &:not([disabled]):active {
+    color: #fff;
+    background: @pr-btn-primary-active;
+    border-color: @pr-btn-primary-active;
+  }
+}
+
 // Base styles clear link outlines; the result page is the first plain <a> use (WCAG 2.4.7).
 a:focus-visible {
   outline: 2px solid currentColor;

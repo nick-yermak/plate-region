@@ -1,11 +1,10 @@
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NzFlexDirective } from 'ng-zorro-antd/flex';
-import { NzButtonComponent } from 'ng-zorro-antd/button';
 import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   input,
   signal,
@@ -16,7 +15,9 @@ import { parsePlate } from '@plate-region/plate-domain';
 
 import type { LoadedMap } from '../plate.types';
 import { countryMapView } from '../../shared/map/map-view';
+import { CardComponent } from '../../shared/card/card/card';
 import { plateDisplayText, resultView } from '../result-view';
+import { voivodeshipCardView } from '../voivodeship-card-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
 import { RESULT_MAP_LOADER, resultMapTarget } from '../result-map';
@@ -24,6 +25,8 @@ import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
 import { CarIllustrationComponent } from '../car-illustration/car-illustration';
+import { VoivodeshipCardComponent } from '../voivodeship-card/voivodeship-card';
+import { MapDialogOpenButtonComponent } from '../map-dialog-open-button/map-dialog-open-button';
 import { VoivodeshipMapDialogComponent } from '../voivodeship-map-dialog/voivodeship-map-dialog';
 
 function isWarsawLoaded(
@@ -42,13 +45,14 @@ function plateCodeOf(plate: string): string | undefined {
   imports: [
     CandidatesListComponent,
     CarIllustrationComponent,
+    CardComponent,
     CountyMapComponent,
-    NzButtonComponent,
-    NzFlexDirective,
+    MapDialogOpenButtonComponent,
     PlateComponent,
     ResultReadingComponent,
     RouterLink,
     TranslocoPipe,
+    VoivodeshipCardComponent,
     // Listed for the @defer block; the bundler loads it only when deferred.
     VoivodeshipMapDialogComponent,
   ],
@@ -70,6 +74,26 @@ export class PlatePage {
   protected readonly plateText = computed(() => plateDisplayText(this.plate()));
 
   protected readonly mapTarget = computed(() => resultMapTarget(this.plate()));
+
+  protected readonly voivodeshipCard = computed(() => {
+    const target = this.mapTarget();
+    if (target === undefined) {
+      return undefined;
+    }
+    const page = this.view();
+    let code: string | undefined;
+    if (page.kind === 'readings') {
+      code = page.readings[0]?.link.fragment;
+    } else if (page.kind === 'candidates') {
+      code = page.link?.fragment;
+    }
+    return voivodeshipCardView(
+      target.region1,
+      target.filled,
+      code,
+      this.language(),
+    );
+  });
 
   protected readonly dialogOpen = signal(false);
   protected readonly dialogRequested = signal(false);
@@ -127,8 +151,9 @@ export class PlatePage {
     );
   });
 
-  private readonly mapDialogButton =
-    viewChild<HTMLButtonElement>('mapDialogButton');
+  private readonly mapDialogButton = viewChild('mapDialogButton', {
+    read: ElementRef,
+  });
 
   private readonly loadedMap = signal<LoadedMap | undefined>(undefined);
 
@@ -182,6 +207,9 @@ export class PlatePage {
 
   protected onDialogClosed(): void {
     this.dialogOpen.set(false);
-    this.mapDialogButton()?.focus();
+    const host = this.mapDialogButton()?.nativeElement as
+      | HTMLElement
+      | undefined;
+    host?.querySelector('button')?.focus();
   }
 }

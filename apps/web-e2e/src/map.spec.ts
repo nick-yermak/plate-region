@@ -16,7 +16,7 @@ async function boxOf(locator: Locator): Promise<{
 }
 
 async function openVoivodeshipDialog(page: Page): Promise<Locator> {
-  const button = page.locator('.map-box .map-dialog-open');
+  const button = page.locator('button.map-dialog-open');
   await expect(button).toBeVisible();
   await button.click();
   const map = page.locator('.ant-modal app-county-map');
@@ -127,15 +127,7 @@ async function expectCountryContrast(page: Page): Promise<void> {
 
 test('map-result-powiat-highlight', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
-  const button = page.locator('.map-box .map-dialog-open');
-  await expect(button).toBeVisible();
-  const car = page.locator('app-car-illustration');
-  const mapBox = page.locator('.map-box');
-  const carBox = await boxOf(car);
-  const box = await boxOf(mapBox);
-  expect(Math.abs(carBox.width - 480)).toBeLessThanOrEqual(0.5);
-  expect(Math.abs(box.y - carBox.y)).toBeLessThanOrEqual(0.5);
-  expect(box.x).toBeGreaterThanOrEqual(carBox.x + carBox.width + 15.5);
+  await expect(page.locator('button.map-dialog-open')).toBeVisible();
 
   const map = await openVoivodeshipDialog(page);
   await expect(
@@ -171,14 +163,9 @@ test('map-result-warsaw-districts', { tag: '@desktop' }, async ({ page }) => {
 
 test('map-mobile-interaction', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/CGD%2012345');
-  const car = page.locator('app-car-illustration');
-  const mapBox = page.locator('.map-box');
-  const carBox = await boxOf(car);
-  const box = await boxOf(mapBox);
-  expect(box.y).toBeGreaterThanOrEqual(carBox.y + carBox.height - 0.5);
-  await expect(page.locator('.map-box .map-dialog-open')).toBeVisible();
+  await expect(page.locator('button.map-dialog-open')).toBeVisible();
 
-  await page.locator('.map-box .map-dialog-open').tap();
+  await page.locator('button.map-dialog-open').tap();
   const map = page.locator('.ant-modal app-county-map');
   await expect(map).toBeVisible();
   const panel = page.locator('.ant-modal .map-dialog-panel');
@@ -204,15 +191,12 @@ test('map-country-desktop', { tag: '@desktop' }, async ({ page }) => {
   ).toBeVisible();
   const country = page.locator('.country-map-box');
   const car = page.locator('app-car-illustration');
-  const readings = page.locator('app-result-reading');
   const countryBox = await boxOf(country);
   const carBox = await boxOf(car);
-  const lastReading = readings.last();
-  const readingBox = await boxOf(lastReading);
-  expect(Math.abs(countryBox.width - 650)).toBeLessThanOrEqual(0.5);
-  expect(Math.abs(countryBox.height - 609.7)).toBeLessThanOrEqual(0.5);
-  expect(Math.abs(countryBox.x - carBox.x)).toBeLessThanOrEqual(0.5);
-  expect(countryBox.y).toBeGreaterThanOrEqual(readingBox.y + readingBox.height);
+  // Two-column result grid from 1200 px: map card on the right, width min(100%, 650).
+  expect(Math.abs(countryBox.width - 584.921875)).toBeLessThanOrEqual(0.5);
+  expect(Math.abs(countryBox.height - 548.65625)).toBeLessThanOrEqual(0.5);
+  expect(countryBox.x).toBeGreaterThan(carBox.x + carBox.width - 1);
   const map = country.locator('app-county-map');
   await expect(map.locator('path.area-tinted')).toHaveCount(30);
   await expect(map.locator('path.area-filled')).toHaveCount(1);

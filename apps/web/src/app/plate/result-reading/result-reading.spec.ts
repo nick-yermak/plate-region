@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
@@ -116,24 +117,71 @@ describe('ResultReadingComponent', () => {
     );
   });
 
-  it('links to the voivodeship page with a county fragment', async () => {
+  it('shows one aria-hidden icon per row', async () => {
+    const fixture = await render(cityReading);
+    const rows = fixture.nativeElement.querySelectorAll('dl > div');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const icon = row.querySelector('.anticon[aria-hidden="true"]');
+      expect(icon).not.toBeNull();
+    }
+  });
+
+  it('links with the codes button name and a fragment', async () => {
     const fixture = await render(cityReading);
     const root = fixture.nativeElement as HTMLElement;
-    const link = root.querySelector<HTMLAnchorElement>('a');
+    const link = root.querySelector<HTMLAnchorElement>('a.ant-btn');
+    expect(link?.classList.contains('ant-btn')).toBe(true);
     expect(link?.getAttribute('href')).toBe('/voivodeship/dolnoslaskie#DW');
-    expect(link?.textContent?.trim()).toBe(
-      testingText('en', 'plate.reading.countyLink', { name: 'Wrocław' }),
+    expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toContain(
+      testingText('en', 'plate.reading.codesLink'),
     );
   });
 
-  it('links to the voivodeship page without a fragment', async () => {
+  it('links without a fragment', async () => {
     const fixture = await render(voivodeshipOnlyReading);
     const root = fixture.nativeElement as HTMLElement;
-    const link = root.querySelector<HTMLAnchorElement>('a');
+    const link = root.querySelector<HTMLAnchorElement>('a.ant-btn');
     expect(link?.getAttribute('href')).toBe('/voivodeship/mazowieckie');
-    expect(link?.textContent?.trim()).toBe(
-      testingText('en', 'plate.reading.voivodeshipLink', { name: 'Masovian' }),
+    expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toContain(
+      testingText('en', 'plate.reading.codesLink'),
     );
+  });
+
+  it('renders projected content before the codes link', async () => {
+    @Component({
+      imports: [ResultReadingComponent],
+      template: `
+        <app-result-reading [reading]="reading" [language]="'en'">
+          <button type="button" class="projected">Map</button>
+        </app-result-reading>
+      `,
+    })
+    class HostComponent {
+      readonly reading = cityReading;
+    }
+
+    await TestBed.configureTestingModule({
+      imports: [
+        HostComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [provideRouter([])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(HostComponent);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const projected = root.querySelector('.projected');
+    const link = root.querySelector('a.ant-btn');
+    expect(projected).not.toBeNull();
+    expect(link).not.toBeNull();
+    if (!projected || !link) {
+      return;
+    }
+    expect(
+      projected.compareDocumentPosition(link) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('renders the reading caption as an h2', async () => {

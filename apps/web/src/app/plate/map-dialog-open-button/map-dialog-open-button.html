@@ -1,0 +1,13 @@
+<button
+  nz-button
+  nzType="primary"
+  type="button"
+  class="map-dialog-open"
+  (click)="openClick.emit()"
+>
+  <span nz-icon nzType="global" nzTheme="outline" aria-hidden="true"></span>
+  {{
+    (filled() ? 'plate.showCountyOnMap' : 'plate.showVoivodeshipOnMap')
+      | transloco
+  }}
+</button>

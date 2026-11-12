@@ -41,7 +41,10 @@
       "possibleTypes": "Możliwe rodzaje tablicy",
       "countyValue": "{{name}} ({{kind}})",
       "countyLink": "{{name}} na stronie województwa",
-      "voivodeshipLink": "Strona województwa: {{name}}"
+      "codesLink": "Kody w województwie"
+    },
+    "voivodeshipCard": {
+      "codes": "Rejestracje zaczynające się m.in. od: {{codes}}"
     },
     "kind": {
       "city": "miasto na prawach powiatu",

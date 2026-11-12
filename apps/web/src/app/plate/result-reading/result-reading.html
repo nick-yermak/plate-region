@@ -3,34 +3,75 @@
 }
 <dl>
   @if (reading().powiat; as powiat) {
-    <dt>{{ 'plate.reading.county' | transloco }}</dt>
-    <dd>
-      @let kindLabel = powiat.kindKey | transloco;
-      {{
-        'plate.reading.countyValue'
-          | transloco: { name: powiat.name, kind: kindLabel }
-      }}
-    </dd>
+    <div>
+      <span nz-icon nzType="bank" nzTheme="outline" aria-hidden="true"></span>
+      <div>
+        <dt>{{ 'plate.reading.county' | transloco }}</dt>
+        <dd>
+          @let kindLabel = powiat.kindKey | transloco;
+          {{
+            'plate.reading.countyValue'
+              | transloco: { name: powiat.name, kind: kindLabel }
+          }}
+        </dd>
+      </div>
+    </div>
   }
   @if (reading().districts; as districts) {
-    <dt>
-      {{
-        (districts.length === 1
-          ? 'plate.reading.district'
-          : 'plate.reading.possibleDistricts'
-        ) | transloco
-      }}
-    </dt>
-    <dd>{{ districtsText() }}</dd>
+    <div>
+      <span
+        nz-icon
+        nzType="apartment"
+        nzTheme="outline"
+        aria-hidden="true"
+      ></span>
+      <div>
+        <dt>
+          {{
+            (districts.length === 1
+              ? 'plate.reading.district'
+              : 'plate.reading.possibleDistricts'
+            ) | transloco
+          }}
+        </dt>
+        <dd>{{ districtsText() }}</dd>
+      </div>
+    </div>
   }
-  <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
-  <dd>{{ reading().voivodeshipName }}</dd>
-  <dt>{{ reading().typesLabelKey | transloco }}</dt>
-  <dd>{{ typesText() }}</dd>
+  <div>
+    <span
+      nz-icon
+      nzType="environment"
+      nzTheme="outline"
+      aria-hidden="true"
+    ></span>
+    <div>
+      <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
+      <dd>{{ reading().voivodeshipName }}</dd>
+    </div>
+  </div>
+  <div>
+    <span nz-icon nzType="car" nzTheme="outline" aria-hidden="true"></span>
+    <div>
+      <dt>{{ reading().typesLabelKey | transloco }}</dt>
+      <dd>{{ typesText() }}</dd>
+    </div>
+  </div>
 </dl>
-<a
-  [routerLink]="['/voivodeship', reading().link.slug]"
-  [fragment]="reading().link.fragment"
->
-  {{ linkKey() | transloco: { name: linkName() } }}
-</a>
+<div class="actions">
+  <ng-content />
+  <a
+    nz-button
+    nzType="default"
+    [routerLink]="['/voivodeship', reading().link.slug]"
+    [fragment]="reading().link.fragment"
+  >
+    <span
+      nz-icon
+      nzType="unordered-list"
+      nzTheme="outline"
+      aria-hidden="true"
+    ></span>
+    {{ 'plate.reading.codesLink' | transloco }}
+  </a>
+</div>

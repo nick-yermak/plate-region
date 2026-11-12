@@ -1,54 +1,96 @@
 @let page = view();
-<nz-flex nzVertical nzGap="middle">
-  <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
-  <div class="result-media">
-    <app-car-illustration>
-      <app-plate [plate]="plateText()" />
-    </app-car-illustration>
-    @if (mapTarget(); as target) {
-      <nz-flex class="map-box" nzAlign="center" nzJustify="center">
-        <button
-          #mapDialogButton
-          nz-button
-          nzType="default"
-          type="button"
-          class="map-dialog-open"
-          (click)="openMapDialog()"
-        >
-          {{
-            (target.filled
-              ? 'plate.showCountyOnMap'
-              : 'plate.showVoivodeshipOnMap'
-            ) | transloco
-          }}
-        </button>
-      </nz-flex>
-    }
-  </div>
-  @if (page.kind === 'readings') {
-    @if (page.noteKey) {
-      <p>{{ page.noteKey | transloco }}</p>
-    }
-    @for (reading of page.readings; track $index) {
-      <app-result-reading [reading]="reading" [language]="language()" />
-    }
-  } @else if (page.kind === 'candidates') {
-    <app-candidates-list
-      [result]="page.candidates"
-      [link]="page.link"
-      [language]="language()"
-    />
-  } @else {
-    <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
-  }
-  @if (mapTarget()) {
-    <div class="country-map-box">
-      @if (countryView(); as country) {
-        <app-county-map [view]="country" />
+<h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
+@if (page.kind === 'message') {
+  <app-card class="car-card">
+    <div class="car-card-body">
+      <app-car-illustration>
+        <app-plate [plate]="plateText()" />
+      </app-car-illustration>
+      <div class="car-card-content">
+        <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
+      </div>
+    </div>
+  </app-card>
+} @else {
+  <div class="result-grid">
+    <div class="result-main">
+      <app-card class="car-card">
+        <div class="car-card-body">
+          <app-car-illustration>
+            <app-plate [plate]="plateText()" />
+          </app-car-illustration>
+          <div class="car-card-content">
+            @if (page.kind === 'readings') {
+              @if (page.noteKey) {
+                <p class="note">{{ page.noteKey | transloco }}</p>
+              }
+              @if (page.readings.length === 1) {
+                <app-result-reading
+                  [reading]="page.readings[0]"
+                  [language]="language()"
+                >
+                  @if (mapTarget(); as target) {
+                    <app-map-dialog-open-button
+                      #mapDialogButton
+                      [filled]="!!target.filled"
+                      (openClick)="openMapDialog()"
+                    />
+                  }
+                </app-result-reading>
+              } @else {
+                @for (reading of page.readings; track $index) {
+                  <app-result-reading
+                    [reading]="reading"
+                    [language]="language()"
+                  />
+                }
+                <div class="actions">
+                  @if (mapTarget(); as target) {
+                    <app-map-dialog-open-button
+                      #mapDialogButton
+                      [filled]="!!target.filled"
+                      (openClick)="openMapDialog()"
+                    />
+                  }
+                </div>
+              }
+            } @else {
+              <app-candidates-list
+                [result]="page.candidates"
+                [link]="page.link"
+                [language]="language()"
+              />
+              <div class="actions">
+                @if (mapTarget(); as target) {
+                  <app-map-dialog-open-button
+                    #mapDialogButton
+                    [filled]="!!target.filled"
+                    (openClick)="openMapDialog()"
+                  />
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </app-card>
+      @if (voivodeshipCard(); as card) {
+        <app-card tone="info">
+          <app-voivodeship-card [heading]="card.heading" [codes]="card.codes" />
+        </app-card>
       }
     </div>
-  }
-</nz-flex>
+    @if (mapTarget()) {
+      <app-card class="map-card">
+        <h2>{{ 'map.countryTitle' | transloco }}</h2>
+        <div class="country-map-box">
+          @if (countryView(); as country) {
+            <app-county-map [view]="country" />
+          }
+        </div>
+      </app-card>
+    }
+  </div>
+}
 @defer (when dialogRequested(); prefetch on idle) {
   @if (dialogLoaded(); as loaded) {
     <app-voivodeship-map-dialog

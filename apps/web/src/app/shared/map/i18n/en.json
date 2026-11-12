@@ -14,6 +14,7 @@
     "tableLink": "Show on the voivodeship page",
     "dialogTitle": "{{name}} Voivodeship",
     "dialogSubtitle": "Counties and registration codes",
-    "dialogClose": "Close"
+    "dialogClose": "Close",
+    "countryTitle": "Poland – voivodeships"
   }
 }

@@ -14,6 +14,7 @@
     "tableLink": "Pokaż na stronie województwa",
     "dialogTitle": "Województwo {{name}}",
     "dialogSubtitle": "Powiaty i kody rejestracyjne",
-    "dialogClose": "Zamknij"
+    "dialogClose": "Zamknij",
+    "countryTitle": "Polska – województwa"
   }
 }

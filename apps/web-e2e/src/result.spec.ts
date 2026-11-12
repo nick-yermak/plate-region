@@ -13,7 +13,7 @@ test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
     page.locator('app-car-illustration').getByText('DW 12345', { exact: true }),
   ).toBeVisible();
   await expect(
-    main.getByRole('link', { name: 'Wrocław on the voivodeship page' }),
+    main.getByRole('link', { name: 'Codes in the voivodeship' }),
   ).toHaveAttribute('href', '/voivodeship/dolnoslaskie#DW');
 });
 
@@ -54,7 +54,7 @@ test('result-share-reload', { tag: '@desktop' }, async ({ page }) => {
     page.locator('app-car-illustration > svg[aria-hidden="true"]'),
   ).toBeVisible();
   await expect(
-    main.getByRole('link', { name: 'Wrocław on the voivodeship page' }),
+    main.getByRole('link', { name: 'Codes in the voivodeship' }),
   ).toHaveAttribute('href', '/voivodeship/dolnoslaskie#DW');
 });
 
