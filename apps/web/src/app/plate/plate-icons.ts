@@ -1,3 +1,6 @@
+// Local copies of @ant-design/icons-angular 22.1.1 icons used only on the lazy
+// result route: importing them from `@ant-design/icons-angular/icons` puts them
+// in the initial bundle (D-28 Update #161).
 import type { IconDefinition } from '@ant-design/icons-angular';
 
 export const ApartmentOutline: IconDefinition = {
