@@ -61,6 +61,11 @@ export interface CountryMap {
   readonly counties: readonly CountryMapCounty[];
   /** The 18 voivodeship capitals, as rows of `counties`, in registry order. */
   readonly capitals: readonly CountryMapCounty[];
+  /** Closed outlines of the 16 voivodeships, in `registry.region1` order. */
+  readonly voivodeships: readonly {
+    readonly region1Letter: string;
+    readonly path: string;
+  }[];
 }
 
 /** Stored form of the map of Poland: county rows by index of `registry.region2`. */
@@ -73,6 +78,8 @@ export interface CountryMapModule {
     region1Letter: string,
     firstSuffix: string,
   ])[];
+  /** Closed outlines in `registry.region1` order. */
+  readonly voivodeships: readonly string[];
 }
 
 /** One district of the Warsaw map. */

@@ -1299,6 +1299,9 @@ function serializeCountryMap(module: CountryMapModule): string {
         `    [${JSON.stringify(letter)}, ${JSON.stringify(suffix)}]`,
     )
     .join(',\n');
+  const voivodeships = module.voivodeships
+    .map((path) => `    ${JSON.stringify(path)}`)
+    .join(',\n');
   return (
     `{\n` +
     `  viewBox: { width: ${module.viewBox.width}, height: ${module.viewBox.height} },\n` +
@@ -1306,6 +1309,7 @@ function serializeCountryMap(module: CountryMapModule): string {
     `  borders: ${JSON.stringify(module.borders)},\n` +
     `  counties: [\n${counties}\n  ],\n` +
     `  capitals: [\n${capitals}\n  ],\n` +
+    `  voivodeships: [\n${voivodeships}\n  ],\n` +
     `}`
   );
 }
@@ -1714,6 +1718,7 @@ function assertSourceBudget(
 
 function generateCountryModule(
   counties: readonly MatchedCounty[],
+  region1: readonly Region1[],
   region2: readonly Region2[],
 ): GeneratedModule {
   if (counties.length !== region2.length) {
@@ -1849,6 +1854,29 @@ function generateCountryModule(
     fail('empty borders path for country map');
   }
 
+  const voivodeships: string[] = [];
+  for (const r1 of region1) {
+    const letter = r1.letters[0];
+    const geoms = region2
+      .filter((r2) => r2.region1Letter === letter)
+      .map((r2) => {
+        const matched = expectDefined(
+          matchedById.get(`${r2.region1Letter}\0${r2.suffixes[0]}`),
+          `voivodeship ${letter} county ${r2.region1Letter}${r2.suffixes[0]}`,
+        );
+        return expectDefined(byTeryt.get(matched.teryt), matched.teryt);
+      });
+    const outlineGeom = mergePolygons(simplifiedTopo, geoms);
+    const outlineEncoded = encodePath(outlineGeom, height);
+    const path = assertPathNonEmpty(
+      outlineEncoded.path,
+      outlineGeom,
+      `voivodeship ${letter}`,
+    );
+    pathVertices += outlineEncoded.vertices;
+    voivodeships.push(path);
+  }
+
   const aliasToRegistry = new Map(NAME_ALIASES.map((a) => [a.prg, a.registry]));
   const capitalsWithIndex: Array<{
     index: number;
@@ -1890,6 +1918,7 @@ function generateCountryModule(
     borders,
     counties: countyRows,
     capitals,
+    voivodeships,
   };
 
   return {
@@ -1940,7 +1969,11 @@ async function main(): Promise<void> {
   }
   const warsaw = generateWarsawModule(counties, districts, WARSAW_MIN_WEIGHT);
   modules.push(warsaw);
-  const country = generateCountryModule(counties, registry.region2);
+  const country = generateCountryModule(
+    counties,
+    registry.region1,
+    registry.region2,
+  );
   modules.push(country);
 
   mkdirSync(MAPS_DIR, { recursive: true });
