@@ -83,6 +83,7 @@ test('result-layout-wide', { tag: '@desktop' }, async ({ page }) => {
   const list = await boxOf(
     carCard.locator('app-result-reading, app-candidates-list').first(),
   );
+  expect(car.width).toBeGreaterThanOrEqual(303);
   expect(car.x + car.width).toBeLessThan(list.x + 1);
 });
 
@@ -107,6 +108,12 @@ test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   expect(Math.abs(carBox.width - voiBox.width)).toBeLessThanOrEqual(1);
   expect(Math.abs(voiBox.width - mapBox.width)).toBeLessThanOrEqual(1);
   expect(carBox.width).toBeLessThanOrEqual(640);
+  const car = await boxOf(carCard.locator('app-car-illustration'));
+  const list = await boxOf(
+    carCard.locator('app-result-reading, app-candidates-list').first(),
+  );
+  expect(car.width).toBeGreaterThanOrEqual(303);
+  expect(car.x + car.width).toBeLessThan(list.x + 1);
 });
 
 test('result-layout-mobile', { tag: '@mobile' }, async ({ page }) => {
@@ -230,9 +237,22 @@ test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
 });
 
 test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/plate/HA12345');
   await expect(page.locator('app-voivodeship-card')).toHaveCount(0);
   await expect(page.locator('.country-map-box')).toHaveCount(0);
+  const haCar = await boxOf(
+    page
+      .locator('app-card')
+      .filter({ has: page.locator('app-car-illustration') }),
+  );
+  await page.goto('/plate/GMB%202397T');
+  const gmbCar = await boxOf(
+    page
+      .locator('app-card')
+      .filter({ has: page.locator('app-car-illustration') }),
+  );
+  expect(Math.abs(haCar.width - gmbCar.width)).toBeLessThanOrEqual(1);
 
   await page.goto('/plate/G%2012345');
   const card = page.locator('app-voivodeship-card');

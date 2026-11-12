@@ -2,6 +2,18 @@
   <h2>{{ captionKey | transloco }}</h2>
 }
 <dl>
+  <div>
+    <span
+      nz-icon
+      nzType="environment"
+      nzTheme="outline"
+      aria-hidden="true"
+    ></span>
+    <div>
+      <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
+      <dd>{{ reading().voivodeshipName }}</dd>
+    </div>
+  </div>
   @if (reading().powiat; as powiat) {
     <div>
       <span nz-icon nzType="bank" nzTheme="outline" aria-hidden="true"></span>
@@ -38,18 +50,6 @@
       </div>
     </div>
   }
-  <div>
-    <span
-      nz-icon
-      nzType="environment"
-      nzTheme="outline"
-      aria-hidden="true"
-    ></span>
-    <div>
-      <dt>{{ 'plate.reading.voivodeship' | transloco }}</dt>
-      <dd>{{ reading().voivodeshipName }}</dd>
-    </div>
-  </div>
   <div>
     <span nz-icon nzType="car" nzTheme="outline" aria-hidden="true"></span>
     <div>

@@ -45,20 +45,15 @@ h1 {
 }
 
 // At 1440 px the card is 554 px inside ((1340 − 16) × 5/11 − 48); at 1280 px 481 px.
-// Side-by-side from 33rem so the car column stays ≤ 19rem.
+// Fixed 19rem car column: minmax(0, 19rem) only grows when content asks for it.
 @container (width >= 33rem) {
   .car-card-body {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-
-  .car-card-body > app-car-illustration {
-    flex: 0 1 19rem;
-    min-width: 0;
+    display: grid;
+    grid-template-columns: 19rem minmax(0, 1fr);
+    align-items: start;
   }
 
   .car-card-content {
-    flex: 1 1 auto;
     min-width: 0;
   }
 }

@@ -1,16 +1,20 @@
 @let page = view();
 <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
 @if (page.kind === 'message') {
-  <app-card class="car-card">
-    <div class="car-card-body">
-      <app-car-illustration>
-        <app-plate [plate]="plateText()" />
-      </app-car-illustration>
-      <div class="car-card-content">
-        <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
-      </div>
+  <div class="result-grid">
+    <div class="result-main">
+      <app-card class="car-card">
+        <div class="car-card-body">
+          <app-car-illustration>
+            <app-plate [plate]="plateText()" />
+          </app-car-illustration>
+          <div class="car-card-content">
+            <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
+          </div>
+        </div>
+      </app-card>
     </div>
-  </app-card>
+  </div>
 } @else {
   <div class="result-grid">
     <div class="result-main">

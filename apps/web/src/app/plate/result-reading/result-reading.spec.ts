@@ -73,11 +73,11 @@ describe('ResultReadingComponent', () => {
   it('shows the county name and kind', async () => {
     const fixture = await render(cityReading);
     expect(dtTexts(fixture.nativeElement)).toEqual([
-      testingText('en', 'plate.reading.county'),
       testingText('en', 'plate.reading.voivodeship'),
+      testingText('en', 'plate.reading.county'),
       testingText('en', 'plate.reading.type'),
     ]);
-    expect(ddTexts(fixture.nativeElement)[0]).toBe(
+    expect(ddTexts(fixture.nativeElement)[1]).toBe(
       testingText('en', 'plate.reading.countyValue', {
         name: 'Wrocław',
         kind: testingText('en', 'plate.kind.city'),
@@ -192,7 +192,7 @@ describe('ResultReadingComponent', () => {
     );
   });
 
-  it('labels a single district', async () => {
+  it('orders dt as voivodeship, county, district, plate type for WE 12345', async () => {
     const fixture = await render({
       ...cityReading,
       powiat: { name: 'm.st. Warszawa', kindKey: 'plate.kind.city' },
@@ -200,13 +200,13 @@ describe('ResultReadingComponent', () => {
       link: { slug: 'mazowieckie', fragment: 'WE' },
       districts: ['Mokotów'],
     });
-    expect(dtTexts(fixture.nativeElement)).toContain(
+    expect(dtTexts(fixture.nativeElement)).toEqual([
+      testingText('en', 'plate.reading.voivodeship'),
+      testingText('en', 'plate.reading.county'),
       testingText('en', 'plate.reading.district'),
-    );
-    const districtIndex = dtTexts(fixture.nativeElement).indexOf(
-      testingText('en', 'plate.reading.district'),
-    );
-    expect(ddTexts(fixture.nativeElement)[districtIndex]).toBe('Mokotów');
+      testingText('en', 'plate.reading.type'),
+    ]);
+    expect(ddTexts(fixture.nativeElement)[2]).toBe('Mokotów');
   });
 
   it('joins several districts in English', async () => {
