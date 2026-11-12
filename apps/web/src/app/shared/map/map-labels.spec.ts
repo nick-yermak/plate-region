@@ -1,3 +1,10 @@
+import {
+  countySeat,
+  fullCodes,
+  registry,
+  warsawDistricts,
+} from '@plate-region/plate-data';
+
 import { INTER_600_GLYPHS } from './inter-600-glyphs';
 import {
   DOT_LABEL_BASELINE_PX,
@@ -12,8 +19,35 @@ describe('map-labels', () => {
     expect(DOT_LABEL_BASELINE_PX).toBe(11);
   });
 
-  it('INTER_600_GLYPHS has the 64 probe characters', () => {
-    expect(Object.keys(INTER_600_GLYPHS)).toHaveLength(64);
+  it('INTER_600_GLYPHS covers every seat and Warsaw district label character', () => {
+    expect(Object.keys(INTER_600_GLYPHS)).toHaveLength(85);
+    const missing: string[] = [];
+    const check = (label: string): void => {
+      for (const ch of label) {
+        if (!(ch in INTER_600_GLYPHS)) {
+          missing.push(`${JSON.stringify(ch)} in ${label}`);
+        }
+      }
+    };
+    for (const region2 of registry.region2) {
+      const region1 = registry.region1.find(
+        (entry) => entry.letters[0] === region2.region1Letter,
+      );
+      if (region1 === undefined) {
+        throw new Error(`no region1 for ${region2.region1Letter}`);
+      }
+      for (const code of fullCodes(region1, region2)) {
+        check(`${countySeat(region2)} (${code})`);
+      }
+    }
+    for (const row of warsawDistricts.rows) {
+      for (const district of row.districts) {
+        for (const letter of ['W', 'A'] as const) {
+          check(`${district.value} (${letter}${row.suffix})`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
   });
 
   it('labelSizeEm gives DW 1.7421875 by 0.7275390625 em', () => {
