@@ -91,11 +91,13 @@ export function voivodeshipDialogMapView(
         tier: 'none' as const,
         position: 'above' as const,
         forced: false,
+        slideDx: 0,
       };
       const wide = wideTiers.get(area.id) ?? {
         tier: 'none' as const,
         position: 'above' as const,
         forced: false,
+        slideDx: 0,
       };
       return {
         ...area,
@@ -115,6 +117,10 @@ export function voivodeshipDialogMapView(
           forced: {
             narrow: narrow.forced,
             wide: wide.forced,
+          },
+          slideDx: {
+            narrow: narrow.slideDx,
+            wide: wide.slideDx,
           },
         },
       };
@@ -174,11 +180,13 @@ export function warsawDialogMapView(
         tier: 'none' as const,
         position: 'above' as const,
         forced: false,
+        slideDx: 0,
       };
       const wide = wideTiers.get(area.id) ?? {
         tier: 'none' as const,
         position: 'above' as const,
         forced: false,
+        slideDx: 0,
       };
       return {
         ...area,
@@ -198,6 +206,10 @@ export function warsawDialogMapView(
           forced: {
             narrow: narrow.forced,
             wide: wide.forced,
+          },
+          slideDx: {
+            narrow: narrow.slideDx,
+            wide: wide.slideDx,
           },
         },
       };

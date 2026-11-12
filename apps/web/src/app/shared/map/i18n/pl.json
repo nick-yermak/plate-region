@@ -15,6 +15,7 @@
     "dialogTitle": "Województwo {{name}}",
     "dialogSubtitle": "Powiaty i kody rejestracyjne",
     "dialogClose": "Zamknij",
-    "countryTitle": "Polska – województwa"
+    "countryTitle": "Polska – województwa",
+    "countrySubtitle": "Kliknij podświetlone województwo, aby zobaczyć jego mapę."
   }
 }

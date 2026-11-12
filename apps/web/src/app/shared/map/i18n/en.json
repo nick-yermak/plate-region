@@ -15,6 +15,7 @@
     "dialogTitle": "{{name}} Voivodeship",
     "dialogSubtitle": "Counties and registration codes",
     "dialogClose": "Close",
-    "countryTitle": "Poland – voivodeships"
+    "countryTitle": "Poland – voivodeships",
+    "countrySubtitle": "Click the highlighted voivodeship to see its map."
   }
 }

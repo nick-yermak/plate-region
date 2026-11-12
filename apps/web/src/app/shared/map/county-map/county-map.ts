@@ -21,6 +21,7 @@ import { CountyMapSeatsComponent } from '../county-map-seats/county-map-seats';
   host: {
     '[style.width]': 'hostWidth()',
     '[style.aspect-ratio]': 'aspectRatio()',
+    '[class.faint-county-lines]': 'interaction() === "none"',
     '(document:pointerdown)': 'onDocumentPointerDown($event)',
     '(document:keydown.escape)': 'closeTooltip()',
   },
@@ -29,9 +30,10 @@ export class CountyMapComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   readonly view = input.required<MapView>();
-  readonly interaction = input<'tooltip' | 'select'>('tooltip');
+  readonly interaction = input<'tooltip' | 'select' | 'none'>('tooltip');
   readonly selectedId = input<string | undefined>(undefined);
   readonly areaSelect = output<string>();
+  readonly openDialog = output<void>();
 
   protected readonly tooltipSelectedId = linkedSignal({
     source: this.view,
@@ -44,6 +46,9 @@ export class CountyMapComponent {
   });
 
   protected readonly selectedArea = computed((): MapArea | undefined => {
+    if (this.interaction() === 'none') {
+      return undefined;
+    }
     if (this.interaction() === 'select') {
       const id = this.selectedId();
       if (id === undefined) {
@@ -59,7 +64,7 @@ export class CountyMapComponent {
   });
 
   protected readonly hoveredArea = computed((): MapArea | undefined => {
-    if (this.interaction() === 'select') {
+    if (this.interaction() !== 'tooltip') {
       return undefined;
     }
     const id = this.hoveredId();
@@ -100,6 +105,22 @@ export class CountyMapComponent {
     };
   });
 
+  protected readonly capitalMarkerPositions = computed(() => {
+    const markers = this.view().capitalMarkers;
+    if (markers === undefined) {
+      return [];
+    }
+    const { width, height } = this.view().viewBox;
+    return markers.map((marker) => ({
+      cx: `${(marker.x / width) * 100}%`,
+      cy: `${(marker.y / height) * 100}%`,
+    }));
+  });
+
+  protected readonly voivodeshipButton = computed(
+    () => this.view().voivodeshipButton,
+  );
+
   protected readonly hostWidth = computed(() => {
     const { width, height } = this.view().viewBox;
     return `${Math.min(100, (100 * width) / height)}%`;
@@ -136,6 +157,9 @@ export class CountyMapComponent {
 
   protected toggleSelection(id: string, event: Event): void {
     event.stopPropagation();
+    if (this.interaction() === 'none') {
+      return;
+    }
     if (this.interaction() === 'select') {
       this.areaSelect.emit(id);
       return;
@@ -146,14 +170,14 @@ export class CountyMapComponent {
   }
 
   protected setHovered(id: string | undefined): void {
-    if (this.interaction() === 'select') {
+    if (this.interaction() !== 'tooltip') {
       return;
     }
     this.hoveredId.set(id);
   }
 
   protected onDocumentPointerDown(event: Event): void {
-    if (this.interaction() === 'select') {
+    if (this.interaction() !== 'tooltip') {
       return;
     }
     const target = event.target;
@@ -166,18 +190,24 @@ export class CountyMapComponent {
   }
 
   protected closeTooltip(): void {
-    if (this.interaction() === 'select') {
+    if (this.interaction() !== 'tooltip') {
       return;
     }
     this.tooltipSelectedId.set(undefined);
   }
 
   protected onSvgClick(event: MouseEvent): void {
-    if (this.interaction() === 'select') {
+    if (this.interaction() !== 'tooltip') {
       return;
     }
     if (event.target === event.currentTarget) {
       this.closeTooltip();
     }
+  }
+
+  protected onVoivodeshipActivate(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.openDialog.emit();
   }
 }

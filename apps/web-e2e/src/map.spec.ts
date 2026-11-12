@@ -106,11 +106,31 @@ async function expectCountryContrast(page: Page): Promise<void> {
           !area.classList.contains('area-filled') &&
           !area.classList.contains('area-tinted'),
       );
+      const borders = root.querySelector('path.borders');
+      const marker = root.querySelector('circle.marker');
+      const capital = root.querySelector('circle.capital-marker');
+      const label = root.querySelector('text.seat-label, svg.labels text');
       if (filled === null || tinted === null || land === undefined) {
         throw new Error('filled, tinted or land area missing');
       }
+      if (borders === null) {
+        throw new Error('borders missing');
+      }
+      if (marker === null) {
+        throw new Error('selected marker missing');
+      }
+      if (capital === null) {
+        throw new Error('capital marker missing');
+      }
+      if (label === null) {
+        throw new Error('label missing');
+      }
       return {
-        stroke: getComputedStyle(tinted).stroke,
+        countyStroke: getComputedStyle(tinted).stroke,
+        borderStroke: getComputedStyle(borders).stroke,
+        markerStroke: getComputedStyle(marker).stroke,
+        capitalStroke: getComputedStyle(capital).stroke,
+        labelFill: getComputedStyle(label).fill,
         filledFill: getComputedStyle(filled).fill,
         tintedFill: getComputedStyle(tinted).fill,
         landFill: getComputedStyle(land).fill,
@@ -118,11 +138,22 @@ async function expectCountryContrast(page: Page): Promise<void> {
     });
   const tinted = parseCssColor(colours.tintedFill);
   const land = parseCssColor(colours.landFill);
-  const stroke = parseCssColor(colours.stroke);
+  const countyStroke = parseCssColor(colours.countyStroke);
+  const borderStroke = parseCssColor(colours.borderStroke);
+  const markerStroke = parseCssColor(colours.markerStroke);
+  const capitalStroke = parseCssColor(colours.capitalStroke);
+  const labelFill = parseCssColor(colours.labelFill);
   const filled = parseCssColor(colours.filledFill);
+  // Selected fill vs tint ≥ 3:1.
   expect(contrastRatio(filled, tinted)).toBeGreaterThanOrEqual(3);
-  // County lines target ≥ 3:1 on land (G5); tint is a separate fill check above.
-  expect(contrastRatio(stroke, land)).toBeGreaterThanOrEqual(3);
+  // County lines decorative: below 3:1 against land.
+  expect(contrastRatio(countyStroke, land)).toBeLessThan(3);
+  // Voivodeship borders, selected ring, capital markers ≥ 3:1 against land.
+  expect(contrastRatio(borderStroke, land)).toBeGreaterThanOrEqual(3);
+  expect(contrastRatio(markerStroke, land)).toBeGreaterThanOrEqual(3);
+  expect(contrastRatio(capitalStroke, land)).toBeGreaterThanOrEqual(3);
+  // Labels ≥ 4.5:1 against land.
+  expect(contrastRatio(labelFill, land)).toBeGreaterThanOrEqual(4.5);
 }
 
 test('map-result-powiat-highlight', { tag: '@desktop' }, async ({ page }) => {
@@ -200,30 +231,21 @@ test('map-country-desktop', { tag: '@desktop' }, async ({ page }) => {
   const map = country.locator('app-county-map');
   await expect(map.locator('path.area-tinted')).toHaveCount(30);
   await expect(map.locator('path.area-filled')).toHaveCount(1);
-  await expect(map.locator('svg.labels text')).toHaveCount(18);
-  await expect(map.getByText('CT', { exact: true })).toBeVisible();
+  await expect(
+    map.locator('text.seat-label-wide', { hasText: 'Wrocław (DW)' }),
+  ).toBeVisible();
+  await expect(
+    map.locator('text.seat-label-wide', { hasText: 'Toruń (CT)' }),
+  ).toBeVisible();
+  await expect(map.locator('circle.capital-marker')).toHaveCount(17);
+  await expect(
+    map.locator('svg.voivodeship-button path[role="button"]'),
+  ).toBeVisible();
   const fontSize = await map
-    .locator('svg.labels text')
+    .locator('text.seat-label-wide')
     .first()
     .evaluate((el) => getComputedStyle(el).fontSize);
   expect(fontSize).toBe('12px');
-  const dwLabel = map.getByText('DW', { exact: true });
-  await dwLabel.scrollIntoViewIfNeeded();
-  // Playwright boundingBox includes the label stroke; layout boxes keep the ring clear.
-  const { dwBottom, markerTop } = await map.evaluate((root) => {
-    const text = [...root.querySelectorAll('svg.labels text')].find(
-      (node) => node.textContent?.trim() === 'DW',
-    );
-    const marker = root.querySelector('circle.marker');
-    if (text === undefined || marker === null) {
-      throw new Error('DW label or marker missing');
-    }
-    return {
-      dwBottom: text.getBoundingClientRect().bottom,
-      markerTop: marker.getBoundingClientRect().top,
-    };
-  });
-  expect(dwBottom).toBeLessThanOrEqual(markerTop + 0.5);
   await expectCountryContrast(page);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expectCountryContrast(page);
@@ -236,53 +258,30 @@ test('map-country-mobile', { tag: '@mobile' }, async ({ page }) => {
   expect(Math.abs(box.width - 328)).toBeLessThanOrEqual(0.5);
   const map = country.locator('app-county-map');
   const fontSize = await map
-    .locator('svg.labels text')
+    .locator('text.seat-label-narrow')
     .first()
     .evaluate((el) => getComputedStyle(el).fontSize);
   expect(fontSize).toBe('11px');
-  await expect(map.getByText('CGD', { exact: true })).toBeVisible();
-  const marker = map.locator('circle.marker');
-  await marker.scrollIntoViewIfNeeded();
-  const markerBox = await boxOf(marker);
-  await page.touchscreen.tap(
-    markerBox.x + markerBox.width / 2,
-    markerBox.y + markerBox.height / 2,
-  );
-  const tooltip = map.locator('.map-tooltip');
-  await expect(tooltip).toContainText('golubsko-dobrzyński county');
-  await expect(tooltip.locator('a')).toHaveAttribute(
-    'href',
-    '/voivodeship/kujawsko-pomorskie#CGD',
-  );
+  await expect(
+    page.getByText('Click the highlighted voivodeship to see its map.'),
+  ).toBeVisible();
+  await expect(map.locator('.map-tooltip')).toHaveCount(0);
 });
 
 test('map-country-other-voivodeship', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
   const map = page.locator('.country-map-box app-county-map');
-  const kr = map.getByText('KR', { exact: true });
-  await kr.scrollIntoViewIfNeeded();
-  const krBox = await boxOf(kr);
-  await page.mouse.click(krBox.x + krBox.width / 2, krBox.y + krBox.height / 2);
-  await expect(map.locator('.map-tooltip a')).toHaveAttribute(
-    'href',
-    '/voivodeship/malopolskie#KR',
-  );
-});
-
-test('map-country-narrow-capitals', { tag: '@mobile' }, async ({ page }) => {
-  await page.goto('/plate/DW%2012345');
-  const map = page.locator('.country-map-box app-county-map');
-  await expect(map.getByText('CB', { exact: true })).toBeVisible();
-  await expect(map.getByText('CT', { exact: true })).toBeHidden();
+  const kr = map.locator('path.area[data-id="KR"]');
+  await kr.dispatchEvent('click');
+  await expect(map.locator('.map-tooltip')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('map-country-marker-clear', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/CT%2012345');
   const map = page.locator('.country-map-box app-county-map');
-  const ct = map.getByText('CT', { exact: true });
-  await ct.scrollIntoViewIfNeeded();
-  const ctBox = await boxOf(ct);
-  const filledBox = await boxOf(map.locator('path.area-filled'));
-  expect(ctBox.y + ctBox.height).toBeLessThanOrEqual(filledBox.y + 0.5);
+  await expect(
+    map.locator('text.seat-label-narrow', { hasText: 'Toruń (CT)' }),
+  ).toBeVisible();
   await expect(map.locator('circle.marker')).toBeVisible();
 });

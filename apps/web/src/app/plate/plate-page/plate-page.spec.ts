@@ -287,6 +287,16 @@ describe('PlatePage', () => {
         (node) => node.textContent?.trim() === 'Poland – voivodeships',
       ),
     ).toBe(true);
+    expect(
+      root
+        .querySelector('.map-card .country-map-subtitle')
+        ?.textContent?.trim(),
+    ).toBe('Click the highlighted voivodeship to see its map.');
+    expect(
+      root.querySelector(
+        '.country-map-box svg.voivodeship-button path[role="button"]',
+      ),
+    ).not.toBeNull();
   });
 
   it('hides the voivodeship card, map card and map button for HA 12345', async () => {

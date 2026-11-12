@@ -61,6 +61,7 @@ function overlapViolations(
       tier: 'none',
       position: 'above',
       forced: false,
+      slideDx: 0,
     };
     const text = visibleText(area, placed.tier);
     if (text === undefined) {
@@ -72,6 +73,8 @@ function overlapViolations(
       area.y * scale,
       tier.fontPx,
       placed.position,
+      area.markerExtent,
+      placed.slideDx,
     );
     // Only a forced selected code may meet a foreign tip.
     if (!placed.forced) {
@@ -364,6 +367,7 @@ describe('placeSeatLabels', () => {
             tier: 'none' as const,
             position: 'above' as const,
             forced: false,
+            slideDx: 0,
           };
           const text = visibleText(area, placed.tier);
           if (text === undefined) {
@@ -541,4 +545,156 @@ describe('placeSeatLabels', () => {
       left: 33,
     });
   });
+
+  it.each([
+    {
+      name: '328/11',
+      tier: { mapPx: 328, fontPx: 11 },
+      expected: {
+        capitals: { full: 5817, code: 977, none: 46 },
+        selected: { full: 272, code: 104, forced: 4 },
+      },
+    },
+    {
+      name: '541/12',
+      tier: { mapPx: 541, fontPx: 12 },
+      expected: {
+        capitals: { full: 6767, code: 67, none: 6 },
+        selected: { full: 373, code: 7, forced: 0 },
+      },
+    },
+  ] as const)(
+    'country map totals match the stage 4 probe at $name',
+    async ({ tier, expected }) => {
+      const country = await loadCountryMap();
+      const capitalIds = country.capitals.map(
+        (c) => `${c.region1Letter}${c.firstSuffix}`,
+      );
+      type CountryPlaceOptions = {
+        readonly capitalOrder: 'shortest-full';
+        readonly horizontalClamp: boolean;
+      };
+      const options: CountryPlaceOptions = {
+        capitalOrder: 'shortest-full',
+        horizontalClamp: true,
+      };
+
+      let capitalsFull = 0;
+      let capitalsCode = 0;
+      let capitalsNone = 0;
+      let selectedFull = 0;
+      let selectedCode = 0;
+      let selectedForced = 0;
+      for (const selected of registry.region2) {
+        const selectedId = `${selected.region1Letter}${selected.suffixes[0]}`;
+        const selectedCounty = country.counties.find(
+          (c) => `${c.region1Letter}${c.firstSuffix}` === selectedId,
+        );
+        if (selectedCounty === undefined) {
+          throw new Error(`no county ${selectedId}`);
+        }
+        const capitalSet = new Set(capitalIds);
+        const areas: SeatLabelArea[] = [];
+        const push = (
+          county: (typeof country.counties)[number],
+          opts: {
+            selected: boolean;
+            capital: boolean;
+            markerExtent: number;
+          },
+        ) => {
+          const region1 = region1ByLetter(county.region1Letter);
+          const region2 = registry.region2.find(
+            (r) =>
+              r.region1Letter === county.region1Letter &&
+              r.suffixes[0] === county.firstSuffix,
+          );
+          if (region2 === undefined) {
+            throw new Error(`no region2 for ${county.region1Letter}`);
+          }
+          const codeText = fullCodes(region1, region2)[0];
+          areas.push({
+            id: codeText,
+            x: county.label.x,
+            y: county.label.y,
+            radius: 0,
+            fullText: `${countySeat(region2)} (${codeText})`,
+            codeText,
+            selected: opts.selected,
+            capital: opts.capital,
+            markerExtent: opts.markerExtent,
+          } as SeatLabelArea);
+        };
+        if (capitalSet.has(selectedId)) {
+          for (const capital of country.capitals) {
+            const id = `${capital.region1Letter}${capital.firstSuffix}`;
+            push(capital, {
+              selected: id === selectedId,
+              capital: true,
+              markerExtent: id === selectedId ? 9 : 7,
+            });
+          }
+        } else {
+          push(selectedCounty, {
+            selected: true,
+            capital: false,
+            markerExtent: 9,
+          });
+          for (const capital of country.capitals) {
+            push(capital, {
+              selected: false,
+              capital: true,
+              markerExtent: 7,
+            });
+          }
+        }
+        const placement = (
+          placeSeatLabels as (
+            areas: readonly SeatLabelArea[],
+            viewBox: MapViewBox,
+            tierConfig: { readonly mapPx: number; readonly fontPx: number },
+            opts?: CountryPlaceOptions,
+          ) => ReadonlyMap<string, SeatLabelPlacement>
+        )(areas, country.viewBox, tier, options);
+        const sel = placement.get(selectedId);
+        if (sel === undefined) {
+          throw new Error(`no placement ${selectedId}`);
+        }
+        if (sel.tier === 'full') {
+          selectedFull += 1;
+        } else if (sel.forced) {
+          selectedForced += 1;
+        } else if (sel.tier === 'code') {
+          selectedCode += 1;
+        } else {
+          selectedForced += 1;
+        }
+        for (const id of capitalIds) {
+          const p = placement.get(id);
+          if (p === undefined) {
+            throw new Error(`no capital ${id}`);
+          }
+          if (p.tier === 'full') {
+            capitalsFull += 1;
+          } else if (p.tier === 'code') {
+            capitalsCode += 1;
+          } else {
+            capitalsNone += 1;
+          }
+        }
+      }
+      expect({
+        capitals: {
+          full: capitalsFull,
+          code: capitalsCode,
+          none: capitalsNone,
+        },
+        selected: {
+          full: selectedFull,
+          code: selectedCode,
+          forced: selectedForced,
+        },
+      }).toEqual(expected);
+    },
+  );
 });

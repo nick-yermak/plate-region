@@ -60,6 +60,7 @@ function plateCodeOf(plate: string): string | undefined {
   styleUrl: './plate-page.less',
 })
 export class PlatePage {
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly languageService = inject(LanguageService);
   private readonly loadMap = inject(RESULT_MAP_LOADER);
 
@@ -148,12 +149,15 @@ export class PlatePage {
       loaded.target.region1,
       loaded.target.filled,
       this.language(),
+      this.dialogPlateCode(),
     );
   });
 
   private readonly mapDialogButton = viewChild('mapDialogButton', {
     read: ElementRef,
   });
+
+  private readonly mapDialogOpener = signal<'card' | 'map'>('card');
 
   private readonly loadedMap = signal<LoadedMap | undefined>(undefined);
 
@@ -179,11 +183,12 @@ export class PlatePage {
     });
   }
 
-  protected openMapDialog(): void {
+  protected openMapDialog(opener: 'card' | 'map' = 'card'): void {
     const loaded = this.dialogLoaded();
     if (loaded === undefined) {
       return;
     }
+    this.mapDialogOpener.set(opener);
     if (isWarsawLoaded(loaded)) {
       this.dialogSelectedId.set(loaded.target.districts[0]);
     } else {
@@ -207,6 +212,13 @@ export class PlatePage {
 
   protected onDialogClosed(): void {
     this.dialogOpen.set(false);
+    if (this.mapDialogOpener() === 'map') {
+      const path = (this.host.nativeElement as HTMLElement).querySelector(
+        '.country-map-box svg.voivodeship-button path[role="button"]',
+      ) as HTMLElement | null;
+      path?.focus();
+      return;
+    }
     const host = this.mapDialogButton()?.nativeElement as
       | HTMLElement
       | undefined;

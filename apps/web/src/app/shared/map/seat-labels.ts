@@ -25,8 +25,22 @@ export const SEAT_LABEL_POSITIONS: readonly SeatLabelPosition[] = [
 
 export const NARROW = { mapPx: 328, fontPx: 11 } as const;
 export const WIDE = { mapPx: 560, fontPx: 12 } as const;
+export const COUNTRY_NARROW = { mapPx: 328, fontPx: 11 } as const;
+export const COUNTRY_WIDE = { mapPx: 541, fontPx: 12 } as const;
 
-export type SeatLabelTierConfig = typeof NARROW | typeof WIDE;
+export type SeatLabelTierConfig = {
+  readonly mapPx: number;
+  readonly fontPx: number;
+};
+
+export type CapitalOrder = 'radius' | 'shortest-full';
+
+export type PlaceSeatLabelsOptions = {
+  /** Default `radius` (dialog). Country uses `shortest-full`. */
+  readonly capitalOrder?: CapitalOrder;
+  /** Slide above/below into the map at the left/right edges (country only). */
+  readonly horizontalClamp?: boolean;
+};
 
 export interface SeatLabelArea {
   readonly id: string;
@@ -38,13 +52,22 @@ export interface SeatLabelArea {
   readonly selected: boolean;
   /** Voivodeship capital of this module (CountryMap.capitals). */
   readonly capital: boolean;
+  /**
+   * Half-extent of the marker obstacle in CSS px. Dialog dots omit this and
+   * use the seat-dot square (±4). Country: 9 selected / 7 capital.
+   */
+  readonly markerExtent?: number;
+  /** Index in CountryMap.capitals for shortest-full ties. */
+  readonly registryIndex?: number;
 }
 
 export interface SeatLabelPlacement {
   readonly tier: SeatLabelTier;
   readonly position: SeatLabelPosition;
-  /** Selected code placed despite overlapping another area's dot. */
+  /** Selected code placed despite overlapping another area's tip. */
   readonly forced: boolean;
+  /** Extra CSS px on dx for edge slide (above/below). */
+  readonly slideDx: number;
 }
 
 type Box = {
@@ -57,6 +80,10 @@ type Box = {
 const MAP_MARGIN_PX = 8;
 /** Half-extent of a seat-dot obstacle square in CSS px (radius 3 + half of 2 px halo). */
 const DOT_HALF_PX = DOT_RADIUS_PX + DOT_HALO_PX / 2;
+/** Dialog reference extent (radius 3 + halo 2) for outward label shifts. */
+const DIALOG_EXTENT_PX = 5;
+const COLLISION_PAD_PX = 2;
+const CLAMP_ANCHOR_INSET_PX = 4;
 
 function textMetrics(
   text: string,
@@ -86,29 +113,46 @@ function textMetrics(
   return { width: advance * s, yMin: yMin * s, yMax: yMax * s };
 }
 
-/** Extra CSS px so collision boxes cover browser text metrics (± stroke). */
-const COLLISION_PAD_PX = 2;
+function outwardShift(markerExtent: number | undefined): number {
+  if (markerExtent === undefined) {
+    return 0;
+  }
+  return markerExtent - DIALOG_EXTENT_PX;
+}
 
 /** SVG dx/dy (user px) and text-anchor for a placed seat label. */
-export function seatLabelSvgAttrs(position: SeatLabelPosition): {
+export function seatLabelSvgAttrs(
+  position: SeatLabelPosition,
+  markerExtent?: number,
+  slideDx = 0,
+): {
   readonly dx: number;
   readonly dy: number;
   readonly textAnchor: 'middle' | 'start' | 'end';
 } {
+  const shift = outwardShift(markerExtent);
   switch (position) {
     case 'above':
-      return { dx: 0, dy: -DOT_LABEL_BASELINE_PX, textAnchor: 'middle' };
+      return {
+        dx: slideDx,
+        dy: -(DOT_LABEL_BASELINE_PX + shift),
+        textAnchor: 'middle',
+      };
     case 'below':
-      return { dx: 0, dy: DOT_LABEL_BELOW_BASELINE_PX, textAnchor: 'middle' };
+      return {
+        dx: slideDx,
+        dy: DOT_LABEL_BELOW_BASELINE_PX + shift,
+        textAnchor: 'middle',
+      };
     case 'right':
       return {
-        dx: DOT_LABEL_SIDE_GAP_PX,
+        dx: DOT_LABEL_SIDE_GAP_PX + shift,
         dy: DOT_LABEL_SIDE_BASELINE_PX,
         textAnchor: 'start',
       };
     case 'left':
       return {
-        dx: -DOT_LABEL_SIDE_GAP_PX,
+        dx: -(DOT_LABEL_SIDE_GAP_PX + shift),
         dy: DOT_LABEL_SIDE_BASELINE_PX,
         textAnchor: 'end',
       };
@@ -122,10 +166,16 @@ export function seatLabelBox(
   cy: number,
   fontPx: number,
   position: SeatLabelPosition = 'above',
+  markerExtent?: number,
+  slideDx = 0,
 ): Box {
   const m = textMetrics(text, fontPx);
   const width = m.width + LABEL_HALO_PX + 2 * COLLISION_PAD_PX;
-  const { dx, dy, textAnchor } = seatLabelSvgAttrs(position);
+  const { dx, dy, textAnchor } = seatLabelSvgAttrs(
+    position,
+    markerExtent,
+    slideDx,
+  );
   const baselineX = cx + dx;
   const baselineY = cy + dy;
   const inkTop = baselineY - m.yMax;
@@ -155,6 +205,22 @@ export function seatDotBox(cx: number, cy: number): Box {
   };
 }
 
+function markerObstacleBox(
+  cx: number,
+  cy: number,
+  markerExtent: number | undefined,
+): Box {
+  if (markerExtent === undefined) {
+    return seatDotBox(cx, cy);
+  }
+  return {
+    left: cx - markerExtent,
+    right: cx + markerExtent,
+    top: cy - markerExtent,
+    bottom: cy + markerExtent,
+  };
+}
+
 export function boxesOverlap(a: Box, b: Box): boolean {
   // Edge contact is clear (gap ≥ 0); a tiny epsilon absorbs float noise on sides.
   const eps = 1e-6;
@@ -175,39 +241,97 @@ function insideMap(box: Box, mapW: number, mapH: number): boolean {
   );
 }
 
-/**
- * Places seat/code labels without overlaps at a fixed map width.
- * Selected first, then voivodeship capitals, then radius descending, ties by
- * id. Each label tries above/below/right/left for full, then code. Own tip is
- * not an obstacle; every other area's dot square is. Only a selected forced
- * code (above) may meet a foreign tip.
- */
-export function placeSeatLabels(
+function applyHorizontalClamp(
+  box: Box,
+  cx: number,
+  mapW: number,
+  mapH: number,
+): { ok: true; box: Box; slideDx: number } | { ok: false } {
+  if (box.top < -MAP_MARGIN_PX || box.bottom > mapH + MAP_MARGIN_PX) {
+    return { ok: false };
+  }
+  let left = box.left;
+  let right = box.right;
+  const crossedLeft = left < -MAP_MARGIN_PX;
+  const crossedRight = right > mapW + MAP_MARGIN_PX;
+  if (crossedLeft || crossedRight) {
+    if (crossedLeft) {
+      const slide = -MAP_MARGIN_PX - left;
+      left += slide;
+      right += slide;
+    }
+    if (right > mapW + MAP_MARGIN_PX) {
+      const slide = right - (mapW + MAP_MARGIN_PX);
+      left -= slide;
+      right -= slide;
+    }
+    if (left < -MAP_MARGIN_PX) {
+      return { ok: false };
+    }
+  }
+  if (cx < left + CLAMP_ANCHOR_INSET_PX || cx > right - CLAMP_ANCHOR_INSET_PX) {
+    return { ok: false };
+  }
+  return {
+    ok: true,
+    box: { left, right, top: box.top, bottom: box.bottom },
+    slideDx: left - box.left,
+  };
+}
+
+function fullLabelWidth(text: string, fontPx: number): number {
+  return textMetrics(text, fontPx).width;
+}
+
+function orderAreas(
   areas: readonly SeatLabelArea[],
-  viewBox: MapViewBox,
-  tier: SeatLabelTierConfig,
-): ReadonlyMap<string, SeatLabelPlacement> {
-  // Box is square on the larger side (D-61); CSS px per view-box unit.
-  const scale = tier.mapPx / Math.max(viewBox.width, viewBox.height);
-  const mapW = viewBox.width * scale;
-  const mapH = viewBox.height * scale;
-  const ordered = [...areas].sort((a, b) => {
+  capitalOrder: CapitalOrder,
+  fontPx: number,
+): SeatLabelArea[] {
+  return [...areas].sort((a, b) => {
     if (a.selected !== b.selected) {
       return a.selected ? -1 : 1;
     }
     if (a.capital !== b.capital) {
       return a.capital ? -1 : 1;
     }
+    if (capitalOrder === 'shortest-full') {
+      const wa = fullLabelWidth(a.fullText, fontPx);
+      const wb = fullLabelWidth(b.fullText, fontPx);
+      if (wa !== wb) {
+        return wa - wb;
+      }
+      return (a.registryIndex ?? 0) - (b.registryIndex ?? 0);
+    }
     if (a.radius !== b.radius) {
       return b.radius - a.radius;
     }
     return a.id.localeCompare(b.id);
   });
-  const dots = new Map(
+}
+
+/**
+ * Places seat/code labels without overlaps at a fixed map width.
+ * Defaults match the dialog (D-61 Update #161). Country options: shortest-full
+ * order, marker extents, horizontal edge slide.
+ */
+export function placeSeatLabels(
+  areas: readonly SeatLabelArea[],
+  viewBox: MapViewBox,
+  tier: SeatLabelTierConfig,
+  options: PlaceSeatLabelsOptions = {},
+): ReadonlyMap<string, SeatLabelPlacement> {
+  const capitalOrder = options.capitalOrder ?? 'radius';
+  const horizontalClamp = options.horizontalClamp ?? false;
+  const scale = tier.mapPx / Math.max(viewBox.width, viewBox.height);
+  const mapW = viewBox.width * scale;
+  const mapH = viewBox.height * scale;
+  const ordered = orderAreas(areas, capitalOrder, tier.fontPx);
+  const markers = new Map(
     areas.map((area) => {
       const cx = area.x * scale;
       const cy = area.y * scale;
-      return [area.id, seatDotBox(cx, cy)] as const;
+      return [area.id, markerObstacleBox(cx, cy, area.markerExtent)] as const;
     }),
   );
   const placed: Box[] = [];
@@ -219,53 +343,97 @@ export function placeSeatLabels(
     const tryPlace = (
       text: string,
       position: SeatLabelPosition,
-      ignoreDots: boolean,
-    ): boolean => {
-      const box = seatLabelBox(text, cx, cy, tier.fontPx, position);
-      if (!insideMap(box, mapW, mapH)) {
-        return false;
+    ): { slideDx: number } | undefined => {
+      const raw = seatLabelBox(
+        text,
+        cx,
+        cy,
+        tier.fontPx,
+        position,
+        area.markerExtent,
+      );
+      let box = raw;
+      let slideDx = 0;
+      if (horizontalClamp && (position === 'above' || position === 'below')) {
+        const clamped = applyHorizontalClamp(raw, cx, mapW, mapH);
+        if (!clamped.ok) {
+          return undefined;
+        }
+        box = clamped.box;
+        slideDx = clamped.slideDx;
+      } else if (!insideMap(raw, mapW, mapH)) {
+        return undefined;
       }
-      if (!ignoreDots) {
-        for (const [id, dot] of dots) {
-          if (id === area.id) {
-            continue;
-          }
-          if (boxesOverlap(box, dot)) {
-            return false;
-          }
+      for (const [id, marker] of markers) {
+        if (id === area.id) {
+          continue;
+        }
+        if (boxesOverlap(box, marker)) {
+          return undefined;
         }
       }
       for (const prior of placed) {
         if (boxesOverlap(box, prior)) {
-          return false;
+          return undefined;
         }
       }
       placed.push(box);
-      return true;
+      return { slideDx };
     };
     let chosen: SeatLabelPlacement | undefined;
     for (const position of SEAT_LABEL_POSITIONS) {
-      if (tryPlace(area.fullText, position, false)) {
-        chosen = { tier: 'full', position, forced: false };
+      const placedOk = tryPlace(area.fullText, position);
+      if (placedOk !== undefined) {
+        chosen = {
+          tier: 'full',
+          position,
+          forced: false,
+          slideDx: placedOk.slideDx,
+        };
         break;
       }
     }
     if (chosen === undefined) {
       for (const position of SEAT_LABEL_POSITIONS) {
-        if (tryPlace(area.codeText, position, false)) {
-          chosen = { tier: 'code', position, forced: false };
+        const placedOk = tryPlace(area.codeText, position);
+        if (placedOk !== undefined) {
+          chosen = {
+            tier: 'code',
+            position,
+            forced: false,
+            slideDx: placedOk.slideDx,
+          };
           break;
         }
       }
     }
     if (chosen === undefined && area.selected) {
       // Forced code stays above; may sit on a foreign tip.
-      placed.push(seatLabelBox(area.codeText, cx, cy, tier.fontPx, 'above'));
-      chosen = { tier: 'code', position: 'above', forced: true };
+      placed.push(
+        seatLabelBox(
+          area.codeText,
+          cx,
+          cy,
+          tier.fontPx,
+          'above',
+          area.markerExtent,
+        ),
+      );
+      chosen = {
+        tier: 'code',
+        position: 'above',
+        forced: true,
+        slideDx: 0,
+      };
     }
     result.set(
       area.id,
-      chosen ?? { tier: 'none', position: 'above', forced: false },
+      chosen ?? {
+        tier: 'none',
+        position: 'above',
+        forced: false,
+        slideDx: 0,
+      },
     );
   }
   return result;

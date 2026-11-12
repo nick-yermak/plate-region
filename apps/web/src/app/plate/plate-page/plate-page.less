@@ -84,6 +84,11 @@ h1 {
   margin-block: 0 var(--pr-padding-md);
 }
 
+.country-map-subtitle {
+  margin-block: 0 var(--pr-padding-md);
+  color: var(--pr-text-secondary);
+}
+
 @media (width < 768px) {
   // Inline border would eat the 328 px content width (box-sizing: border-box).
   .car-card {
@@ -97,7 +102,8 @@ h1 {
     border-inline-width: 0;
   }
 
-  .map-card h2 {
+  .map-card h2,
+  .map-card .country-map-subtitle {
     padding-inline: var(--pr-padding-md);
   }
 }

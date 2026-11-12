@@ -1,12 +1,14 @@
 <svg class="labels seats" aria-hidden="true" [class.halo]="labelHalo()">
   @for (seat of seatOverlay(); track seat.id) {
-    <circle
-      class="seat-dot"
-      [attr.data-area-id]="seat.id"
-      [attr.cx]="seat.x"
-      [attr.cy]="seat.y"
-      [attr.r]="dotRadius"
-    />
+    @if (seat.showDot) {
+      <circle
+        class="seat-dot"
+        [attr.data-area-id]="seat.id"
+        [attr.cx]="seat.x"
+        [attr.cy]="seat.y"
+        [attr.r]="dotRadius"
+      />
+    }
     @if (seat.narrowText; as text) {
       <text
         class="seat-label seat-label-narrow"

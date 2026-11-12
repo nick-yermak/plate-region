@@ -37,7 +37,7 @@
                     <app-map-dialog-open-button
                       #mapDialogButton
                       [filled]="!!target.filled"
-                      (openClick)="openMapDialog()"
+                      (openClick)="openMapDialog('card')"
                     />
                   }
                 </app-result-reading>
@@ -53,7 +53,7 @@
                     <app-map-dialog-open-button
                       #mapDialogButton
                       [filled]="!!target.filled"
-                      (openClick)="openMapDialog()"
+                      (openClick)="openMapDialog('card')"
                     />
                   }
                 </div>
@@ -69,7 +69,7 @@
                   <app-map-dialog-open-button
                     #mapDialogButton
                     [filled]="!!target.filled"
-                    (openClick)="openMapDialog()"
+                    (openClick)="openMapDialog('card')"
                   />
                 }
               </div>
@@ -86,9 +86,16 @@
     @if (mapTarget()) {
       <app-card class="map-card">
         <h2>{{ 'map.countryTitle' | transloco }}</h2>
+        <p class="country-map-subtitle">
+          {{ 'map.countrySubtitle' | transloco }}
+        </p>
         <div class="country-map-box">
           @if (countryView(); as country) {
-            <app-county-map [view]="country" />
+            <app-county-map
+              [view]="country"
+              interaction="none"
+              (openDialog)="openMapDialog('map')"
+            />
           }
         </div>
       </app-card>
