@@ -20,6 +20,11 @@
       "skwSww": "Service plate: Military Counterintelligence Service or Military Intelligence Service"
     },
     "backHome": "Search for another plate",
+    "showCountyOnMap": "Show the county on the map",
+    "showVoivodeshipOnMap": "Show the voivodeship on the map",
+    "mapDialogClose": "Close",
+    "mapDialogTitle": "{{name}} Voivodeship",
+    "mapDialogSubtitle": "Counties and registration codes",
     "notes": {
       "region1Only": "This plate shows only the voivodeship code, not a county.",
       "region2NotInRegistry": "The county code is not in the current registry.",
@@ -36,7 +41,10 @@
       "possibleTypes": "Possible plate types",
       "countyValue": "{{name}} ({{kind}})",
       "countyLink": "{{name}} on the voivodeship page",
-      "voivodeshipLink": "Voivodeship page: {{name}}"
+      "codesLink": "Codes in the voivodeship"
+    },
+    "voivodeshipCard": {
+      "codes": "Plates starting with, among others: {{codes}}"
     },
     "kind": {
       "city": "city with county rights",

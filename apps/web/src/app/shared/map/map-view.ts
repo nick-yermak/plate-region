@@ -1,5 +1,6 @@
 import { voivodeshipSlug } from '@plate-region/plate-domain';
 import {
+  countySeat,
   fullCodes,
   registry,
   warsawDistricts,
@@ -12,26 +13,23 @@ import {
 } from '@plate-region/plate-data';
 
 import type { MapArea, MapView } from './map.types';
+import { labelFits, labelFontSize } from './map-labels';
 import { countyHeading } from '../county/county-heading';
 import type { Language } from '../../i18n/language.types';
 import type { TranslatableMessage } from '../../i18n/i18n.types';
 import {
-  LABEL_FONT_PX,
-  LABEL_HALO_PX,
-  labelFits,
-  labelFontSize,
-  labelSizeEm,
-  MARKER_HALO_PX,
-  MARKER_LABEL_BASELINE_PX,
-  MARKER_RADIUS_PX,
-  REFERENCE_MAP_SIZE_PX,
-} from './map-labels';
+  COUNTRY_NARROW,
+  COUNTRY_WIDE,
+  placeSeatLabels,
+  type SeatLabelArea,
+  type SeatLabelPlacement,
+} from './seat-labels';
 
-type LabelBox = {
-  readonly x: number;
-  readonly y: number;
-  readonly hw: number;
-  readonly hh: number;
+const EMPTY_SEAT_PLACEMENT: SeatLabelPlacement = {
+  tier: 'none',
+  position: 'above',
+  forced: false,
+  slideDx: 0,
 };
 
 function voivodeshipName(region1: Region1, language: Language): string {
@@ -62,69 +60,6 @@ function countyCode(row: CountryMapCounty): string {
   return `${row.region1Letter}${row.firstSuffix}`;
 }
 
-function labelHalfBox(
-  code: string,
-  mapWidthPx: number,
-  fontPx: number,
-): { hw: number; hh: number } {
-  const em = labelSizeEm(code);
-  const scale = 1000 / mapWidthPx;
-  const wPx = em.width * fontPx + LABEL_HALO_PX;
-  const hPx = em.height * fontPx + LABEL_HALO_PX;
-  return { hw: (wPx * scale) / 2, hh: (hPx * scale) / 2 };
-}
-
-function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
-  return Math.abs(a.x - b.x) < a.hw + b.hw && Math.abs(a.y - b.y) < a.hh + b.hh;
-}
-
-function labelBoxesOverlap(
-  a: { readonly code: string; readonly x: number; readonly y: number },
-  b: { readonly code: string; readonly x: number; readonly y: number },
-  mapWidthPx: number,
-  fontPx: number,
-): boolean {
-  const ha = labelHalfBox(a.code, mapWidthPx, fontPx);
-  const hb = labelHalfBox(b.code, mapWidthPx, fontPx);
-  return boxesOverlap({ x: a.x, y: a.y, ...ha }, { x: b.x, y: b.y, ...hb });
-}
-
-function selectedObstacleBoxes(
-  code: string,
-  x: number,
-  y: number,
-  mapWidthPx: number,
-  fontPx: number,
-): readonly [LabelBox, LabelBox] {
-  const scale = 1000 / mapWidthPx;
-  const em = labelSizeEm(code);
-  const ringHalf = (MARKER_RADIUS_PX + MARKER_HALO_PX / 2) * scale;
-  const half = labelHalfBox(code, mapWidthPx, fontPx);
-  const labelCenterY =
-    y - (MARKER_LABEL_BASELINE_PX + (em.height * fontPx) / 2) * scale;
-  return [
-    { x, y, hw: ringHalf, hh: ringHalf },
-    { x, y: labelCenterY, hw: half.hw, hh: half.hh },
-  ];
-}
-
-function capitalOverlapsSelected(
-  capital: { readonly code: string; readonly x: number; readonly y: number },
-  selected: { readonly code: string; readonly x: number; readonly y: number },
-  mapWidthPx: number,
-  fontPx: number,
-): boolean {
-  const half = labelHalfBox(capital.code, mapWidthPx, fontPx);
-  const capitalBox: LabelBox = { x: capital.x, y: capital.y, ...half };
-  return selectedObstacleBoxes(
-    selected.code,
-    selected.x,
-    selected.y,
-    mapWidthPx,
-    fontPx,
-  ).some((box) => boxesOverlap(box, capitalBox));
-}
-
 export function voivodeshipMapView(
   map: CountyMap,
   region1: Region1,
@@ -150,9 +85,14 @@ export function voivodeshipMapView(
         x: county.label.x,
         y: county.label.y,
         text,
+        codeText: text,
         visible: labelFits(text, county.label.radius, fontSize),
         wideOnly: false,
         aboveMarker: false,
+        tiers: { narrow: 'none', wide: 'none' },
+        positions: { narrow: 'above', wide: 'above' },
+        forced: { narrow: false, wide: false },
+        slideDx: { narrow: 0, wide: 0 },
       },
       heading: countyHeading(region2),
       codes,
@@ -181,6 +121,7 @@ export function voivodeshipMapView(
     neighbours: map.neighbours,
     areas,
     labelHalo: false,
+    dots: false,
     ariaLabel,
   };
 }
@@ -220,9 +161,14 @@ export function warsawMapView(
         x: district.label.x,
         y: district.label.y,
         text,
+        codeText: text,
         visible: labelFits(text, district.label.radius, fontSize),
         wideOnly: false,
         aboveMarker: false,
+        tiers: { narrow: 'none', wide: 'none' },
+        positions: { narrow: 'above', wide: 'above' },
+        forced: { narrow: false, wide: false },
+        slideDx: { narrow: 0, wide: 0 },
       },
       heading: { key: 'map.district', params: { name: district.name } },
       codes,
@@ -236,6 +182,7 @@ export function warsawMapView(
     neighbours: map.neighbours,
     areas,
     labelHalo: false,
+    dots: false,
     ariaLabel: {
       key: 'map.aria.warsaw',
       params: {
@@ -252,30 +199,10 @@ export function countryMapView(
   region1: Region1,
   filled: Region2 | undefined,
   language: Language,
+  plateCode?: string,
 ): MapView {
-  const capitalPoints: {
-    readonly code: string;
-    readonly x: number;
-    readonly y: number;
-  }[] = [];
-  const wideOnlyCapitals = new Set<string>();
-  for (const capital of map.capitals) {
-    const point = {
-      code: countyCode(capital),
-      x: capital.label.x,
-      y: capital.label.y,
-    };
-    if (
-      capitalPoints.some((earlier) =>
-        labelBoxesOverlap(earlier, point, REFERENCE_MAP_SIZE_PX, LABEL_FONT_PX),
-      )
-    ) {
-      wideOnlyCapitals.add(point.code);
-    }
-    capitalPoints.push(point);
-  }
-
-  const capitalCodes = new Set(map.capitals.map(countyCode));
+  const capitalIds = map.capitals.map(countyCode);
+  const capitalIndex = new Map(capitalIds.map((id, i) => [id, i]));
   const filledCode =
     filled === undefined
       ? undefined
@@ -293,6 +220,81 @@ export function countryMapView(
           y: filledCounty.label.y,
         };
 
+  const seatAreas: SeatLabelArea[] = [];
+  const pushSeat = (
+    county: CountryMapCounty,
+    opts: {
+      selected: boolean;
+      capital: boolean;
+      markerExtent: number;
+      codeText: string;
+      fullText: string;
+    },
+  ): void => {
+    seatAreas.push({
+      id: countyCode(county),
+      x: county.label.x,
+      y: county.label.y,
+      radius: 0,
+      fullText: opts.fullText,
+      codeText: opts.codeText,
+      selected: opts.selected,
+      capital: opts.capital,
+      markerExtent: opts.markerExtent,
+      registryIndex: capitalIndex.get(countyCode(county)),
+    });
+  };
+
+  if (filledCounty !== undefined && filledCode !== undefined) {
+    const ownRegion1 = region1ByLetter(filledCounty.region1Letter);
+    const region2 = region2ForCounty(ownRegion1, filledCounty.firstSuffix);
+    const firstCode = fullCodes(ownRegion1, region2)[0];
+    const codeText = plateCode ?? firstCode;
+    const isCapital = capitalIndex.has(filledCode);
+    pushSeat(filledCounty, {
+      selected: true,
+      capital: isCapital,
+      markerExtent: 9,
+      codeText,
+      fullText: `${countySeat(region2)} (${codeText})`,
+    });
+  }
+  for (const capital of map.capitals) {
+    const id = countyCode(capital);
+    if (id === filledCode) {
+      continue;
+    }
+    const ownRegion1 = region1ByLetter(capital.region1Letter);
+    const region2 = region2ForCounty(ownRegion1, capital.firstSuffix);
+    const codeText = fullCodes(ownRegion1, region2)[0];
+    pushSeat(capital, {
+      selected: false,
+      capital: true,
+      markerExtent: 7,
+      codeText,
+      fullText: `${countySeat(region2)} (${codeText})`,
+    });
+  }
+
+  const countryOptions = {
+    capitalOrder: 'shortest-full' as const,
+    horizontalClamp: true,
+    mapMarginPx: 0,
+  };
+  const narrowTiers = placeSeatLabels(
+    seatAreas,
+    map.viewBox,
+    COUNTRY_NARROW,
+    countryOptions,
+  );
+  const wideTiers = placeSeatLabels(
+    seatAreas,
+    map.viewBox,
+    COUNTRY_WIDE,
+    countryOptions,
+  );
+  const seatById = new Map(seatAreas.map((area) => [area.id, area]));
+
   const areas: MapArea[] = map.counties.map((row) => {
     const ownRegion1 = region1ByLetter(row.region1Letter);
     const region2 = region2ForCounty(ownRegion1, row.firstSuffix);
@@ -302,20 +304,9 @@ export function countryMapView(
       filled !== undefined &&
       filled.region1Letter === region2.region1Letter &&
       filled.suffixes[0] === region2.suffixes[0];
-    const isCapital = capitalCodes.has(text);
-    let visible = false;
-    if (isFilled) {
-      visible = true;
-    } else if (isCapital) {
-      visible =
-        filledPoint === undefined ||
-        !capitalOverlapsSelected(
-          { code: text, x: row.label.x, y: row.label.y },
-          filledPoint,
-          REFERENCE_MAP_SIZE_PX,
-          LABEL_FONT_PX,
-        );
-    }
+    const seat = seatById.get(text);
+    const narrow = narrowTiers.get(text) ?? EMPTY_SEAT_PLACEMENT;
+    const wide = wideTiers.get(text) ?? EMPTY_SEAT_PLACEMENT;
     return {
       id: text,
       path: row.path,
@@ -325,10 +316,18 @@ export function countryMapView(
       label: {
         x: row.label.x,
         y: row.label.y,
-        text,
-        visible,
-        wideOnly: isFilled ? false : wideOnlyCapitals.has(text),
-        aboveMarker: isFilled,
+        text: seat?.fullText ?? text,
+        codeText: seat?.codeText ?? text,
+        visible: false,
+        wideOnly: false,
+        aboveMarker: false,
+        tiers: { narrow: narrow.tier, wide: wide.tier },
+        positions: { narrow: narrow.position, wide: wide.position },
+        forced: { narrow: narrow.forced, wide: wide.forced },
+        slideDx: { narrow: narrow.slideDx, wide: wide.slideDx },
+        ...(seat?.markerExtent === undefined
+          ? {}
+          : { markerExtent: seat.markerExtent }),
       },
       heading: countyHeading(region2),
       codes,
@@ -355,16 +354,37 @@ export function countryMapView(
     };
   }
 
+  // One path so shared edges between voivodeships are stroked once.
+  const borders = map.voivodeships.map((row) => row.path).join('');
+  const voivodeship = map.voivodeships.find(
+    (row) => row.region1Letter === region1.letters[0],
+  );
+  if (voivodeship === undefined) {
+    throw new Error(`no voivodeship outline for ${region1.letters[0]}`);
+  }
+
+  const capitalMarkers = map.capitals
+    .filter((capital) => countyCode(capital) !== filledCode)
+    .map((capital) => ({ x: capital.label.x, y: capital.label.y }));
+
   return {
     viewBox: map.viewBox,
-    outline: map.outline,
     neighbours: [],
     areas,
-    borders: map.borders,
+    borders,
     labelHalo: true,
+    dots: true,
     ...(filledPoint === undefined
       ? {}
       : { marker: { x: filledPoint.x, y: filledPoint.y } }),
+    capitalMarkers,
+    voivodeshipButton: {
+      path: voivodeship.path,
+      nameKey:
+        filled !== undefined
+          ? 'plate.showCountyOnMap'
+          : 'plate.showVoivodeshipOnMap',
+    },
     ariaLabel,
   };
 }

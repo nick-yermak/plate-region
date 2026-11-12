@@ -1,5 +1,10 @@
 export { fullCodes } from './lib/pl/full-codes';
 export {
+  countySeat,
+  countySeatsProvenance,
+  decodeCountySeats,
+} from './lib/pl/county-seats';
+export {
   countyMapLoaders,
   countyMapProvenance,
   countyMapWaterProvenance,
@@ -17,6 +22,7 @@ export type {
   Source,
   UnofficialName,
 } from './lib/pl/model';
+export type { CountySeatsProvenance } from './lib/pl/county-seats';
 export type {
   CountryMap,
   CountryMapCounty,

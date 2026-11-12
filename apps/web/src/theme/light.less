@@ -1,5 +1,9 @@
 @import 'ng-zorro-antd/style/default.less';
 @import 'ng-zorro-antd/style/patch.less';
+// Primary button: white on @blue-7 4.999:1, hover @blue-8 7.504:1, active @blue-9 10.585:1.
+@pr-btn-primary-bg: @blue-7;
+@pr-btn-primary-hover: @blue-8;
+@pr-btn-primary-active: @blue-9;
 @import './nz-components.less';
 @import './tokens.less';
 
@@ -16,6 +20,8 @@
 @menu-highlight-color: @blue-7;
 @header-brand-color: @blue-7;
 @border-radius-base: 6px;
+// Map strokes: smallest grey ≥ 3:1 on white is gray-7 (~3.4:1).
+@pr-map-line: #8c8c8c;
 // Self-hosted Inter plus metric-matched fallback, then the library default stack (D-56).
 @font-family:
   Inter,

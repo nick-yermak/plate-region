@@ -1,0 +1,45 @@
+.dialog-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.dialog-subtitle {
+  margin: var(--pr-padding-xs) 0 0;
+  font-weight: 400;
+  color: var(--pr-text-secondary, var(--pr-text));
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pr-padding-md);
+}
+
+.dialog-map {
+  width: 100%;
+}
+
+.map-dialog-panel .heading {
+  font-weight: 600;
+}
+
+.map-dialog-panel p {
+  margin: 0 0 var(--pr-padding-xs);
+}
+
+@media (width >= 992px) {
+  .dialog-body {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .dialog-map {
+    flex: 0 0 560px;
+    width: 560px;
+  }
+
+  .map-dialog-panel {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+}

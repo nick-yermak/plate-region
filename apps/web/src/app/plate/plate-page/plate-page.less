@@ -1,29 +1,109 @@
 :host {
   display: block;
+  max-width: var(--pr-column-max-width);
+  margin-inline: auto;
 }
 
-// Car viewBox 984 × 732 → 30rem car is 30rem * 732 / 984 = 357.07 px high;
-// 30rem + 16 + 357.07 = 853.07 px of content; 992 px is D-50's lg and leaves 892 px (D-54, D-61).
-.result-media {
+h1 {
+  margin-block: 0 var(--pr-padding-md);
+}
+
+.result-grid {
   display: grid;
-  row-gap: var(--pr-padding-md);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pr-padding-md);
+  align-items: start;
 }
 
-.map-box {
-  width: min(100%, calc(30rem * 732 / 984));
-  aspect-ratio: 1;
+.result-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pr-padding-md);
+  min-width: 0;
 }
 
-// The country view box (D-62), reserved while loading.
+// Ant @screen-xl; literal per D-28/D-50.
+@media (width >= 1200px) {
+  :host {
+    max-width: none;
+  }
+
+  .result-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+}
+
+// Container on the card host so @container can style .car-card-body (a descendant).
+.car-card {
+  container-type: inline-size;
+}
+
+.car-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pr-padding-md);
+}
+
+// At 1440 px the card is 554 px inside ((1340 − 16) × 5/11 − 48); at 1280 px 481 px.
+// Fixed 19rem car column: minmax(0, 19rem) only grows when content asks for it.
+@container (width >= 33rem) {
+  .car-card-body {
+    display: grid;
+    grid-template-columns: 19rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .car-card-content {
+    min-width: 0;
+  }
+}
+
+.car-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pr-padding-md);
+}
+
+.note {
+  margin: 0;
+  color: var(--pr-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pr-padding-md);
+}
+
 .country-map-box {
   width: min(100%, 650px);
   aspect-ratio: 1000 / 938;
 }
 
-@media (width >= 992px) {
-  .result-media {
-    grid-template-columns: 30rem calc(30rem * 732 / 984);
-    column-gap: var(--pr-padding-md);
-    align-items: start;
+.map-card h2 {
+  margin-block: 0 var(--pr-padding-md);
+}
+
+.country-map-subtitle {
+  margin-block: 0 var(--pr-padding-md);
+  color: var(--pr-text-secondary);
+}
+
+@media (width < 768px) {
+  // Inline border would eat the 328 px content width (box-sizing: border-box).
+  .car-card {
+    padding-inline: var(--pr-padding-xs);
+    border-inline-width: 0;
+  }
+
+  // Drop inline padding and border so the map is the full 328 px content width at 360.
+  .map-card {
+    padding-inline: 0;
+    border-inline-width: 0;
+  }
+
+  .map-card h2,
+  .map-card .country-map-subtitle {
+    padding-inline: var(--pr-padding-md);
   }
 }

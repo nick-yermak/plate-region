@@ -1,6 +1,21 @@
-import { labelFits, labelFontSize, labelSizeEm } from './map-labels';
+import { INTER_600_GLYPHS } from './inter-600-glyphs';
+import {
+  DOT_LABEL_BASELINE_PX,
+  labelFits,
+  labelFontSize,
+  labelSizeEm,
+} from './map-labels';
 
 describe('map-labels', () => {
+  it('DOT_LABEL_BASELINE_PX is 11 from the Inter 600 yMin of g', () => {
+    // ceil(4 + (−(−442)) × 12 / 2048 + 1.5 + 2) = 11
+    expect(DOT_LABEL_BASELINE_PX).toBe(11);
+  });
+
+  it('INTER_600_GLYPHS has the 64 probe characters', () => {
+    expect(Object.keys(INTER_600_GLYPHS)).toHaveLength(64);
+  });
+
   it('labelSizeEm gives DW 1.7421875 by 0.7275390625 em', () => {
     expect(labelSizeEm('DW')).toEqual({
       width: 1.7421875,

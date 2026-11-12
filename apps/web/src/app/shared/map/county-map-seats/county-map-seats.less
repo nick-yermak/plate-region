@@ -1,0 +1,55 @@
+:host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.labels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.labels.halo text {
+  stroke: var(--pr-map-land);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.seat-dot {
+  fill: var(--pr-map-line);
+  stroke: var(--pr-map-land);
+  stroke-width: 2px;
+}
+
+.seat-label {
+  fill: var(--pr-text);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.seat-label-narrow {
+  font-size: 11px;
+}
+
+.seat-label-wide {
+  font-size: 12px;
+}
+
+@media (width < 768px) {
+  .seat-label-wide {
+    display: none;
+  }
+}
+
+@media (width >= 768px) {
+  .seat-label-narrow {
+    display: none;
+  }
+}

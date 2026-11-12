@@ -1,0 +1,73 @@
+@if (modalPresent()) {
+  <nz-modal
+    [nzVisible]="modalVisible()"
+    [nzCentered]="true"
+    [nzNoAnimation]="true"
+    nzWrapClassName="pr-voivodeship-map-dialog-wrap"
+    (nzOnCancel)="requestClose()"
+    (nzVisibleChange)="onVisibleChange($event)"
+  >
+    <div *nzModalTitle>
+      <p class="dialog-title">
+        {{ title().key | transloco: title().params }}
+      </p>
+      <p class="dialog-subtitle">
+        {{ subtitle().key | transloco: subtitle().params }}
+      </p>
+    </div>
+    <ng-container *nzModalContent>
+      <div class="dialog-body">
+        <div class="dialog-map">
+          <app-county-map
+            [view]="view()"
+            interaction="select"
+            [selectedId]="selectedId()"
+            (areaSelect)="onAreaSelect($event)"
+          />
+        </div>
+        <div class="map-dialog-panel">
+          @if (panelArea(); as area) {
+            <p class="heading">
+              {{ area.heading.key | transloco: area.heading.params }}
+            </p>
+            <p>
+              {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
+            </p>
+            <p>
+              {{ 'plate.reading.voivodeship' | transloco }}:
+              {{ voivodeshipLabel() }}
+            </p>
+            <p>
+              {{
+                (area.heading.key === 'map.district'
+                  ? 'plate.reading.district'
+                  : 'plate.reading.county'
+                ) | transloco
+              }}:
+              {{ area.heading.params?.['name'] }}
+            </p>
+            <a
+              [routerLink]="['/voivodeship', area.link.slug]"
+              [fragment]="area.link.fragment"
+            >
+              {{ 'map.tableLink' | transloco }}
+            </a>
+          } @else {
+            <p class="heading">
+              {{ title().key | transloco: title().params }}
+            </p>
+            <p>
+              {{ 'plate.reading.voivodeship' | transloco }}:
+              {{ voivodeshipLabel() }}
+            </p>
+          }
+        </div>
+      </div>
+    </ng-container>
+    <div *nzModalFooter>
+      <button nz-button nzType="default" type="button" (click)="requestClose()">
+        {{ 'map.dialogClose' | transloco }}
+      </button>
+    </div>
+  </nz-modal>
+}

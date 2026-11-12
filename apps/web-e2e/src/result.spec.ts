@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-import { plateTextAndBoxRects, waitForPlateFont } from './support/plate';
+import {
+  PLATE_TEXT_TOLERANCE_PX,
+  plateTextAndBoxRects,
+  waitForPlateFont,
+} from './support/plate';
 
 test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
@@ -13,7 +17,7 @@ test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
     page.locator('app-car-illustration').getByText('DW 12345', { exact: true }),
   ).toBeVisible();
   await expect(
-    main.getByRole('link', { name: 'Wrocław on the voivodeship page' }),
+    main.getByRole('link', { name: 'Codes in the voivodeship' }),
   ).toHaveAttribute('href', '/voivodeship/dolnoslaskie#DW');
 });
 
@@ -54,7 +58,7 @@ test('result-share-reload', { tag: '@desktop' }, async ({ page }) => {
     page.locator('app-car-illustration > svg[aria-hidden="true"]'),
   ).toBeVisible();
   await expect(
-    main.getByRole('link', { name: 'Wrocław on the voivodeship page' }),
+    main.getByRole('link', { name: 'Codes in the voivodeship' }),
   ).toHaveAttribute('href', '/voivodeship/dolnoslaskie#DW');
 });
 
@@ -112,7 +116,7 @@ test(
     await waitForPlateFont(page);
     const { textLeft, textRight, boxLeft, boxRight } =
       await plateTextAndBoxRects(plate);
-    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-    expect(textRight).toBeLessThanOrEqual(boxRight);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+    expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
   },
 );

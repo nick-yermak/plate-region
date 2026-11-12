@@ -7,13 +7,42 @@ export interface MapLink {
   readonly fragment: string;
 }
 
+export type SeatLabelVisibility = 'full' | 'code' | 'none';
+
+export type SeatLabelPosition = 'above' | 'below' | 'right' | 'left';
+
 export interface MapAreaLabel {
   readonly x: number;
   readonly y: number;
   readonly text: string;
+  /** Short code-only text when the tier falls back from the full seat label. */
+  readonly codeText: string;
   readonly visible: boolean;
   readonly wideOnly: boolean;
   readonly aboveMarker: boolean;
+  readonly tiers: {
+    readonly narrow: SeatLabelVisibility;
+    readonly wide: SeatLabelVisibility;
+  };
+  readonly positions: {
+    readonly narrow: SeatLabelPosition;
+    readonly wide: SeatLabelPosition;
+  };
+  /** Selected code that was forced over another area's tip at that tier. */
+  readonly forced: {
+    readonly narrow: boolean;
+    readonly wide: boolean;
+  };
+  /** Extra CSS px on dx for edge slide (map of Poland above/below). */
+  readonly slideDx: {
+    readonly narrow: number;
+    readonly wide: number;
+  };
+  /**
+   * Half-extent of the tip marker in CSS px for label offsets. Dialog dots
+   * omit this; the map of Poland uses 9 (selected) / 7 (capital).
+   */
+  readonly markerExtent?: number;
 }
 
 export interface MapArea {
@@ -32,11 +61,25 @@ export interface MapArea {
 
 export interface MapView {
   readonly viewBox: MapViewBox;
-  readonly outline: string;
+  /** Voivodeship / Warsaw outer path; omitted on the map of Poland. */
+  readonly outline?: string;
   readonly neighbours: readonly string[];
   readonly areas: readonly MapArea[];
+  /** Voivodeship borders (country: all 16 outlines as one path). */
   readonly borders?: string;
   readonly labelHalo: boolean;
+  /** Seat/district dots for the dialog map. */
+  readonly dots: boolean;
   readonly marker?: { readonly x: number; readonly y: number };
+  /** Capital markers on the map of Poland (selected capital uses `marker` only). */
+  readonly capitalMarkers?: readonly {
+    readonly x: number;
+    readonly y: number;
+  }[];
+  /** Result voivodeship outline for the separate button layer. */
+  readonly voivodeshipButton?: {
+    readonly path: string;
+    readonly nameKey: string;
+  };
   readonly ariaLabel: TranslatableMessage;
 }

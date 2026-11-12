@@ -32,12 +32,17 @@
   @if (view().borders; as borders) {
     <path class="borders" [attr.d]="borders" />
   }
-  <path class="outline" [attr.d]="view().outline" />
+  @if (view().outline; as outline) {
+    <path class="outline" [attr.d]="outline" />
+  }
   @for (area of filledAreas(); track area.id) {
     <path class="filled-outline" [attr.d]="area.path" />
   }
   @if (hoveredArea(); as hovered) {
     <path class="hover-outline" [attr.d]="hovered.path" />
+  }
+  @if (interaction() === 'select' && selectedArea(); as selected) {
+    <path class="select-outline" [attr.d]="selected.path" />
   }
 </svg>
 <svg class="labels" aria-hidden="true" [class.halo]="view().labelHalo">
@@ -49,6 +54,26 @@
       r="7"
     />
     <circle class="marker" [attr.cx]="marker.cx" [attr.cy]="marker.cy" r="7" />
+  }
+  @for (marker of capitalMarkerPositions(); track $index) {
+    <circle
+      class="capital-marker-halo"
+      [attr.cx]="marker.cx"
+      [attr.cy]="marker.cy"
+      r="4"
+    />
+    <circle
+      class="capital-marker"
+      [attr.cx]="marker.cx"
+      [attr.cy]="marker.cy"
+      r="4"
+    />
+    <circle
+      class="capital-marker-dot"
+      [attr.cx]="marker.cx"
+      [attr.cy]="marker.cy"
+      r="1.5"
+    />
   }
   @for (area of overlayLabels(); track area.id) {
     <text
@@ -62,23 +87,45 @@
     </text>
   }
 </svg>
-@if (selectedArea(); as area) {
-  <div
-    class="map-tooltip"
-    [class.above]="tooltipAbove()"
-    [style]="tooltipStyle()"
+@defer (when view().dots; prefetch on idle) {
+  <app-county-map-seats [view]="view()" />
+}
+@if (voivodeshipButton(); as button) {
+  <svg
+    class="voivodeship-button"
+    aria-hidden="false"
+    [attr.viewBox]="'0 0 ' + view().viewBox.width + ' ' + view().viewBox.height"
   >
-    <p class="heading">
-      {{ area.heading.key | transloco: area.heading.params }}
-    </p>
-    <p>
-      {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
-    </p>
-    <a
-      [routerLink]="['/voivodeship', area.link.slug]"
-      [fragment]="area.link.fragment"
+    <path
+      role="button"
+      tabindex="0"
+      [attr.d]="button.path"
+      [attr.aria-label]="button.nameKey | transloco"
+      (click)="onVoivodeshipActivate($event)"
+      (keydown.enter)="onVoivodeshipActivate($event)"
+      (keydown.space)="onVoivodeshipActivate($event)"
+    />
+  </svg>
+}
+@if (showTooltip()) {
+  @if (selectedArea(); as area) {
+    <div
+      class="map-tooltip"
+      [class.above]="tooltipAbove()"
+      [style]="tooltipStyle()"
     >
-      {{ 'map.tableLink' | transloco }}
-    </a>
-  </div>
+      <p class="heading">
+        {{ area.heading.key | transloco: area.heading.params }}
+      </p>
+      <p>
+        {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
+      </p>
+      <a
+        [routerLink]="['/voivodeship', area.link.slug]"
+        [fragment]="area.link.fragment"
+      >
+        {{ 'map.tableLink' | transloco }}
+      </a>
+    </div>
+  }
 }

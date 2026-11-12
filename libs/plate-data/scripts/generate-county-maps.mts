@@ -17,6 +17,7 @@ import { dirname, join, resolve } from 'node:path';
 import { presimplify, simplify } from 'topojson-simplify';
 import GeoJSONReader from 'jsts/org/locationtech/jts/io/GeoJSONReader.js';
 import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter.js';
+import { feature as topoFeature, merge as topoMerge } from 'topojson-client';
 import BufferOp from 'jsts/org/locationtech/jts/operation/buffer/BufferOp.js';
 import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
 import OverlayOp from 'jsts/org/locationtech/jts/operation/overlay/OverlayOp.js';
@@ -39,11 +40,6 @@ import type {
   Polygon,
   Position,
 } from 'geojson';
-import {
-  feature as topoFeature,
-  merge as topoMerge,
-  mesh as topoMesh,
-} from 'topojson-client';
 
 import type { Region1, Region2, Registry } from '../src/lib/pl/model.ts';
 import type {
@@ -975,87 +971,6 @@ function shoelaceArea(rings: PathPoint[][]): number {
   return area;
 }
 
-/** Relative encoding of open lines (the voivodeship border mesh). */
-function encodeOpenPath(
-  geometry: { type: string; coordinates: unknown } | null,
-  height: number,
-): string {
-  if (geometry === null) {
-    return '';
-  }
-  const parts: string[] = [];
-  let last: Point | null = null;
-  let current: Point[] | null = null;
-  const flush = (): void => {
-    if (current === null || current.length === 0) {
-      current = null;
-      last = null;
-      return;
-    }
-    const unique: Point[] = [];
-    for (const p of current) {
-      const prev = unique[unique.length - 1];
-      if (prev && prev[0] === p[0] && prev[1] === p[1]) continue;
-      unique.push(p);
-    }
-    if (unique.length >= 2) {
-      const start = expectDefined(unique[0], 'open start');
-      let s = `M${start[0]} ${start[1]}l`;
-      const deltas: number[] = [];
-      for (let i = 1; i < unique.length; i++) {
-        const [x, y] = expectDefined(unique[i], `open ${i}`);
-        const [px, py] = expectDefined(unique[i - 1], `open ${i - 1}`);
-        deltas.push(x - px, y - py);
-      }
-      for (let i = 0; i < deltas.length; i++) {
-        const n = expectDefined(deltas[i], `od ${i}`);
-        if (i > 0 && n >= 0) s += ' ';
-        s += String(n);
-      }
-      parts.push(s);
-    }
-    current = null;
-    last = null;
-  };
-  const ctx = {
-    moveTo(x: number, y: number): void {
-      flush();
-      const p: Point = [Math.round(x), Math.round(y)];
-      current = [p];
-      last = p;
-    },
-    lineTo(x: number, y: number): void {
-      if (current === null || last === null) fail('lineTo without moveTo');
-      const p: Point = [Math.round(x), Math.round(y)];
-      if (p[0] === last[0] && p[1] === last[1]) return;
-      current.push(p);
-      last = p;
-    },
-    closePath(): void {
-      fail('closePath is not expected in open lines');
-    },
-    beginPath(): void {
-      // GeoContext requires beginPath; open-line state is reset in moveTo.
-      return;
-    },
-    arc(): never {
-      fail('arc not supported');
-    },
-    rect(): never {
-      fail('rect not supported');
-    },
-  };
-  geoPath(
-    geoIdentity().clipExtent([
-      [0, 0],
-      [W, height],
-    ]),
-    ctx as never,
-  )(geometry as never);
-  flush();
-  return parts.join('');
-}
-
 async function readLayer(prgDir: string, base: string): Promise<PrgFeature[]> {
   const collection = await readShapefile(
     join(prgDir, `${base}.shp`),
@@ -1299,13 +1214,15 @@ function serializeCountryMap(module: CountryMapModule): string {
         `    [${JSON.stringify(letter)}, ${JSON.stringify(suffix)}]`,
     )
     .join(',\n');
+  const voivodeships = module.voivodeships
+    .map((path) => `    ${JSON.stringify(path)}`)
+    .join(',\n');
   return (
     `{\n` +
     `  viewBox: { width: ${module.viewBox.width}, height: ${module.viewBox.height} },\n` +
-    `  outline: ${JSON.stringify(module.outline)},\n` +
-    `  borders: ${JSON.stringify(module.borders)},\n` +
     `  counties: [\n${counties}\n  ],\n` +
     `  capitals: [\n${capitals}\n  ],\n` +
+    `  voivodeships: [\n${voivodeships}\n  ],\n` +
     `}`
   );
 }
@@ -1714,6 +1631,7 @@ function assertSourceBudget(
 
 function generateCountryModule(
   counties: readonly MatchedCounty[],
+  region1: readonly Region1[],
   region2: readonly Region2[],
 ): GeneratedModule {
   if (counties.length !== region2.length) {
@@ -1818,35 +1736,29 @@ function generateCountryModule(
 
   assertNoPathCrossings('country-map-data.ts', crossingUnits);
 
-  const allGeoms = region2.map((r2) => {
-    const matched = expectDefined(
-      matchedById.get(`${r2.region1Letter}\0${r2.suffixes[0]}`),
-      `own county ${r2.region1Letter}${r2.suffixes[0]}`,
+  // Voivodeship outlines replace the country outline and inter-voivodeship
+  // borders: shared edges are the same lines (stage 4 / #161).
+  const voivodeships: string[] = [];
+  for (const r1 of region1) {
+    const letter = r1.letters[0];
+    const geoms = region2
+      .filter((r2) => r2.region1Letter === letter)
+      .map((r2) => {
+        const matched = expectDefined(
+          matchedById.get(`${r2.region1Letter}\0${r2.suffixes[0]}`),
+          `voivodeship ${letter} county ${r2.region1Letter}${r2.suffixes[0]}`,
+        );
+        return expectDefined(byTeryt.get(matched.teryt), matched.teryt);
+      });
+    const outlineGeom = mergePolygons(simplifiedTopo, geoms);
+    const outlineEncoded = encodePath(outlineGeom, height);
+    const path = assertPathNonEmpty(
+      outlineEncoded.path,
+      outlineGeom,
+      `voivodeship ${letter}`,
     );
-    return expectDefined(byTeryt.get(matched.teryt), matched.teryt);
-  });
-  const outlineGeom = mergePolygons(simplifiedTopo, allGeoms);
-  const outlineEncoded = encodePath(outlineGeom, height);
-  const outline = assertPathNonEmpty(
-    outlineEncoded.path,
-    outlineGeom,
-    'outline of Poland',
-  );
-  pathVertices += outlineEncoded.vertices;
-
-  const meshGeom = topoMesh(
-    simplifiedTopo,
-    simplifiedTopo.objects.counties,
-    (a, b) =>
-      a !== b &&
-      (a as { properties?: { region1Letter?: string } }).properties
-        ?.region1Letter !==
-        (b as { properties?: { region1Letter?: string } }).properties
-          ?.region1Letter,
-  );
-  const borders = encodeOpenPath(meshGeom as never, height);
-  if (borders === '') {
-    fail('empty borders path for country map');
+    pathVertices += outlineEncoded.vertices;
+    voivodeships.push(path);
   }
 
   const aliasToRegistry = new Map(NAME_ALIASES.map((a) => [a.prg, a.registry]));
@@ -1886,10 +1798,9 @@ function generateCountryModule(
 
   const module: CountryMapModule = {
     viewBox: { width: W, height },
-    outline,
-    borders,
     counties: countyRows,
     capitals,
+    voivodeships,
   };
 
   return {
@@ -1940,7 +1851,11 @@ async function main(): Promise<void> {
   }
   const warsaw = generateWarsawModule(counties, districts, WARSAW_MIN_WEIGHT);
   modules.push(warsaw);
-  const country = generateCountryModule(counties, registry.region2);
+  const country = generateCountryModule(
+    counties,
+    registry.region1,
+    registry.region2,
+  );
   modules.push(country);
 
   mkdirSync(MAPS_DIR, { recursive: true });

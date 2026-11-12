@@ -21,9 +21,10 @@ test('search-incomplete-candidates', { tag: '@desktop' }, async ({ page }) => {
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(
     'Opole Voivodeship',
   );
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    '12 possible counties',
-  );
+  await expect(
+    main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
+  ).toHaveText('12 possible counties');
+
   await expect(main.getByRole('listitem')).toHaveCount(12);
 });
 

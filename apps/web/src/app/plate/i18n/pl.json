@@ -20,6 +20,11 @@
       "skwSww": "Tablica służbowa: Służba Kontrwywiadu Wojskowego lub Służba Wywiadu Wojskowego"
     },
     "backHome": "Wyszukaj inną tablicę",
+    "showCountyOnMap": "Zobacz powiat na mapie",
+    "showVoivodeshipOnMap": "Zobacz województwo na mapie",
+    "mapDialogClose": "Zamknij",
+    "mapDialogTitle": "Województwo {{name}}",
+    "mapDialogSubtitle": "Powiaty i kody rejestracyjne",
     "notes": {
       "region1Only": "Ta tablica ma tylko wyróżnik województwa, bez powiatu.",
       "region2NotInRegistry": "Wyróżnika powiatu nie ma w obecnym rejestrze.",
@@ -36,7 +41,10 @@
       "possibleTypes": "Możliwe rodzaje tablicy",
       "countyValue": "{{name}} ({{kind}})",
       "countyLink": "{{name}} na stronie województwa",
-      "voivodeshipLink": "Strona województwa: {{name}}"
+      "codesLink": "Kody w województwie"
+    },
+    "voivodeshipCard": {
+      "codes": "Rejestracje zaczynające się m.in. od: {{codes}}"
     },
     "kind": {
       "city": "miasto na prawach powiatu",

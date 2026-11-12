@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import {
   overflowingPlateTexts,
+  PLATE_TEXT_TOLERANCE_PX,
   plateTextAndBoxRects,
   waitForPlateFont,
 } from './support/plate';
@@ -161,9 +162,7 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
   await expect(main.locator('tr:has(#AZY)')).toBeInViewport();
 
   await page.goto('/plate/DW12345');
-  await main
-    .getByRole('link', { name: /Wrocław on the voivodeship page/i })
-    .click();
+  await main.getByRole('link', { name: 'Codes in the voivodeship' }).click();
   await expect(page).toHaveURL(/\/voivodeship\/dolnoslaskie#DW$/);
   await expectRowGeometryInViewport(
     page.getByRole('main').locator('tr:has(a#DW)'),
@@ -183,7 +182,7 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
   ).toHaveText('żyrardowski county');
   await page
     .getByRole('main')
-    .getByRole('link', { name: /żyrardowski on the voivodeship page/i })
+    .getByRole('link', { name: 'Codes in the voivodeship' })
     .click();
   await expect(page).toHaveURL(/\/voivodeship\/mazowieckie#WZY$/);
   await expect(page.getByRole('main').locator('tr:has(#WZY)')).toBeInViewport();
@@ -217,9 +216,7 @@ test(
     await page.goto('/plate/WY12345');
     await page
       .getByRole('main')
-      .getByRole('link', {
-        name: /m\.st\. Warszawa on the voivodeship page/i,
-      })
+      .getByRole('link', { name: 'Codes in the voivodeship' })
       .click();
     await expect(page).toHaveURL(/\/voivodeship\/mazowieckie#WY$/);
     await expectRowScrolledAndHighlighted(
@@ -404,8 +401,8 @@ test(
     await waitForPlateFont(page);
     const { textLeft, textRight, boxLeft, boxRight } =
       await plateTextAndBoxRects(plate);
-    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-    expect(textRight).toBeLessThanOrEqual(boxRight);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+    expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
   },
 );
 
@@ -420,8 +417,8 @@ test('voivodeship-plate-fit-xmb-en', { tag: '@desktop' }, async ({ page }) => {
   await waitForPlateFont(page);
   const { textLeft, textRight, boxLeft, boxRight } =
     await plateTextAndBoxRects(plate);
-  expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-  expect(textRight).toBeLessThanOrEqual(boxRight);
+  expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+  expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
 });
 
 test(

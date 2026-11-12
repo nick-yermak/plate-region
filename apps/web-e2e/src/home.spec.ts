@@ -25,9 +25,10 @@ test('home-short-code-answer', { tag: '@desktop' }, async ({ page }) => {
   await field.press('Enter');
   await expect(page).toHaveURL('/plate/GD');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText('Gdańsk');
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(
-    'Other possible counties',
-  );
+  await expect(
+    main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
+  ).toHaveText('Other possible counties');
+
   await expect(main.getByRole('listitem')).toHaveCount(1);
   await expect(main.getByRole('listitem')).toHaveText(/GDA gdański \(county\)/);
 });

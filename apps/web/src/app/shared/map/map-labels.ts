@@ -9,6 +9,17 @@ export const MARKER_HALO_PX = 4;
 // Radius 7 + half the 4 px halo = 9 px edge, + 3 px gap.
 export const MARKER_LABEL_BASELINE_PX = 12;
 
+export const DOT_RADIUS_PX = 3;
+export const DOT_HALO_PX = 2;
+// ceil(4 + (−(−442)) × 12 / 2048 + 1.5 + 2) = ceil(10.089…) = 11; −442 is yMin of "g".
+export const DOT_LABEL_BASELINE_PX = 11;
+// ceil(4 + 1.5 + 2 + 1938 × 12 / 2048) = ceil(18.855…) = 19; 1938 is yMax of "Ś".
+export const DOT_LABEL_BELOW_BASELINE_PX = 19;
+// Dot-square half (4) + half label halo (1.5) + collision pad (2) to the label box edge.
+export const DOT_LABEL_SIDE_GAP_PX = 4 + 1.5 + 2;
+// Cap height 1490 centred on the tip: 1490 × 12 / 2048 / 2.
+export const DOT_LABEL_SIDE_BASELINE_PX = (1490 * 12) / 2048 / 2;
+
 // Advance widths of InterVariable.woff2 instanced at wght 600 (fontTools), units per em 2048.
 export const INTER_600_ADVANCES: Readonly<Record<string, number>> = {
   A: 1490,

@@ -8,7 +8,6 @@ import {
   type Region2,
 } from '@plate-region/plate-data';
 
-import { INTER_600_ADVANCES } from './map-labels';
 import { countryMapView, voivodeshipMapView, warsawMapView } from './map-view';
 
 function region1ByLetter(letter: string): Region1 {
@@ -27,92 +26,6 @@ function region2ByName(name: string, region1Letter: string): Region2 {
     throw new Error(`no region2 ${name} under ${region1Letter}`);
   }
   return found;
-}
-
-type TestBox = {
-  readonly x: number;
-  readonly y: number;
-  readonly hw: number;
-  readonly hh: number;
-};
-
-type TestLabel = {
-  readonly code: string;
-  readonly x: number;
-  readonly y: number;
-  readonly wideOnly: boolean;
-  readonly aboveMarker: boolean;
-};
-
-function emSize(code: string): { width: number; height: number } {
-  let sum = 0;
-  for (const ch of code) {
-    const advance = INTER_600_ADVANCES[ch];
-    if (advance === undefined) {
-      throw new Error(`no advance for ${ch}`);
-    }
-    sum += advance;
-  }
-  return { width: sum / 2048, height: 1490 / 2048 };
-}
-
-function centeredBox(
-  code: string,
-  x: number,
-  y: number,
-  mapWidthPx: number,
-  fontPx: number,
-): TestBox {
-  const em = emSize(code);
-  const scale = 1000 / mapWidthPx;
-  const wPx = em.width * fontPx + 3;
-  const hPx = em.height * fontPx + 3;
-  return { x, y, hw: (wPx * scale) / 2, hh: (hPx * scale) / 2 };
-}
-
-function selectedBoxes(
-  code: string,
-  x: number,
-  y: number,
-  mapWidthPx: number,
-  fontPx: number,
-): readonly [TestBox, TestBox] {
-  const em = emSize(code);
-  const scale = 1000 / mapWidthPx;
-  const ringHalf = 9 * scale;
-  const wPx = em.width * fontPx + 3;
-  const hPx = em.height * fontPx + 3;
-  const labelCenterY = y - (12 + (em.height * fontPx) / 2) * scale;
-  return [
-    { x, y, hw: ringHalf, hh: ringHalf },
-    { x, y: labelCenterY, hw: (wPx * scale) / 2, hh: (hPx * scale) / 2 },
-  ];
-}
-
-function boxesOf(
-  label: TestLabel,
-  mapWidthPx: number,
-  fontPx: number,
-): readonly TestBox[] {
-  if (label.aboveMarker) {
-    return selectedBoxes(label.code, label.x, label.y, mapWidthPx, fontPx);
-  }
-  return [centeredBox(label.code, label.x, label.y, mapWidthPx, fontPx)];
-}
-
-function boxesOverlap(a: TestBox, b: TestBox): boolean {
-  return Math.abs(a.x - b.x) < a.hw + b.hw && Math.abs(a.y - b.y) < a.hh + b.hh;
-}
-
-function labelsOverlap(
-  a: TestLabel,
-  b: TestLabel,
-  mapWidthPx: number,
-  fontPx: number,
-): boolean {
-  return boxesOf(a, mapWidthPx, fontPx).some((boxA) =>
-    boxesOf(b, mapWidthPx, fontPx).some((boxB) => boxesOverlap(boxA, boxB)),
-  );
 }
 
 describe('map-view', () => {
@@ -305,38 +218,49 @@ describe('map-view', () => {
       ).toEqual(['DW']);
     });
 
-    it('country map labels the 18 capitals when Wrocław is selected', () => {
+    it('country map places seat tiers for Wrocław and the 18 capitals', () => {
       const view = countryMapView(
         map,
         region1ByLetter('D'),
         region2ByName('Wrocław', 'D'),
         'en',
       );
-      expect(
-        view.areas.filter((area) => area.label.visible).map((area) => area.id),
-      ).toEqual([
-        'DW',
-        'CB',
-        'CT',
-        'LU',
-        'FG',
-        'FZ',
-        'EL',
-        'KR',
-        'WA',
-        'OP',
-        'RZ',
-        'BI',
-        'GD',
-        'SK',
-        'TK',
-        'NO',
-        'PO',
-        'ZS',
-      ]);
+      const labelled = view.areas
+        .filter(
+          (area) =>
+            area.label.tiers.narrow !== 'none' ||
+            area.label.tiers.wide !== 'none',
+        )
+        .map((area) => area.id)
+        .sort();
+      expect(labelled).toEqual(
+        [
+          'DW',
+          'CB',
+          'CT',
+          'LU',
+          'FG',
+          'FZ',
+          'EL',
+          'KR',
+          'WA',
+          'OP',
+          'RZ',
+          'BI',
+          'GD',
+          'SK',
+          'TK',
+          'NO',
+          'PO',
+          'ZS',
+        ].sort(),
+      );
+      expect(view.areas.every((area) => area.label.visible === false)).toBe(
+        true,
+      );
     });
 
-    it('country map labels Kłodzko county and the 18 capitals', () => {
+    it('country map places seat tiers for Kłodzko county and the 18 capitals', () => {
       const filled = registry.region2.find(
         (region) => region.region1Letter === 'D' && region.suffixes[0] === 'KL',
       );
@@ -344,12 +268,15 @@ describe('map-view', () => {
         throw new Error('no DKL');
       }
       const view = countryMapView(map, region1ByLetter('D'), filled, 'en');
-      expect(
-        view.areas
-          .filter((area) => area.label.visible)
-          .map((area) => area.id)
-          .sort(),
-      ).toEqual(
+      const labelled = view.areas
+        .filter(
+          (area) =>
+            area.label.tiers.narrow !== 'none' ||
+            area.label.tiers.wide !== 'none',
+        )
+        .map((area) => area.id)
+        .sort();
+      expect(labelled).toEqual(
         [
           'DW',
           'CB',
@@ -374,7 +301,7 @@ describe('map-view', () => {
       );
     });
 
-    it('country map hides DW under the marker of DDZ', () => {
+    it('country map keeps a seat tier for DDZ when it is selected', () => {
       const filled = registry.region2.find(
         (region) => region.region1Letter === 'D' && region.suffixes[0] === 'DZ',
       );
@@ -382,52 +309,9 @@ describe('map-view', () => {
         throw new Error('no DDZ');
       }
       const view = countryMapView(map, region1ByLetter('D'), filled, 'en');
-      const visible = view.areas
-        .filter((area) => area.label.visible)
-        .map((area) => area.id);
-      expect(visible).toContain('DDZ');
-      expect(visible).not.toContain('DW');
-    });
-
-    it('country map keeps visible label boxes apart for all 380 selections at 328 and 650 px', () => {
-      const selections = registry.region2.map((filled) => {
-        const view = countryMapView(
-          map,
-          region1ByLetter(filled.region1Letter),
-          filled,
-          'en',
-        );
-        return view.areas
-          .filter((area) => area.label.visible)
-          .map(
-            (area): TestLabel => ({
-              code: area.id,
-              x: area.label.x,
-              y: area.label.y,
-              wideOnly: area.label.wideOnly,
-              aboveMarker: area.label.aboveMarker,
-            }),
-          );
-      });
-      const offending328 = selections.flatMap((visible) => {
-        const narrow = visible.filter((label) => !label.wideOnly);
-        return narrow.flatMap((a, i) =>
-          narrow
-            .slice(i + 1)
-            .filter((b) => labelsOverlap(a, b, 328, 11))
-            .map((b) => `${a.code}/${b.code}`),
-        );
-      });
-      const offending650 = selections.flatMap((visible) =>
-        visible.flatMap((a, i) =>
-          visible
-            .slice(i + 1)
-            .filter((b) => labelsOverlap(a, b, 650, 12))
-            .map((b) => `${a.code}/${b.code}`),
-        ),
-      );
-      expect(offending328).toEqual([]);
-      expect(offending650).toEqual([]);
+      const ddz = view.areas.find((area) => area.id === 'DDZ');
+      expect(ddz?.label.tiers.narrow).not.toBe('none');
+      expect(ddz?.label.tiers.wide).not.toBe('none');
     });
 
     it('country map names the county and the voivodeship in the aria label', () => {
@@ -473,30 +357,34 @@ describe('map-view', () => {
         region2ByName('Wrocław', 'D'),
         'en',
       );
-      expect(view.borders).toBe(map.borders);
+      expect(view.borders).toBe(
+        map.voivodeships.map((row) => row.path).join(''),
+      );
+      expect(view.outline).toBeUndefined();
       expect(view.neighbours).toEqual([]);
       expect(view.labelHalo).toBe(true);
     });
 
-    it('country map draws CT only from 768 px', () => {
+    it('country map uses seat labels with no wide-only capitals', () => {
       const view = countryMapView(
         map,
         region1ByLetter('D'),
         region2ByName('Wrocław', 'D'),
         'en',
       );
-      const visible = view.areas.filter((area) => area.label.visible);
-      expect(visible.find((area) => area.id === 'CT')?.label.wideOnly).toBe(
-        true,
-      );
+      const dw = view.areas.find((area) => area.id === 'DW');
+      expect(dw?.label.text).toBe('Wrocław (DW)');
+      expect(dw?.label.codeText).toBe('DW');
+      expect(dw?.label.tiers.narrow).not.toBe('none');
+      expect(view.dots).toBe(true);
       expect(
-        visible
-          .filter((area) => area.id !== 'CT')
+        view.areas
+          .filter((area) => area.label.visible)
           .every((area) => area.label.wideOnly === false),
       ).toBe(true);
     });
 
-    it('country map puts a marker at the selected county and its label above it', () => {
+    it('country map marks capitals and keeps the selected ring only on the selection', () => {
       const withCounty = countryMapView(
         map,
         region1ByLetter('D'),
@@ -504,14 +392,17 @@ describe('map-view', () => {
         'en',
       );
       expect(withCounty.marker).toEqual({ x: 295, y: 590 });
+      expect(withCounty.capitalMarkers?.length).toBe(17);
       expect(
-        withCounty.areas.find((area) => area.id === 'DW')?.label.aboveMarker,
-      ).toBe(true);
-      expect(
-        withCounty.areas
-          .filter((area) => area.id !== 'DW')
-          .every((area) => area.label.aboveMarker === false),
-      ).toBe(true);
+        withCounty.capitalMarkers?.some((m) => m.x === 295 && m.y === 590),
+      ).toBe(false);
+      const land = countryMapView(
+        map,
+        region1ByLetter('D'),
+        region2ByName('kłodzki', 'D'),
+        'en',
+      );
+      expect(land.capitalMarkers?.length).toBe(18);
       expect(
         countryMapView(map, region1ByLetter('D'), undefined, 'en').marker,
       ).toBeUndefined();

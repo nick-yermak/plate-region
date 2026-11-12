@@ -7,18 +7,21 @@ import {
   inject,
   input,
   linkedSignal,
+  output,
 } from '@angular/core';
 
 import type { MapArea, MapView } from '../map.types';
+import { CountyMapSeatsComponent } from '../county-map-seats/county-map-seats';
 
 @Component({
   selector: 'app-county-map',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [CountyMapSeatsComponent, RouterLink, TranslocoPipe],
   templateUrl: './county-map.html',
   styleUrl: './county-map.less',
   host: {
     '[style.width]': 'hostWidth()',
     '[style.aspect-ratio]': 'aspectRatio()',
+    '[class.faint-county-lines]': 'interaction() === "none"',
     '(document:pointerdown)': 'onDocumentPointerDown($event)',
     '(document:keydown.escape)': 'closeTooltip()',
   },
@@ -27,8 +30,12 @@ export class CountyMapComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   readonly view = input.required<MapView>();
+  readonly interaction = input<'tooltip' | 'select' | 'none'>('tooltip');
+  readonly selectedId = input<string | undefined>(undefined);
+  readonly areaSelect = output<string>();
+  readonly openDialog = output<void>();
 
-  protected readonly selectedId = linkedSignal({
+  protected readonly tooltipSelectedId = linkedSignal({
     source: this.view,
     computation: (): string | undefined => undefined,
   });
@@ -39,7 +46,17 @@ export class CountyMapComponent {
   });
 
   protected readonly selectedArea = computed((): MapArea | undefined => {
-    const id = this.selectedId();
+    if (this.interaction() === 'none') {
+      return undefined;
+    }
+    if (this.interaction() === 'select') {
+      const id = this.selectedId();
+      if (id === undefined) {
+        return undefined;
+      }
+      return this.view().areas.find((area) => area.id === id);
+    }
+    const id = this.tooltipSelectedId();
     if (id === undefined) {
       return undefined;
     }
@@ -47,6 +64,9 @@ export class CountyMapComponent {
   });
 
   protected readonly hoveredArea = computed((): MapArea | undefined => {
+    if (this.interaction() !== 'tooltip') {
+      return undefined;
+    }
     const id = this.hoveredId();
     if (id === undefined) {
       return undefined;
@@ -85,6 +105,22 @@ export class CountyMapComponent {
     };
   });
 
+  protected readonly capitalMarkerPositions = computed(() => {
+    const markers = this.view().capitalMarkers;
+    if (markers === undefined) {
+      return [];
+    }
+    const { width, height } = this.view().viewBox;
+    return markers.map((marker) => ({
+      cx: `${(marker.x / width) * 100}%`,
+      cy: `${(marker.y / height) * 100}%`,
+    }));
+  });
+
+  protected readonly voivodeshipButton = computed(
+    () => this.view().voivodeshipButton,
+  );
+
   protected readonly hostWidth = computed(() => {
     const { width, height } = this.view().viewBox;
     return `${Math.min(100, (100 * width) / height)}%`;
@@ -115,16 +151,35 @@ export class CountyMapComponent {
     return area.anchor.y > this.view().viewBox.height / 2;
   });
 
+  protected readonly showTooltip = computed(
+    () => this.interaction() === 'tooltip' && this.selectedArea() !== undefined,
+  );
+
   protected toggleSelection(id: string, event: Event): void {
     event.stopPropagation();
-    this.selectedId.update((current) => (current === id ? undefined : id));
+    if (this.interaction() === 'none') {
+      return;
+    }
+    if (this.interaction() === 'select') {
+      this.areaSelect.emit(id);
+      return;
+    }
+    this.tooltipSelectedId.update((current) =>
+      current === id ? undefined : id,
+    );
   }
 
   protected setHovered(id: string | undefined): void {
+    if (this.interaction() !== 'tooltip') {
+      return;
+    }
     this.hoveredId.set(id);
   }
 
   protected onDocumentPointerDown(event: Event): void {
+    if (this.interaction() !== 'tooltip') {
+      return;
+    }
     const target = event.target;
     if (
       !(target instanceof Node) ||
@@ -135,12 +190,24 @@ export class CountyMapComponent {
   }
 
   protected closeTooltip(): void {
-    this.selectedId.set(undefined);
+    if (this.interaction() !== 'tooltip') {
+      return;
+    }
+    this.tooltipSelectedId.set(undefined);
   }
 
   protected onSvgClick(event: MouseEvent): void {
+    if (this.interaction() !== 'tooltip') {
+      return;
+    }
     if (event.target === event.currentTarget) {
       this.closeTooltip();
     }
+  }
+
+  protected onVoivodeshipActivate(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.openDialog.emit();
   }
 }
