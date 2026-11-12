@@ -40,6 +40,11 @@ export type PlaceSeatLabelsOptions = {
   readonly capitalOrder?: CapitalOrder;
   /** Slide above/below into the map at the left/right edges (country only). */
   readonly horizontalClamp?: boolean;
+  /**
+   * How far a label may sit past the map edge in CSS px. Dialog default 8;
+   * map of Poland uses 0 (no card padding below 768 px).
+   */
+  readonly mapMarginPx?: number;
 };
 
 export interface SeatLabelArea {
@@ -77,7 +82,8 @@ type Box = {
   readonly bottom: number;
 };
 
-const MAP_MARGIN_PX = 8;
+/** Default outside margin for the dialog map. */
+const DIALOG_MAP_MARGIN_PX = 8;
 /** Half-extent of a seat-dot obstacle square in CSS px (radius 3 + half of 2 px halo). */
 const DOT_HALF_PX = DOT_RADIUS_PX + DOT_HALO_PX / 2;
 /** Dialog reference extent (radius 3 + halo 2) for outward label shifts. */
@@ -232,12 +238,17 @@ export function boxesOverlap(a: Box, b: Box): boolean {
   );
 }
 
-function insideMap(box: Box, mapW: number, mapH: number): boolean {
+function insideMap(
+  box: Box,
+  mapW: number,
+  mapH: number,
+  mapMarginPx: number,
+): boolean {
   return (
-    box.left >= -MAP_MARGIN_PX &&
-    box.right <= mapW + MAP_MARGIN_PX &&
-    box.top >= -MAP_MARGIN_PX &&
-    box.bottom <= mapH + MAP_MARGIN_PX
+    box.left >= -mapMarginPx &&
+    box.right <= mapW + mapMarginPx &&
+    box.top >= -mapMarginPx &&
+    box.bottom <= mapH + mapMarginPx
   );
 }
 
@@ -246,26 +257,27 @@ function applyHorizontalClamp(
   cx: number,
   mapW: number,
   mapH: number,
+  mapMarginPx: number,
 ): { ok: true; box: Box; slideDx: number } | { ok: false } {
-  if (box.top < -MAP_MARGIN_PX || box.bottom > mapH + MAP_MARGIN_PX) {
+  if (box.top < -mapMarginPx || box.bottom > mapH + mapMarginPx) {
     return { ok: false };
   }
   let left = box.left;
   let right = box.right;
-  const crossedLeft = left < -MAP_MARGIN_PX;
-  const crossedRight = right > mapW + MAP_MARGIN_PX;
+  const crossedLeft = left < -mapMarginPx;
+  const crossedRight = right > mapW + mapMarginPx;
   if (crossedLeft || crossedRight) {
     if (crossedLeft) {
-      const slide = -MAP_MARGIN_PX - left;
+      const slide = -mapMarginPx - left;
       left += slide;
       right += slide;
     }
-    if (right > mapW + MAP_MARGIN_PX) {
-      const slide = right - (mapW + MAP_MARGIN_PX);
+    if (right > mapW + mapMarginPx) {
+      const slide = right - (mapW + mapMarginPx);
       left -= slide;
       right -= slide;
     }
-    if (left < -MAP_MARGIN_PX) {
+    if (left < -mapMarginPx) {
       return { ok: false };
     }
   }
@@ -323,6 +335,7 @@ export function placeSeatLabels(
 ): ReadonlyMap<string, SeatLabelPlacement> {
   const capitalOrder = options.capitalOrder ?? 'radius';
   const horizontalClamp = options.horizontalClamp ?? false;
+  const mapMarginPx = options.mapMarginPx ?? DIALOG_MAP_MARGIN_PX;
   const scale = tier.mapPx / Math.max(viewBox.width, viewBox.height);
   const mapW = viewBox.width * scale;
   const mapH = viewBox.height * scale;
@@ -355,13 +368,13 @@ export function placeSeatLabels(
       let box = raw;
       let slideDx = 0;
       if (horizontalClamp && (position === 'above' || position === 'below')) {
-        const clamped = applyHorizontalClamp(raw, cx, mapW, mapH);
+        const clamped = applyHorizontalClamp(raw, cx, mapW, mapH, mapMarginPx);
         if (!clamped.ok) {
           return undefined;
         }
         box = clamped.box;
         slideDx = clamped.slideDx;
-      } else if (!insideMap(raw, mapW, mapH)) {
+      } else if (!insideMap(raw, mapW, mapH, mapMarginPx)) {
         return undefined;
       }
       for (const [id, marker] of markers) {

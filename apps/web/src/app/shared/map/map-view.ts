@@ -279,6 +279,7 @@ export function countryMapView(
   const countryOptions = {
     capitalOrder: 'shortest-full' as const,
     horizontalClamp: true,
+    mapMarginPx: 0,
   };
   const narrowTiers = placeSeatLabels(
     seatAreas,

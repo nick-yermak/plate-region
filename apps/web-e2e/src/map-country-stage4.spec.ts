@@ -208,12 +208,12 @@ async function expectLabelsClear(
       if (a === undefined) {
         continue;
       }
-      // placeSeatLabels allows MAP_MARGIN_PX (8) past the map edge.
+      // Map of Poland: labels must stay inside the SVG box (margin 0).
       if (
-        a.left < mapBox.left - 8 ||
-        a.right > mapBox.right + 8 ||
-        a.top < mapBox.top - 8 ||
-        a.bottom > mapBox.bottom + 8
+        a.left < mapBox.left - 1 ||
+        a.right > mapBox.right + 1 ||
+        a.top < mapBox.top - 1 ||
+        a.bottom > mapBox.bottom + 1
       ) {
         overlaps.push(`${a.text} outside map`);
       }

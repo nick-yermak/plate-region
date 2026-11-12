@@ -551,20 +551,20 @@ describe('placeSeatLabels', () => {
       name: '328/11',
       tier: { mapPx: 328, fontPx: 11 },
       expected: {
-        capitals: { full: 5817, code: 977, none: 46 },
-        selected: { full: 272, code: 104, forced: 4 },
+        capitals: { full: 5812, code: 982, none: 46 },
+        selected: { full: 265, code: 111, forced: 4 },
       },
     },
     {
       name: '541/12',
       tier: { mapPx: 541, fontPx: 12 },
       expected: {
-        capitals: { full: 6767, code: 67, none: 6 },
-        selected: { full: 373, code: 7, forced: 0 },
+        capitals: { full: 6765, code: 69, none: 6 },
+        selected: { full: 372, code: 8, forced: 0 },
       },
     },
   ] as const)(
-    'country map totals match the stage 4 probe at $name',
+    'country map totals match margin-0 placement at $name',
     async ({ tier, expected }) => {
       const country = await loadCountryMap();
       const capitalIds = country.capitals.map(
@@ -573,10 +573,12 @@ describe('placeSeatLabels', () => {
       type CountryPlaceOptions = {
         readonly capitalOrder: 'shortest-full';
         readonly horizontalClamp: boolean;
+        readonly mapMarginPx: number;
       };
       const options: CountryPlaceOptions = {
         capitalOrder: 'shortest-full',
         horizontalClamp: true,
+        mapMarginPx: 0,
       };
 
       let capitalsFull = 0;
