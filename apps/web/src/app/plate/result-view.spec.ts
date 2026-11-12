@@ -14,9 +14,19 @@ describe('resultPlateCode', () => {
     expect(resultPlateCode(resultView('VX', 'en'))).toBe('VX');
   });
 
+  it('candidates without an answer → undefined', () => {
+    const view = resultView('GK', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.link).toBeUndefined();
+    expect(view.candidates.answer).toBeUndefined();
+    expect(resultPlateCode(view)).toBeUndefined();
+  });
+
   it('otherwise undefined', () => {
     expect(resultPlateCode(resultView('WA12', 'en'))).toBeUndefined();
-    expect(resultPlateCode(resultView('GK', 'en'))).toBeUndefined();
     expect(resultPlateCode(resultView('2A12345', 'en'))).toBeUndefined();
   });
 });
