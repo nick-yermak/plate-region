@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-import { plateTextAndBoxRects, waitForPlateFont } from './support/plate';
+import {
+  PLATE_TEXT_TOLERANCE_PX,
+  plateTextAndBoxRects,
+  waitForPlateFont,
+} from './support/plate';
 
 test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
@@ -112,7 +116,7 @@ test(
     await waitForPlateFont(page);
     const { textLeft, textRight, boxLeft, boxRight } =
       await plateTextAndBoxRects(plate);
-    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-    expect(textRight).toBeLessThanOrEqual(boxRight);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+    expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
   },
 );

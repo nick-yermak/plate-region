@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import {
   overflowingPlateTexts,
+  PLATE_TEXT_TOLERANCE_PX,
   plateTextAndBoxRects,
   waitForPlateFont,
 } from './support/plate';
@@ -400,8 +401,8 @@ test(
     await waitForPlateFont(page);
     const { textLeft, textRight, boxLeft, boxRight } =
       await plateTextAndBoxRects(plate);
-    expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-    expect(textRight).toBeLessThanOrEqual(boxRight);
+    expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+    expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
   },
 );
 
@@ -416,8 +417,8 @@ test('voivodeship-plate-fit-xmb-en', { tag: '@desktop' }, async ({ page }) => {
   await waitForPlateFont(page);
   const { textLeft, textRight, boxLeft, boxRight } =
     await plateTextAndBoxRects(plate);
-  expect(textLeft).toBeGreaterThanOrEqual(boxLeft);
-  expect(textRight).toBeLessThanOrEqual(boxRight);
+  expect(textLeft).toBeGreaterThanOrEqual(boxLeft - PLATE_TEXT_TOLERANCE_PX);
+  expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
 });
 
 test(

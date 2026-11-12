@@ -1,5 +1,11 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+// text bounds differ between platforms by a fraction of a pixel ("DWW 800WW"
+// starts 0.05 px further left on the Linux CI runner than on macOS); the fit
+// checks allow 0.25 CSS px, above that difference and below one device pixel
+// at DPR 3 (0.33 CSS px), so a visible overflow still fails.
+export const PLATE_TEXT_TOLERANCE_PX = 0.25;
+
 export async function plateTextAndBoxRects(plate: Locator): Promise<{
   textLeft: number;
   textRight: number;
