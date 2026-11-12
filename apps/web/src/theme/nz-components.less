@@ -11,6 +11,7 @@
 @import '../../../../node_modules/ng-zorro-antd/flex/style/entry';
 @import 'ng-zorro-antd/table/style/entry';
 @import 'ng-zorro-antd/tabs/style/entry';
+@import 'ng-zorro-antd/modal/style/entry';
 
 // NG-ZORRO resets outline on buttons/drawer close; menu focus is on the li while focus lands on the inner link.
 .ant-btn:focus-visible,
@@ -149,4 +150,73 @@ a:focus-visible {
 // (tabs/style/index.less).
 .ant-tabs-ink-bar {
   background: var(--pr-tabs-ink);
+}
+
+// Result-page voivodeship map dialog widths (D-50 md/lg; #161 probe).
+.pr-voivodeship-map-dialog-wrap {
+  .ant-modal {
+    width: 100vw !important;
+    max-width: 100vw;
+    // Mobile fills the viewport; library `margin: 0 auto` is not needed here.
+    margin: 0;
+    top: 0;
+    padding-bottom: 0;
+  }
+
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .ant-modal-header {
+    // 16px sides so a 360 px viewport still gives the NARROW 328 px map.
+    padding: 16px;
+  }
+
+  .ant-modal-body {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 16px;
+  }
+
+  .ant-modal-footer {
+    padding: 10px 16px;
+  }
+}
+
+@media (width >= 768px) {
+  .pr-voivodeship-map-dialog-wrap {
+    .ant-modal {
+      width: 608px !important;
+      max-width: 608px;
+      // Width !important above beats the library rule that sets `margin: 0 auto`
+      // on `.ant-modal`; restore auto so the dialog stays horizontally centred.
+      margin: 0 auto;
+      padding-bottom: 24px;
+    }
+
+    .ant-modal-content {
+      height: auto;
+      border-radius: var(--pr-border-radius);
+    }
+
+    .ant-modal-header {
+      padding: 16px 24px;
+    }
+
+    .ant-modal-body {
+      padding: 16px 24px;
+    }
+  }
+}
+
+@media (width >= 992px) {
+  .pr-voivodeship-map-dialog-wrap {
+    .ant-modal {
+      width: 912px !important;
+      max-width: 912px;
+    }
+  }
 }

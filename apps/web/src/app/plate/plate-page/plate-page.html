@@ -5,11 +5,23 @@
     <app-car-illustration>
       <app-plate [plate]="plateText()" />
     </app-car-illustration>
-    @if (mapTarget()) {
+    @if (mapTarget(); as target) {
       <nz-flex class="map-box" nzAlign="center" nzJustify="center">
-        @if (mapView(); as map) {
-          <app-county-map [view]="map" />
-        }
+        <button
+          #mapDialogButton
+          nz-button
+          nzType="default"
+          type="button"
+          class="map-dialog-open"
+          (click)="openMapDialog()"
+        >
+          {{
+            (target.filled
+              ? 'plate.showCountyOnMap'
+              : 'plate.showVoivodeshipOnMap'
+            ) | transloco
+          }}
+        </button>
       </nz-flex>
     }
   </div>
@@ -37,3 +49,19 @@
     </div>
   }
 </nz-flex>
+@defer (when dialogRequested(); prefetch on idle) {
+  @if (dialogLoaded(); as loaded) {
+    <app-voivodeship-map-dialog
+      [open]="dialogOpen()"
+      [loaded]="loaded"
+      [plateCode]="dialogPlateCode()"
+      [language]="language()"
+      [title]="dialogTitle()"
+      [subtitle]="dialogSubtitle()"
+      [voivodeshipLabel]="dialogVoivodeshipLabel()"
+      [selectedId]="dialogSelectedId()"
+      (areaSelect)="onDialogAreaSelect($event)"
+      (closed)="onDialogClosed()"
+    />
+  }
+}

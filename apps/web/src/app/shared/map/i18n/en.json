@@ -11,6 +11,9 @@
     },
     "district": "{{name}}, Warsaw",
     "codes": "Codes: {{codes}}",
-    "tableLink": "Show on the voivodeship page"
+    "tableLink": "Show on the voivodeship page",
+    "dialogTitle": "{{name}} Voivodeship",
+    "dialogSubtitle": "Counties and registration codes",
+    "dialogClose": "Close"
   }
 }

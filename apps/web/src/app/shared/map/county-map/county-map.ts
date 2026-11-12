@@ -7,13 +7,15 @@ import {
   inject,
   input,
   linkedSignal,
+  output,
 } from '@angular/core';
 
 import type { MapArea, MapView } from '../map.types';
+import { CountyMapSeatsComponent } from '../county-map-seats/county-map-seats';
 
 @Component({
   selector: 'app-county-map',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [CountyMapSeatsComponent, RouterLink, TranslocoPipe],
   templateUrl: './county-map.html',
   styleUrl: './county-map.less',
   host: {
@@ -27,8 +29,11 @@ export class CountyMapComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   readonly view = input.required<MapView>();
+  readonly interaction = input<'tooltip' | 'select'>('tooltip');
+  readonly selectedId = input<string | undefined>(undefined);
+  readonly areaSelect = output<string>();
 
-  protected readonly selectedId = linkedSignal({
+  protected readonly tooltipSelectedId = linkedSignal({
     source: this.view,
     computation: (): string | undefined => undefined,
   });
@@ -39,7 +44,14 @@ export class CountyMapComponent {
   });
 
   protected readonly selectedArea = computed((): MapArea | undefined => {
-    const id = this.selectedId();
+    if (this.interaction() === 'select') {
+      const id = this.selectedId();
+      if (id === undefined) {
+        return undefined;
+      }
+      return this.view().areas.find((area) => area.id === id);
+    }
+    const id = this.tooltipSelectedId();
     if (id === undefined) {
       return undefined;
     }
@@ -47,6 +59,9 @@ export class CountyMapComponent {
   });
 
   protected readonly hoveredArea = computed((): MapArea | undefined => {
+    if (this.interaction() === 'select') {
+      return undefined;
+    }
     const id = this.hoveredId();
     if (id === undefined) {
       return undefined;
@@ -115,16 +130,32 @@ export class CountyMapComponent {
     return area.anchor.y > this.view().viewBox.height / 2;
   });
 
+  protected readonly showTooltip = computed(
+    () => this.interaction() === 'tooltip' && this.selectedArea() !== undefined,
+  );
+
   protected toggleSelection(id: string, event: Event): void {
     event.stopPropagation();
-    this.selectedId.update((current) => (current === id ? undefined : id));
+    if (this.interaction() === 'select') {
+      this.areaSelect.emit(id);
+      return;
+    }
+    this.tooltipSelectedId.update((current) =>
+      current === id ? undefined : id,
+    );
   }
 
   protected setHovered(id: string | undefined): void {
+    if (this.interaction() === 'select') {
+      return;
+    }
     this.hoveredId.set(id);
   }
 
   protected onDocumentPointerDown(event: Event): void {
+    if (this.interaction() === 'select') {
+      return;
+    }
     const target = event.target;
     if (
       !(target instanceof Node) ||
@@ -135,10 +166,16 @@ export class CountyMapComponent {
   }
 
   protected closeTooltip(): void {
-    this.selectedId.set(undefined);
+    if (this.interaction() === 'select') {
+      return;
+    }
+    this.tooltipSelectedId.set(undefined);
   }
 
   protected onSvgClick(event: MouseEvent): void {
+    if (this.interaction() === 'select') {
+      return;
+    }
     if (event.target === event.currentTarget) {
       this.closeTooltip();
     }

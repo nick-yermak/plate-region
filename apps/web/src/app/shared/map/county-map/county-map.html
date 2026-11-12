@@ -39,6 +39,9 @@
   @if (hoveredArea(); as hovered) {
     <path class="hover-outline" [attr.d]="hovered.path" />
   }
+  @if (interaction() === 'select' && selectedArea(); as selected) {
+    <path class="select-outline" [attr.d]="selected.path" />
+  }
 </svg>
 <svg class="labels" aria-hidden="true" [class.halo]="view().labelHalo">
   @if (markerPosition(); as marker) {
@@ -62,23 +65,28 @@
     </text>
   }
 </svg>
-@if (selectedArea(); as area) {
-  <div
-    class="map-tooltip"
-    [class.above]="tooltipAbove()"
-    [style]="tooltipStyle()"
-  >
-    <p class="heading">
-      {{ area.heading.key | transloco: area.heading.params }}
-    </p>
-    <p>
-      {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
-    </p>
-    <a
-      [routerLink]="['/voivodeship', area.link.slug]"
-      [fragment]="area.link.fragment"
+@defer (when view().dots; prefetch on idle) {
+  <app-county-map-seats [view]="view()" />
+}
+@if (showTooltip()) {
+  @if (selectedArea(); as area) {
+    <div
+      class="map-tooltip"
+      [class.above]="tooltipAbove()"
+      [style]="tooltipStyle()"
     >
-      {{ 'map.tableLink' | transloco }}
-    </a>
-  </div>
+      <p class="heading">
+        {{ area.heading.key | transloco: area.heading.params }}
+      </p>
+      <p>
+        {{ 'map.codes' | transloco: { codes: area.codes.join(', ') } }}
+      </p>
+      <a
+        [routerLink]="['/voivodeship', area.link.slug]"
+        [fragment]="area.link.fragment"
+      >
+        {{ 'map.tableLink' | transloco }}
+      </a>
+    </div>
+  }
 }

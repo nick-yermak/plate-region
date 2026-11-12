@@ -7,13 +7,32 @@ export interface MapLink {
   readonly fragment: string;
 }
 
+export type SeatLabelVisibility = 'full' | 'code' | 'none';
+
+export type SeatLabelPosition = 'above' | 'below' | 'right' | 'left';
+
 export interface MapAreaLabel {
   readonly x: number;
   readonly y: number;
   readonly text: string;
+  /** Short code-only text when the tier falls back from the full seat label. */
+  readonly codeText: string;
   readonly visible: boolean;
   readonly wideOnly: boolean;
   readonly aboveMarker: boolean;
+  readonly tiers: {
+    readonly narrow: SeatLabelVisibility;
+    readonly wide: SeatLabelVisibility;
+  };
+  readonly positions: {
+    readonly narrow: SeatLabelPosition;
+    readonly wide: SeatLabelPosition;
+  };
+  /** Selected code that was forced over another area's tip at that tier. */
+  readonly forced: {
+    readonly narrow: boolean;
+    readonly wide: boolean;
+  };
 }
 
 export interface MapArea {
@@ -37,6 +56,8 @@ export interface MapView {
   readonly areas: readonly MapArea[];
   readonly borders?: string;
   readonly labelHalo: boolean;
+  /** Seat/district dots for the dialog map. */
+  readonly dots: boolean;
   readonly marker?: { readonly x: number; readonly y: number };
   readonly ariaLabel: TranslatableMessage;
 }

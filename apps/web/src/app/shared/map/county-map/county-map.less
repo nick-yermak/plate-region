@@ -42,7 +42,7 @@ svg[role='img'] {
 .area {
   fill: var(--pr-map-land);
   stroke: var(--pr-map-line);
-  stroke-width: 1;
+  stroke-width: 0.75;
   cursor: pointer;
 }
 
@@ -76,6 +76,13 @@ svg[role='img'] {
 }
 
 .hover-outline {
+  fill: none;
+  stroke: var(--pr-text);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.select-outline {
   fill: none;
   stroke: var(--pr-text);
   stroke-width: 2;

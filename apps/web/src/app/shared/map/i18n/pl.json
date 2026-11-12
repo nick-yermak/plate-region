@@ -11,6 +11,9 @@
     },
     "district": "{{name}}, Warszawa",
     "codes": "Wyróżniki: {{codes}}",
-    "tableLink": "Pokaż na stronie województwa"
+    "tableLink": "Pokaż na stronie województwa",
+    "dialogTitle": "Województwo {{name}}",
+    "dialogSubtitle": "Powiaty i kody rejestracyjne",
+    "dialogClose": "Zamknij"
   }
 }

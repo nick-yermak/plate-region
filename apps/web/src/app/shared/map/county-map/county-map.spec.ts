@@ -11,6 +11,7 @@ import {
 
 import type { MapView } from '../map.types';
 import { CountyMapComponent } from './county-map';
+import { voivodeshipDialogMapView } from '../dialog-map-view';
 import { TRANSLOCO_TESTING } from '../../../i18n/testing-langs';
 import { countryMapView, voivodeshipMapView } from '../map-view';
 
@@ -268,5 +269,81 @@ describe('CountyMapComponent', () => {
     const marker = host.querySelector('circle.marker');
     expect(marker?.getAttribute('r')).toBe('7');
     expect(marker?.getAttribute('cx')).toBe('29.5%');
+  });
+
+  it('in select mode emits areaSelect and shows no tooltip', async () => {
+    const map = await countyMapLoaders['D']();
+    const region1 = registry.region1.find(
+      (region) => region.letters[0] === 'D',
+    );
+    if (region1 === undefined) {
+      throw new Error('no region1 D');
+    }
+    const country = await loadCountryMap();
+    const view = voivodeshipDialogMapView(
+      map,
+      region1,
+      region2ByName('Wrocław', 'D'),
+      'DW',
+      'en',
+      country,
+    );
+    await TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        CountyMapComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [provideRouter([])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(CountyMapComponent);
+    fixture.componentRef.setInput('view', view);
+    fixture.componentRef.setInput('interaction', 'select');
+    const emitted: string[] = [];
+    fixture.componentInstance.areaSelect.subscribe((id) => emitted.push(id));
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const area = root.querySelector(
+      'path.area[data-id="DW"]',
+    ) as HTMLElement | null;
+    area?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(emitted).toEqual(['DW']);
+    expect(root.querySelectorAll('.map-tooltip')).toHaveLength(0);
+  });
+
+  it('draws one seat dot per area when view.dots is true', async () => {
+    const map = await countyMapLoaders['D']();
+    const region1 = registry.region1.find(
+      (region) => region.letters[0] === 'D',
+    );
+    if (region1 === undefined) {
+      throw new Error('no region1 D');
+    }
+    const country = await loadCountryMap();
+    const view = voivodeshipDialogMapView(
+      map,
+      region1,
+      region2ByName('Wrocław', 'D'),
+      'DW',
+      'en',
+      country,
+    );
+    await TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [
+        CountyMapComponent,
+        TranslocoTestingModule.forRoot(TRANSLOCO_TESTING),
+      ],
+      providers: [provideRouter([])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(CountyMapComponent);
+    fixture.componentRef.setInput('view', view);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('circle.seat-dot')).toHaveLength(
+      view.areas.length,
+    );
   });
 });

@@ -1,0 +1,39 @@
+<svg class="labels seats" aria-hidden="true" [class.halo]="labelHalo()">
+  @for (seat of seatOverlay(); track seat.id) {
+    <circle
+      class="seat-dot"
+      [attr.data-area-id]="seat.id"
+      [attr.cx]="seat.x"
+      [attr.cy]="seat.y"
+      [attr.r]="dotRadius"
+    />
+    @if (seat.narrowText; as text) {
+      <text
+        class="seat-label seat-label-narrow"
+        [attr.data-area-id]="seat.id"
+        [attr.x]="seat.x"
+        [attr.y]="seat.y"
+        [attr.dx]="seat.narrowSvg.dx"
+        [attr.dy]="seat.narrowSvg.dy"
+        [attr.text-anchor]="seat.narrowSvg.textAnchor"
+        [attr.data-forced]="seat.narrowForced ? true : null"
+      >
+        {{ text }}
+      </text>
+    }
+    @if (seat.wideText; as text) {
+      <text
+        class="seat-label seat-label-wide"
+        [attr.data-area-id]="seat.id"
+        [attr.x]="seat.x"
+        [attr.y]="seat.y"
+        [attr.dx]="seat.wideSvg.dx"
+        [attr.dy]="seat.wideSvg.dy"
+        [attr.text-anchor]="seat.wideSvg.textAnchor"
+        [attr.data-forced]="seat.wideForced ? true : null"
+      >
+        {{ text }}
+      </text>
+    }
+  }
+</svg>

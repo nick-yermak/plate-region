@@ -224,7 +224,7 @@ describe('PlatePage', () => {
       const labels = [
         ...fixture.nativeElement.querySelectorAll('svg[role="img"]'),
       ].map((node) => (node as SVGElement).getAttribute('aria-label'));
-      expect(labels).toHaveLength(2);
+      expect(labels).toHaveLength(1);
       expect(
         labels.every(
           (label) =>
@@ -242,7 +242,7 @@ describe('PlatePage', () => {
       const labels = [
         ...fixture.nativeElement.querySelectorAll('svg[role="img"]'),
       ].map((node) => (node as SVGElement).getAttribute('aria-label'));
-      expect(labels).toHaveLength(2);
+      expect(labels).toHaveLength(1);
       expect(
         labels.every(
           (label) =>
@@ -252,6 +252,64 @@ describe('PlatePage', () => {
             !label.includes('Wrocław'),
         ),
       ).toBe(true);
+    });
+  });
+
+  it('puts the map dialog button in the car row instead of the voivodeship map', async () => {
+    const withCounty = await renderPage('GMB 12345');
+    await vi.waitFor(() => {
+      expect(
+        withCounty.nativeElement.querySelector(
+          '.country-map-box app-county-map',
+        ),
+      ).not.toBeNull();
+    });
+    expect(
+      withCounty.nativeElement.querySelector('.map-box app-county-map'),
+    ).toBeNull();
+    expect(
+      withCounty.nativeElement
+        .querySelector('.map-box .map-dialog-open')
+        ?.textContent?.trim(),
+    ).toBe('Show the county on the map');
+
+    await TestBed.resetTestingModule();
+    const withoutCounty = await renderPage('G 12345');
+    await vi.waitFor(() => {
+      expect(
+        withoutCounty.nativeElement.querySelector(
+          '.country-map-box app-county-map',
+        ),
+      ).not.toBeNull();
+    });
+    expect(
+      withoutCounty.nativeElement
+        .querySelector('.map-box .map-dialog-open')
+        ?.textContent?.trim(),
+    ).toBe('Show the voivodeship on the map');
+  });
+
+  it('renders no dialog component before the first map button press', async () => {
+    const fixture = await renderPage('GMB 12345');
+    await vi.waitFor(() => {
+      expect(
+        fixture.nativeElement.querySelector('.country-map-box app-county-map'),
+      ).not.toBeNull();
+    });
+    expect(
+      fixture.nativeElement.querySelector('app-voivodeship-map-dialog'),
+    ).toBeNull();
+    const button = fixture.nativeElement.querySelector(
+      '.map-box .map-dialog-open',
+    ) as HTMLButtonElement | null;
+    expect(button).not.toBeNull();
+    button?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      expect(
+        fixture.nativeElement.querySelector('app-voivodeship-map-dialog'),
+      ).not.toBeNull();
     });
   });
 
