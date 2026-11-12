@@ -212,7 +212,9 @@ function matchLandSeats(
     byKey.set(key, { ...row, name });
   }
 
-  const letterOf = new Map(region1.map((r) => [r.name, r.letters[0]]));
+  const letterOf = new Map<string, string>(
+    region1.map((r) => [r.name, r.letters[0]]),
+  );
   const nameOf = new Map(region1.map((r) => [r.letters[0], r.name]));
   const regLand = region2.filter((r) => r.kind === 'land');
   const inListNotRegistry: string[] = [];
