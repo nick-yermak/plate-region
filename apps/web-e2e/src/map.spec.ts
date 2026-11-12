@@ -277,6 +277,23 @@ test('map-country-other-voivodeship', { tag: '@desktop' }, async ({ page }) => {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
+test('map-result-code-vx', { tag: '@desktop' }, async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/plate/VX12345');
+  const country = page.locator('.country-map-box app-county-map');
+  await expect(
+    country.locator('text.seat-label-wide', { hasText: 'VX' }),
+  ).toBeVisible();
+  const dialogMap = await openVoivodeshipDialog(page);
+  await expect(
+    dialogMap.locator('.seat-label-wide', {
+      hasText: /Wrocław \(VX\)|^VX$/,
+    }),
+  ).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
 test('map-country-marker-clear', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/CT%2012345');
   const map = page.locator('.country-map-box app-county-map');

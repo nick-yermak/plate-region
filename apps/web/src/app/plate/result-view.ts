@@ -103,6 +103,17 @@ function voivodeshipHeading(
   };
 }
 
+/** The result's code for the voivodeship link and filled-map labels (D-54 Update #141). */
+export function resultPlateCode(view: ResultView): string | undefined {
+  if (view.kind === 'readings') {
+    return view.readings[0]?.link.fragment;
+  }
+  if (view.kind === 'candidates') {
+    return view.link?.fragment;
+  }
+  return undefined;
+}
+
 /** Maps a plate string to the result-page view model for the active UI language. */
 export function resultView(plate: string, language: Language): ResultView {
   const result = parsePlate(plate);

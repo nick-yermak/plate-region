@@ -11,12 +11,9 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { parsePlate } from '@plate-region/plate-domain';
-
 import type { LoadedMap } from '../plate.types';
 import { countryMapView } from '../../shared/map/map-view';
 import { CardComponent } from '../../shared/card/card/card';
-import { plateDisplayText, resultView } from '../result-view';
 import { voivodeshipCardView } from '../voivodeship-card-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
@@ -24,6 +21,7 @@ import { RESULT_MAP_LOADER, resultMapTarget } from '../result-map';
 import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
+import { plateDisplayText, resultPlateCode, resultView } from '../result-view';
 import { CarIllustrationComponent } from '../car-illustration/car-illustration';
 import { VoivodeshipCardComponent } from '../voivodeship-card/voivodeship-card';
 import { MapDialogOpenButtonComponent } from '../map-dialog-open-button/map-dialog-open-button';
@@ -33,11 +31,6 @@ function isWarsawLoaded(
   loaded: LoadedMap,
 ): loaded is Extract<LoadedMap, { target: { kind: 'warsaw' } }> {
   return loaded.target.kind === 'warsaw';
-}
-
-function plateCodeOf(plate: string): string | undefined {
-  const result = parsePlate(plate);
-  return result.status === 'resolved' ? result.code : undefined;
 }
 
 @Component({
@@ -82,16 +75,10 @@ export class PlatePage {
       return undefined;
     }
     const page = this.view();
-    let code: string | undefined;
-    if (page.kind === 'readings') {
-      code = page.readings[0]?.link.fragment;
-    } else if (page.kind === 'candidates') {
-      code = page.link?.fragment;
-    }
     return voivodeshipCardView(
       target.region1,
       target.filled,
-      code,
+      resultPlateCode(page),
       this.language(),
     );
   });
@@ -109,7 +96,7 @@ export class PlatePage {
   });
 
   protected readonly dialogPlateCode = computed(() =>
-    plateCodeOf(this.plate()),
+    resultPlateCode(this.view()),
   );
 
   protected readonly dialogTitle = computed(() => {

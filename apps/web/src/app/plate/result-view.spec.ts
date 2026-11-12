@@ -1,5 +1,25 @@
-import { resultView } from './result-view';
 import { county, voivodeship } from './plate.testing';
+import { resultPlateCode, resultView } from './result-view';
+
+describe('resultPlateCode', () => {
+  it('resolved → its code', () => {
+    expect(resultPlateCode(resultView('VX12345', 'en'))).toBe('VX');
+  });
+
+  it('ambiguous with a powiat → its code', () => {
+    expect(resultPlateCode(resultView('WOO1A', 'en'))).toBe('WO');
+  });
+
+  it('candidates with an answer → the normalised input that selected it', () => {
+    expect(resultPlateCode(resultView('VX', 'en'))).toBe('VX');
+  });
+
+  it('otherwise undefined', () => {
+    expect(resultPlateCode(resultView('WA12', 'en'))).toBeUndefined();
+    expect(resultPlateCode(resultView('GK', 'en'))).toBeUndefined();
+    expect(resultPlateCode(resultView('2A12345', 'en'))).toBeUndefined();
+  });
+});
 
 describe('resultView', () => {
   it('resolved DW 12345 → city reading with DW anchor', () => {
