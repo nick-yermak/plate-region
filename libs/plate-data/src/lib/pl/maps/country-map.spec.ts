@@ -39,8 +39,6 @@ function moduleWith(
 ): CountryMapModule {
   return {
     viewBox: { width: 1000, height: 938 },
-    outline: 'M0 0l1 0 0 1z',
-    borders: 'M0 0l1 1',
     counties: [['M0 0l1 0 0 1z', 0, 0]],
     capitals,
     voivodeships,

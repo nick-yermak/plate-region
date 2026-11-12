@@ -53,10 +53,6 @@ export interface CountryMapCounty {
 /** Map of Poland with all counties. */
 export interface CountryMap {
   readonly viewBox: MapViewBox;
-  /** Outline of the country. */
-  readonly outline: string;
-  /** Borders between voivodeships, each drawn once, as open lines. */
-  readonly borders: string;
   /** In registry order. */
   readonly counties: readonly CountryMapCounty[];
   /** The 18 voivodeship capitals, as rows of `counties`, in registry order. */
@@ -71,8 +67,6 @@ export interface CountryMap {
 /** Stored form of the map of Poland: county rows by index of `registry.region2`. */
 export interface CountryMapModule {
   readonly viewBox: MapViewBox;
-  readonly outline: string;
-  readonly borders: string;
   readonly counties: readonly (readonly [path: string, x: number, y: number])[];
   readonly capitals: readonly (readonly [
     region1Letter: string,

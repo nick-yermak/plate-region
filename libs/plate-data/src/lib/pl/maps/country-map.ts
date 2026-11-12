@@ -45,8 +45,6 @@ export function decodeCountryMap(
   }));
   return {
     viewBox: module.viewBox,
-    outline: module.outline,
-    borders: module.borders,
     counties,
     capitals,
     voivodeships,

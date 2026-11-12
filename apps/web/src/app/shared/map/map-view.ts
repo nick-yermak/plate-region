@@ -369,12 +369,14 @@ export function countryMapView(
     };
   }
 
+  // One path so shared edges between voivodeships are stroked once.
+  const borders = map.voivodeships.map((row) => row.path).join('');
+
   return {
     viewBox: map.viewBox,
-    outline: map.outline,
     neighbours: [],
     areas,
-    borders: map.borders,
+    borders,
     labelHalo: true,
     dots: false,
     ...(filledPoint === undefined

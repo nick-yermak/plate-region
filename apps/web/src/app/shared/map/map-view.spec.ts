@@ -473,7 +473,10 @@ describe('map-view', () => {
         region2ByName('Wrocław', 'D'),
         'en',
       );
-      expect(view.borders).toBe(map.borders);
+      expect(view.borders).toBe(
+        map.voivodeships.map((row) => row.path).join(''),
+      );
+      expect(view.outline).toBeUndefined();
       expect(view.neighbours).toEqual([]);
       expect(view.labelHalo).toBe(true);
     });

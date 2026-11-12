@@ -51,9 +51,11 @@ export interface MapArea {
 
 export interface MapView {
   readonly viewBox: MapViewBox;
-  readonly outline: string;
+  /** Voivodeship / Warsaw outer path; omitted on the map of Poland. */
+  readonly outline?: string;
   readonly neighbours: readonly string[];
   readonly areas: readonly MapArea[];
+  /** Voivodeship borders (country: all 16 outlines as one path). */
   readonly borders?: string;
   readonly labelHalo: boolean;
   /** Seat/district dots for the dialog map. */

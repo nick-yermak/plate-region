@@ -32,7 +32,9 @@
   @if (view().borders; as borders) {
     <path class="borders" [attr.d]="borders" />
   }
-  <path class="outline" [attr.d]="view().outline" />
+  @if (view().outline; as outline) {
+    <path class="outline" [attr.d]="outline" />
+  }
   @for (area of filledAreas(); track area.id) {
     <path class="filled-outline" [attr.d]="area.path" />
   }

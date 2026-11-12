@@ -466,13 +466,14 @@ describe('country map', () => {
     ).toEqual(CAPITAL_LABELS);
   });
 
-  it('draws the outline, the borders and every county inside a 1000 by 938 view box', async () => {
+  it('draws the 16 voivodeship outlines and every county inside a 1000 by 938 view box', async () => {
     const map = await loadCountryMap();
     expect(map.viewBox).toEqual({ width: 1000, height: 938 });
-    expect(map.outline).toMatch(PATH_START);
-    expectInsideViewBox(map.outline, map.viewBox);
-    expect(map.borders).toMatch(PATH_START);
-    expectInsideViewBox(map.borders, map.viewBox);
+    expect(map.voivodeships).toHaveLength(16);
+    for (const voivodeship of map.voivodeships) {
+      expect(voivodeship.path).toMatch(PATH_START);
+      expectInsideViewBox(voivodeship.path, map.viewBox);
+    }
     for (const county of map.counties) {
       expect(county.path).toMatch(PATH_START);
       expectInsideViewBox(county.path, map.viewBox);

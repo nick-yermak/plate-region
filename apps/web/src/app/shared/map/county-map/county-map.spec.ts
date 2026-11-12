@@ -207,7 +207,10 @@ describe('CountyMapComponent', () => {
       (fixture.nativeElement as HTMLElement)
         .querySelector('path.borders')
         ?.getAttribute('d'),
-    ).toBe(country.borders);
+    ).toBe(country.voivodeships.map((row) => row.path).join(''));
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('path.outline'),
+    ).toBeNull();
   });
 
   it('marks wide-only labels', async () => {
