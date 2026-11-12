@@ -32,10 +32,10 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 ### Result — `/plate/:plate`
 
 - The URL holds the plate, so the page can be shared.
-- Shows: voivodeship and powiat, plate type, the county map of the voivodeship (or of Warsaw with its districts) with the powiat highlighted, a link to the voivodeship page that opens at the matching powiat (D-61), and the map of Poland with the voivodeship tinted and the powiat marked (D-64).
+- Shows: the plate on a car (D-54); the reading — voivodeship, county, district and plate type, or two readings when the characters allow both (D-54); a button that opens the voivodeship map in a dialog (D-54 Update #161, D-61 Update #161); a link to the voivodeship page at the matching code (D-54 Update #141); a card with the voivodeship and five of its codes; and the map of Poland with the voivodeship tinted and the county marked (D-64).
 - For m.st. Warszawa with a five-character vehicle part, a District row (or Possible districts) follows the powiat; the names come from unofficial data (D-57).
 - Image: an SVG car with the plate drawn in its plate area. From Epic 4 (#92), a photo taken or uploaded in this session replaces the car until reload; a shared link always shows the SVG car: photos never leave the device (D-04 Update #92).
-- Layout: from 992 px the car (30rem) and the map share one row at the car's height; below 992 px the map follows under the car (D-54 Update #146). The map of Poland closes the page, at most 650 px wide (D-64).
+- Layout: cards (D-67). From 1200 px two columns, 5:6: the car card and the voivodeship card on the left, the map card on the right; below 1200 px one column of at most 40rem in the same order. In the car card the reading sits beside the car once the card is 33rem wide, else under it. Below 768 px the map keeps its 328 px width at 360 px (D-54 Update #161).
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
 - A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
 
