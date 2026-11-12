@@ -1,7 +1,7 @@
-import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { signal, type Provider } from '@angular/core';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 
@@ -9,7 +9,9 @@ import { PlatePage } from './plate-page';
 import { resultView } from '../result-view';
 import { appConfig } from '../../app.config';
 import { county, voivodeship } from '../plate.testing';
+import type { LoadedMap, MapTarget } from '../plate.types';
 import { PlateComponent } from '../../shared/plate/plate/plate';
+import { loadResultMap, RESULT_MAP_LOADER } from '../result-map';
 import { LanguageService } from '../../language/language.service';
 import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
@@ -18,6 +20,18 @@ import {
   testingText,
   TRANSLOCO_TESTING,
 } from '../../i18n/testing-langs';
+
+type DeferredLoad = {
+  readonly target: MapTarget;
+  readonly resolve: (value: LoadedMap) => void;
+};
+
+function deferredLoader(calls: DeferredLoad[]): typeof loadResultMap {
+  return (target) =>
+    new Promise((resolve) => {
+      calls.push({ target, resolve });
+    });
+}
 
 describe('PlatePage', () => {
   beforeEach(() => {
@@ -36,10 +50,10 @@ describe('PlatePage', () => {
     vi.unstubAllGlobals();
   });
 
-  async function renderPage(plate: string) {
+  async function renderPage(plate: string, providers: Provider[] = []) {
     await TestBed.configureTestingModule({
       imports: [PlatePage, TranslocoTestingModule.forRoot(TRANSLOCO_TESTING)],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), ...providers],
     }).compileComponents();
     const fixture = TestBed.createComponent(PlatePage);
     fixture.componentRef.setInput('plate', plate);
@@ -174,5 +188,94 @@ describe('PlatePage', () => {
         name: voivodeship('G').nameEn.value,
       }),
     );
+  });
+
+  it('shows the map of Poland with Wrocław for DW 12345', async () => {
+    const fixture = await renderPage('DW 12345');
+    await vi.waitFor(() => {
+      expect(
+        fixture.nativeElement.querySelector(
+          'svg[role="img"][aria-label="Map of Poland. Highlighted: Wrocław, Lower Silesian Voivodeship"]',
+        ),
+      ).not.toBeNull();
+    });
+  });
+
+  it('drops a map load that finishes after the plate changed', async () => {
+    const calls: DeferredLoad[] = [];
+    const fixture = await renderPage('DW 12345', [
+      { provide: RESULT_MAP_LOADER, useValue: deferredLoader(calls) },
+    ]);
+    await vi.waitFor(() => expect(calls.length).toBe(1));
+    fixture.componentRef.setInput('plate', 'GD 12345');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => expect(calls.length).toBe(2));
+    const dw = calls[0];
+    const gd = calls[1];
+    if (dw === undefined || gd === undefined) {
+      throw new Error('expected deferred loads');
+    }
+    gd.resolve(await loadResultMap(gd.target));
+    await Promise.resolve();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      const labels = [
+        ...fixture.nativeElement.querySelectorAll('svg[role="img"]'),
+      ].map((node) => (node as SVGElement).getAttribute('aria-label'));
+      expect(labels).toHaveLength(2);
+      expect(
+        labels.every(
+          (label) =>
+            label !== null &&
+            label.includes('Gdańsk') &&
+            label.includes('Pomeranian'),
+        ),
+      ).toBe(true);
+    });
+    dw.resolve(await loadResultMap(dw.target));
+    await Promise.resolve();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      const labels = [
+        ...fixture.nativeElement.querySelectorAll('svg[role="img"]'),
+      ].map((node) => (node as SVGElement).getAttribute('aria-label'));
+      expect(labels).toHaveLength(2);
+      expect(
+        labels.every(
+          (label) =>
+            label !== null &&
+            label.includes('Gdańsk') &&
+            label.includes('Pomeranian') &&
+            !label.includes('Wrocław'),
+        ),
+      ).toBe(true);
+    });
+  });
+
+  it("shows no map while the current plate's map is loading", async () => {
+    const calls: DeferredLoad[] = [];
+    const fixture = await renderPage('DW 12345', [
+      { provide: RESULT_MAP_LOADER, useValue: deferredLoader(calls) },
+    ]);
+    await vi.waitFor(() => expect(calls.length).toBe(1));
+    const dw = calls[0];
+    if (dw === undefined) {
+      throw new Error('expected DW load');
+    }
+    dw.resolve(await loadResultMap(dw.target));
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      expect(
+        fixture.nativeElement.querySelector('app-county-map'),
+      ).not.toBeNull();
+    });
+    fixture.componentRef.setInput('plate', 'GD 12345');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => expect(calls.length).toBe(2));
+    expect(fixture.nativeElement.querySelector('app-county-map')).toBeNull();
   });
 });

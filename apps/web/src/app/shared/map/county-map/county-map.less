@@ -26,6 +26,7 @@ svg[role='img'] {
 
 .neighbour,
 .area,
+.borders,
 .outline,
 .filled-outline,
 .hover-outline {
@@ -45,8 +46,19 @@ svg[role='img'] {
   cursor: pointer;
 }
 
+.area-tinted {
+  fill: var(--pr-map-tint);
+}
+
 .area-filled {
   fill: var(--pr-map-highlight);
+}
+
+.borders {
+  fill: none;
+  stroke: var(--pr-map-line);
+  stroke-width: 2;
+  pointer-events: none;
 }
 
 .outline {
@@ -76,15 +88,58 @@ svg[role='img'] {
   }
 }
 
-text {
+.labels {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+// 11 px at the 328 px reference box, 12 px from D-50's lg; CSS px so the size does not scale with the map (D-61, #154).
+.labels text {
   fill: var(--pr-text);
   font-weight: 600;
+  font-size: 11px;
   text-anchor: middle;
   pointer-events: none;
 }
 
-text.on-fill {
+@media (width >= 992px) {
+  .labels text {
+    font-size: 12px;
+  }
+}
+
+.labels.halo text {
+  stroke: var(--pr-map-land);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.marker-halo {
+  fill: none;
+  stroke: var(--pr-map-land);
+  stroke-width: 4px;
+}
+
+.marker {
+  fill: none;
+  stroke: var(--pr-map-highlight);
+  stroke-width: 2px;
+}
+
+.labels text.on-fill {
   fill: var(--pr-map-label-on-fill);
+}
+
+// CB and CT need a map of at least 383 px at 11 px; 768 px is D-50's md, and the map is 650 px from a 682 px window.
+@media (width < 768px) {
+  .wide-only {
+    display: none;
+  }
 }
 
 .map-tooltip {

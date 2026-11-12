@@ -15,6 +15,7 @@ describe('resultMapTarget', () => {
       kind: 'warsaw',
       region1: voivodeship('W'),
       districts: ['Mokotów'],
+      filled: county('WA'),
     });
   });
 

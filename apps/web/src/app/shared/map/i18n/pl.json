@@ -4,7 +4,10 @@
       "voivodeship": "Mapa: województwo {{voivodeship}}",
       "city": "Mapa: województwo {{voivodeship}}. Zaznaczono: {{name}}",
       "land": "Mapa: województwo {{voivodeship}}. Zaznaczono: powiat {{name}}",
-      "warsaw": "Mapa: Warszawa. Zaznaczono: {{districts}}"
+      "warsaw": "Mapa: Warszawa. Zaznaczono: {{districts}}",
+      "country": "Mapa Polski. Zaznaczono: województwo {{voivodeship}}",
+      "countryCity": "Mapa Polski. Zaznaczono: {{name}}, województwo {{voivodeship}}",
+      "countryLand": "Mapa Polski. Zaznaczono: powiat {{name}}, województwo {{voivodeship}}"
     },
     "district": "{{name}}, Warszawa",
     "codes": "Wyróżniki: {{codes}}",

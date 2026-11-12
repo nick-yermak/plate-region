@@ -1,6 +1,13 @@
-import { labelFits, labelFontSize } from './map-labels';
+import { labelFits, labelFontSize, labelSizeEm } from './map-labels';
 
 describe('map-labels', () => {
+  it('labelSizeEm gives DW 1.7421875 by 0.7275390625 em', () => {
+    expect(labelSizeEm('DW')).toEqual({
+      width: 1.7421875,
+      height: 0.7275390625,
+    });
+  });
+
   it('labelFontSize gives 11 px at the reference size for a view box 923 high', () => {
     expect(labelFontSize(923)).toBeCloseTo(33.536585, 6);
   });

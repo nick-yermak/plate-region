@@ -4,7 +4,10 @@
       "voivodeship": "Map: {{voivodeship}} Voivodeship",
       "city": "Map: {{voivodeship}} Voivodeship. Highlighted: {{name}}",
       "land": "Map: {{voivodeship}} Voivodeship. Highlighted: {{name}} county",
-      "warsaw": "Map: Warsaw. Highlighted: {{districts}}"
+      "warsaw": "Map: Warsaw. Highlighted: {{districts}}",
+      "country": "Map of Poland. Highlighted: {{voivodeship}} Voivodeship",
+      "countryCity": "Map of Poland. Highlighted: {{name}}, {{voivodeship}} Voivodeship",
+      "countryLand": "Map of Poland. Highlighted: {{name}} county, {{voivodeship}} Voivodeship"
     },
     "district": "{{name}}, Warsaw",
     "codes": "Codes: {{codes}}",
