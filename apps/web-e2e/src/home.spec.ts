@@ -29,8 +29,9 @@ test('home-short-code-answer', { tag: '@desktop' }, async ({ page }) => {
     main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
   ).toHaveText('Other possible counties');
 
-  await expect(main.getByRole('listitem')).toHaveCount(1);
-  await expect(main.getByRole('listitem')).toHaveText(/GDA gdański \(county\)/);
+  const candidates = main.locator('app-candidates-list').getByRole('listitem');
+  await expect(candidates).toHaveCount(1);
+  await expect(candidates).toHaveText(/GDA gdański \(county\)/);
 });
 
 test('home-short-code-mobile', { tag: '@mobile' }, async ({ page }) => {

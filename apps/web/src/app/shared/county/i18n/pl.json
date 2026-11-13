@@ -1,8 +1,11 @@
 {
   "county": {
     "heading": {
-      "city": "{{name}}",
-      "land": "Powiat {{name}}"
+      "city": "{{seat}}",
+      "cityShared": "{{seat}} (miasto)",
+      "cityWithDistrict": "{{seat}} – {{district}}",
+      "landShared": "{{seat}} (powiat)",
+      "land": "{{seat}}, powiat {{name}}"
     }
   }
 }

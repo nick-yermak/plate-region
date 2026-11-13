@@ -298,9 +298,7 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/G%2012345');
   const card = page.locator('app-voivodeship-card');
   await expect(card).toBeVisible();
-  const codesText = await card.innerText();
-  const codes = codesText.match(/[A-Z]{1,3}/g) ?? [];
-  expect(new Set(codes).size).toBeGreaterThanOrEqual(5);
+  await expect(card.getByRole('listitem').first()).toHaveText(/GD — Gdańsk/);
   await expect(page.locator('button.map-dialog-open')).toHaveText(
     /Show the voivodeship on the map/,
   );
@@ -318,3 +316,91 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   const buttonBox = await boxOf(mapButton);
   expect(buttonBox.y).toBeGreaterThanOrEqual(linkBox.y - 1);
 });
+
+/** Narrowest window where the car card shows the reading beside the car (D-54 Update #169). */
+const RESULT_W_SBS = 1390;
+
+async function columnGeometry(
+  page: Page,
+  platePath: string,
+  width: number,
+): Promise<{
+  leftBottom: number;
+  mapBottom: number;
+  leftHeight: number;
+  mapHeight: number;
+  mapContentBottom: number;
+  mapPaddingBottom: number;
+}> {
+  await page.setViewportSize({ width, height: 900 });
+  await page.goto(platePath);
+  const left = page.locator('.result-main');
+  const mapCard = page.locator('app-card.map-card');
+  await expect(left).toBeVisible();
+  await expect(mapCard).toBeVisible();
+  await expect(mapCard.locator('svg[role="img"]')).toBeVisible();
+  return page.evaluate(() => {
+    const leftEl = document.querySelector('.result-main');
+    const mapEl = document.querySelector('app-card.map-card');
+    if (leftEl === null || mapEl === null) {
+      throw new Error('left column or map card missing');
+    }
+    const mapBox = mapEl.getBoundingClientRect();
+    const paddingBottom = parseFloat(getComputedStyle(mapEl).paddingBottom);
+    let contentBottom = mapBox.top;
+    for (const child of mapEl.children) {
+      contentBottom = Math.max(
+        contentBottom,
+        (child as HTMLElement).getBoundingClientRect().bottom,
+      );
+    }
+    return {
+      leftBottom: leftEl.getBoundingClientRect().bottom,
+      mapBottom: mapBox.bottom,
+      leftHeight: leftEl.getBoundingClientRect().height,
+      mapHeight: mapBox.height,
+      mapContentBottom: contentBottom,
+      mapPaddingBottom: paddingBottom,
+    };
+  });
+}
+
+for (const width of [RESULT_W_SBS, 1440] as const) {
+  for (const [name, path] of [
+    ['resolved', '/plate/GMB%202397T'],
+    ['candidates', '/plate/G%2012345'],
+  ] as const) {
+    test(
+      `result-columns-level-${name}-${width}`,
+      { tag: '@desktop' },
+      async ({ page }) => {
+        const { leftBottom, mapBottom } = await columnGeometry(
+          page,
+          path,
+          width,
+        );
+        expect(Math.abs(leftBottom - mapBottom)).toBeLessThanOrEqual(1);
+      },
+    );
+  }
+}
+
+for (const width of [1200, 1280] as const) {
+  for (const [name, path] of [
+    ['resolved', '/plate/GMB%202397T'],
+    ['two-readings', '/plate/WOO1A'],
+    ['candidates', '/plate/G%2012345'],
+  ] as const) {
+    test(
+      `result-map-natural-${name}-${width}`,
+      { tag: '@desktop' },
+      async ({ page }) => {
+        const g = await columnGeometry(page, path, width);
+        expect(g.leftBottom).toBeGreaterThan(g.mapBottom + 1);
+        expect(
+          Math.abs(g.mapBottom - (g.mapContentBottom + g.mapPaddingBottom)),
+        ).toBeLessThanOrEqual(1);
+      },
+    );
+  }
+}

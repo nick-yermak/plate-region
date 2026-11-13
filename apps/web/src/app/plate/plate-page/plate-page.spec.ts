@@ -115,7 +115,7 @@ describe('PlatePage', () => {
   it('renders Wrocław as the heading for a resolved city plate', async () => {
     const fixture = await renderPage('DW 12345');
     expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
-      'Wrocław',
+      testingText('en', 'county.heading.cityShared', { seat: 'Wrocław' }),
     );
   });
 
@@ -185,7 +185,10 @@ describe('PlatePage', () => {
     const fixture = await renderPage('GMB3837');
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('h1')?.textContent?.trim()).toBe(
-      testingText('en', 'county.heading.land', { name: county('GMB').name }),
+      testingText('en', 'county.heading.land', {
+        seat: 'Malbork',
+        name: county('GMB').name,
+      }),
     );
     expect(root.querySelector('p.note')?.textContent?.trim()).toBe(
       testingText('en', 'plate.notes.incomplete'),
@@ -288,7 +291,9 @@ describe('PlatePage', () => {
       ).not.toBeNull();
     });
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('h1')?.textContent?.trim()).toBe('Wrocław');
+    expect(root.querySelector('h1')?.textContent?.trim()).toBe(
+      testingText('en', 'county.heading.cityShared', { seat: 'Wrocław' }),
+    );
     const carCard = root.querySelector('app-card');
     expect(carCard?.querySelector('app-car-illustration')).not.toBeNull();
     expect(carCard?.querySelector('app-result-reading')).not.toBeNull();

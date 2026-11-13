@@ -136,10 +136,14 @@ export function resultPlateCode(view: ResultView): string | undefined {
 export function resultView(plate: string, language: Language): ResultView {
   const result = parsePlate(plate);
   switch (result.status) {
-    case 'resolved':
+    case 'resolved': {
+      const districts = districtNames(result.districts);
       return {
         kind: 'readings',
-        heading: countyHeading(result.region2),
+        heading: countyHeading(
+          result.region2,
+          districts?.length === 1 ? districts[0] : undefined,
+        ),
         noteKey: undefined,
         readings: [
           withCountyReading({
@@ -148,10 +152,11 @@ export function resultView(plate: string, language: Language): ResultView {
             language,
             code: result.code,
             plateTypes: result.plateTypes,
-            districts: districtNames(result.districts),
+            districts,
           }),
         ],
       };
+    }
     case 'region1-only':
       return {
         kind: 'readings',

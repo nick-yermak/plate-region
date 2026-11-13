@@ -1,58 +1,34 @@
-import {
-  fullCodes,
-  registry,
-  type Region1,
-  type Region2,
-} from '@plate-region/plate-data';
+import type { Region1 } from '@plate-region/plate-data';
 
 import type { Language } from '../i18n/language.types';
 import type { TranslatableMessage } from '../i18n/i18n.types';
+import { voivodeshipMainCodes } from './voivodeship-main-codes';
+
+/** How many main codes the voivodeship card shows (D-54 Update #169). */
+/** How many main codes the voivodeship card shows (D-54 Update #169). */
+export const VOIVODESHIP_CARD_MAIN_CODES_COUNT = 10;
+
+export type VoivodeshipCardCode = {
+  readonly code: string;
+  readonly name: TranslatableMessage;
+};
 
 export type VoivodeshipCardView = {
   readonly heading: TranslatableMessage;
-  readonly codes: readonly string[];
+  readonly codes: readonly VoivodeshipCardCode[];
 };
 
 export function voivodeshipCardView(
   region1: Region1,
-  filled: Region2 | undefined,
-  code: string | undefined,
   language: Language,
 ): VoivodeshipCardView {
   const name = language === 'pl' ? region1.name : region1.nameEn.value;
-  const codes: string[] = [];
-  if (code !== undefined) {
-    codes.push(code);
-  }
-  const letter = region1.letters[0];
-  for (const region2 of registry.region2) {
-    if (region2.region1Letter !== letter) {
-      continue;
-    }
-    if (filled !== undefined && region2 === filled) {
-      continue;
-    }
-    if (
-      filled !== undefined &&
-      region2.name === filled.name &&
-      region2.region1Letter === filled.region1Letter
-    ) {
-      continue;
-    }
-    const first = fullCodes(region1, region2)[0];
-    if (first === undefined) {
-      continue;
-    }
-    if (codes.includes(first)) {
-      continue;
-    }
-    codes.push(first);
-    if (codes.length >= 5) {
-      break;
-    }
-  }
+  const all = voivodeshipMainCodes(region1);
   return {
     heading: { key: 'plate.heading.voivodeship', params: { name } },
-    codes,
+    codes: all.slice(
+      0,
+      Math.min(VOIVODESHIP_CARD_MAIN_CODES_COUNT, all.length),
+    ),
   };
 }

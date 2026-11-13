@@ -1,53 +1,59 @@
 import { registry } from '@plate-region/plate-data';
 
-import { county, voivodeship } from './plate.testing';
-import { voivodeshipCardView } from './voivodeship-card-view';
+import { voivodeship } from './plate.testing';
+import { voivodeshipMainCodes } from './voivodeship-main-codes';
+import {
+  VOIVODESHIP_CARD_MAIN_CODES_COUNT,
+  voivodeshipCardView,
+} from './voivodeship-card-view';
 
 describe('voivodeshipCardView', () => {
-  it("returns GMB then four other G codes for Malbork with 'GMB'", () => {
-    expect(
-      voivodeshipCardView(voivodeship('G'), county('GMB'), 'GMB', 'en').codes,
-    ).toEqual(['GMB', 'GD', 'GA', 'GS', 'GSP']);
+  it('shows a positive number of main codes', () => {
+    expect(VOIVODESHIP_CARD_MAIN_CODES_COUNT).toBeGreaterThan(0);
   });
 
-  it('returns the first five G codes without a matched code', () => {
-    expect(
-      voivodeshipCardView(voivodeship('G'), undefined, undefined, 'en').codes,
-    ).toEqual(['GD', 'GA', 'GS', 'GSP', 'GBY']);
+  it('returns the first N main codes for G in English', () => {
+    const expected = voivodeshipMainCodes(voivodeship('G')).slice(
+      0,
+      VOIVODESHIP_CARD_MAIN_CODES_COUNT,
+    );
+    expect(voivodeshipCardView(voivodeship('G'), 'en')).toEqual({
+      heading: {
+        key: 'plate.heading.voivodeship',
+        params: { name: voivodeship('G').nameEn.value },
+      },
+      codes: expected,
+    });
   });
 
-  it("puts 'VX' first and omits Wrocław's own first code", () => {
-    const codes = voivodeshipCardView(
-      voivodeship('D'),
-      county('VX'),
-      'VX',
-      'en',
-    ).codes;
-    expect(codes[0]).toBe('VX');
-    expect(codes).not.toContain('DW');
+  it('returns the first N main codes for G in Polish', () => {
+    const expected = voivodeshipMainCodes(voivodeship('G')).slice(
+      0,
+      VOIVODESHIP_CARD_MAIN_CODES_COUNT,
+    );
+    expect(voivodeshipCardView(voivodeship('G'), 'pl')).toEqual({
+      heading: {
+        key: 'plate.heading.voivodeship',
+        params: { name: voivodeship('G').name },
+      },
+      codes: expected,
+    });
   });
 
-  it("puts 'WE' first and omits m.st. Warszawa's first code", () => {
-    const codes = voivodeshipCardView(
-      voivodeship('W'),
-      county('WE'),
-      'WE',
-      'en',
-    ).codes;
-    expect(codes[0]).toBe('WE');
-    expect(codes).not.toContain('WA');
-  });
-
-  it('returns five distinct codes for every voivodeship', () => {
+  it('returns min(N, count) codes for every voivodeship', () => {
     for (const region1 of registry.region1) {
-      const codes = voivodeshipCardView(
-        region1,
-        undefined,
-        undefined,
-        'en',
-      ).codes;
-      expect(codes).toHaveLength(5);
-      expect(new Set(codes).size).toBe(5);
+      const all = voivodeshipMainCodes(region1);
+      const expectedCount = Math.min(
+        VOIVODESHIP_CARD_MAIN_CODES_COUNT,
+        all.length,
+      );
+      const codes = voivodeshipCardView(region1, 'en').codes;
+      expect(codes).toHaveLength(expectedCount);
+      expect(new Set(codes.map((row) => row.code)).size).toBe(expectedCount);
+      expect(codes).toEqual(all.slice(0, expectedCount));
     }
+    expect(voivodeshipCardView(voivodeship('G'), 'en').codes[0]?.code).toBe(
+      'GD',
+    );
   });
 });

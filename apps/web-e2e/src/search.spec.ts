@@ -25,7 +25,9 @@ test('search-incomplete-candidates', { tag: '@desktop' }, async ({ page }) => {
     main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
   ).toHaveText('12 possible counties');
 
-  await expect(main.getByRole('listitem')).toHaveCount(12);
+  await expect(
+    main.locator('app-candidates-list').getByRole('listitem'),
+  ).toHaveCount(12);
 });
 
 test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
@@ -43,7 +45,7 @@ test('search-submit-mobile', { tag: '@mobile' }, async ({ page }) => {
   await expect(page).toHaveURL('/plate/DW');
   await expect(
     page.getByRole('main').getByRole('heading', { level: 1 }),
-  ).toHaveText('Wrocław');
+  ).toHaveText('Wrocław (city)');
 
   await page.goto('/');
   const again = page.getByRole('textbox', { name: 'Licence plate number' });

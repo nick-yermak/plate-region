@@ -1,8 +1,11 @@
 {
   "county": {
     "heading": {
-      "city": "{{name}}",
-      "land": "{{name}} county"
+      "city": "{{seat}}",
+      "cityShared": "{{seat}} (city)",
+      "cityWithDistrict": "{{seat}} – {{district}}",
+      "landShared": "{{seat}} (county)",
+      "land": "{{seat}}, {{name}} county"
     }
   }
 }
