@@ -58,10 +58,6 @@ describe('VoivodeshipMapDialogComponent', () => {
       key: 'map.dialogTitle',
       params: { name: 'Pomeranian' },
     });
-    fixture.componentRef.setInput('subtitle', {
-      key: 'map.dialogSubtitle',
-      params: {},
-    });
     fixture.componentRef.setInput('voivodeshipLabel', 'Pomeranian');
     fixture.componentRef.setInput('selectedId', selectedId);
     fixture.detectChanges();
@@ -75,12 +71,16 @@ describe('VoivodeshipMapDialogComponent', () => {
     expect(document.querySelector('.ant-modal')).toBeNull();
   });
 
-  it('opens with title, subtitle, map and panel', async () => {
+  it('opens with the title only, map and panel', async () => {
     const { root } = await render(true);
     await fixtureWhenModal();
     const modal = document.querySelector('.ant-modal') ?? root;
-    expect(modal.textContent).toContain('Pomeranian Voivodeship');
-    expect(modal.textContent).toContain('Counties and registration codes');
+    const titleText = (
+      modal.querySelector('.ant-modal-title')?.textContent ?? ''
+    )
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(titleText).toBe('Pomeranian Voivodeship');
     expect(
       document.querySelector('app-county-map') ??
         root.querySelector('app-county-map'),

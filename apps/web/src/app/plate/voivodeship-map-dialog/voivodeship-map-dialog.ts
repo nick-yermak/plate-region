@@ -54,7 +54,6 @@ export class VoivodeshipMapDialogComponent {
   readonly plateCode = input<string | undefined>(undefined);
   readonly language = input.required<Language>();
   readonly title = input.required<TranslatableMessage>();
-  readonly subtitle = input.required<TranslatableMessage>();
   readonly voivodeshipLabel = input.required<string>();
   readonly selectedId = input<string | undefined>(undefined);
 

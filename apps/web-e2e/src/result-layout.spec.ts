@@ -39,6 +39,47 @@ async function primaryContrast(
   return { rest, hover };
 }
 
+async function mapGaps(
+  page: Page,
+  size: { width: number; height: number },
+): Promise<{ leftGap: number; rightGap: number; width: number }> {
+  await page.setViewportSize(size);
+  await page.goto('/plate/DW%20783JW');
+  const mapCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Poland – voivodeships',
+    }),
+  });
+  const map = mapCard.locator('svg[role="img"]');
+  await expect(map).toBeVisible();
+  return mapCard.evaluate((card) => {
+    const svg = card.querySelector('svg[role="img"]');
+    if (svg === null) {
+      throw new Error('map svg missing');
+    }
+    const cardBox = card.getBoundingClientRect();
+    const svgBox = svg.getBoundingClientRect();
+    return {
+      leftGap: svgBox.left - cardBox.left,
+      rightGap: cardBox.right - svgBox.right,
+      width: svgBox.width,
+    };
+  });
+}
+
+test(
+  'centres the map of Poland in its card',
+  { tag: '@desktop' },
+  async ({ page }) => {
+    const at1280 = await mapGaps(page, { width: 1280, height: 800 });
+    expect(Math.abs(at1280.leftGap - at1280.rightGap)).toBeLessThanOrEqual(1);
+    const at1920 = await mapGaps(page, { width: 1920, height: 1080 });
+    expect(Math.abs(at1920.leftGap - at1920.rightGap)).toBeLessThanOrEqual(1);
+    expect(Math.abs(at1920.width - 650)).toBeLessThanOrEqual(0.5);
+  },
+);
+
 test('result-layout-desktop', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/GMB%202397T');
   const cards = page.locator('app-card');
