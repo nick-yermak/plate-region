@@ -25,6 +25,10 @@ describe('resultPlateCode', () => {
     expect(resultPlateCode(view)).toBeUndefined();
   });
 
+  it('incomplete → GMB', () => {
+    expect(resultPlateCode(resultView('GMB3837', 'en'))).toBe('GMB');
+  });
+
   it('otherwise undefined', () => {
     expect(resultPlateCode(resultView('WA12', 'en'))).toBeUndefined();
     expect(resultPlateCode(resultView('2A12345', 'en'))).toBeUndefined();
@@ -45,8 +49,10 @@ describe('resultView', () => {
           captionKey: undefined,
           powiat: { name: county('DW').name, kindKey: 'plate.kind.city' },
           voivodeshipName: voivodeship('D').nameEn.value,
-          typesLabelKey: 'plate.reading.type',
-          plateTypes: ['ordinary'],
+          types: {
+            labelKey: 'plate.reading.type',
+            plateTypes: ['ordinary'],
+          },
           districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: 'DW' },
         },
@@ -88,8 +94,10 @@ describe('resultView', () => {
           captionKey: undefined,
           powiat: undefined,
           voivodeshipName: voivodeship('W').nameEn.value,
-          typesLabelKey: 'plate.reading.possibleTypes',
-          plateTypes: ['ordinary', 'vintage', 'temporary'],
+          types: {
+            labelKey: 'plate.reading.possibleTypes',
+            plateTypes: ['ordinary', 'vintage', 'temporary'],
+          },
           districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
@@ -110,8 +118,10 @@ describe('resultView', () => {
           captionKey: 'plate.reading.withCounty',
           powiat: { name: county('WO').name, kindKey: 'plate.kind.city' },
           voivodeshipName: voivodeship('W').nameEn.value,
-          typesLabelKey: 'plate.reading.type',
-          plateTypes: ['vintage'],
+          types: {
+            labelKey: 'plate.reading.type',
+            plateTypes: ['vintage'],
+          },
           districts: undefined,
           link: { slug: 'mazowieckie', fragment: 'WO' },
         },
@@ -119,8 +129,10 @@ describe('resultView', () => {
           captionKey: 'plate.reading.withoutCounty',
           powiat: undefined,
           voivodeshipName: voivodeship('W').nameEn.value,
-          typesLabelKey: 'plate.reading.type',
-          plateTypes: ['individual'],
+          types: {
+            labelKey: 'plate.reading.type',
+            plateTypes: ['individual'],
+          },
           districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
@@ -141,8 +153,10 @@ describe('resultView', () => {
           captionKey: undefined,
           powiat: undefined,
           voivodeshipName: voivodeship('D').nameEn.value,
-          typesLabelKey: 'plate.reading.type',
-          plateTypes: ['ordinary'],
+          types: {
+            labelKey: 'plate.reading.type',
+            plateTypes: ['ordinary'],
+          },
           districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: undefined },
         },
@@ -234,8 +248,10 @@ describe('resultView', () => {
           captionKey: undefined,
           powiat: { name: county('VX').name, kindKey: 'plate.kind.city' },
           voivodeshipName: voivodeship('D').nameEn.value,
-          typesLabelKey: 'plate.reading.type',
-          plateTypes: ['ordinary'],
+          types: {
+            labelKey: 'plate.reading.type',
+            plateTypes: ['ordinary'],
+          },
           districts: undefined,
           link: { slug: 'dolnoslaskie', fragment: 'VX' },
         },
@@ -256,8 +272,10 @@ describe('resultView', () => {
           captionKey: undefined,
           powiat: undefined,
           voivodeshipName: voivodeship('W').name,
-          typesLabelKey: 'plate.reading.possibleTypes',
-          plateTypes: ['ordinary', 'vintage', 'temporary'],
+          types: {
+            labelKey: 'plate.reading.possibleTypes',
+            plateTypes: ['ordinary', 'vintage', 'temporary'],
+          },
           districts: undefined,
           link: { slug: 'mazowieckie', fragment: undefined },
         },
@@ -334,36 +352,93 @@ describe('resultView', () => {
     expect(view.link).toBeUndefined();
   });
 
-  it('candidates GD 1 → no answer, Gdańsk listed', () => {
-    const view = resultView('GD 1', 'en');
-    expect(view.kind).toBe('candidates');
-    if (view.kind !== 'candidates') {
-      throw new Error('expected candidates');
-    }
-    expect(view.heading).toEqual({
-      key: 'plate.heading.voivodeship',
-      params: { name: voivodeship('G').nameEn.value },
+  it('incomplete GMB3837 → malborski reading without types', () => {
+    expect(resultView('GMB3837', 'en')).toEqual({
+      kind: 'incomplete',
+      heading: {
+        key: 'county.heading.land',
+        params: { name: county('GMB').name },
+      },
+      noteKey: 'plate.notes.incomplete',
+      reading: {
+        captionKey: undefined,
+        powiat: { name: county('GMB').name, kindKey: 'plate.kind.land' },
+        voivodeshipName: voivodeship('G').nameEn.value,
+        types: undefined,
+        districts: undefined,
+        link: { slug: 'pomorskie', fragment: 'GMB' },
+      },
+      withoutRegion2: false,
+      notInRegistry: false,
     });
-    expect(view.candidates.answer).toBeUndefined();
-    expect(view.candidates.counties).toHaveLength(1);
-    expect(view.candidates.counties[0]?.codes).toEqual(['GD']);
-    expect(view.link).toBeUndefined();
   });
 
-  it('candidates DWR1234 → one county, no answer', () => {
-    const view = resultView('DWR1234', 'en');
+  it('candidates GMB → answer', () => {
+    const view = resultView('GMB', 'en');
     expect(view.kind).toBe('candidates');
     if (view.kind !== 'candidates') {
       throw new Error('expected candidates');
     }
+    expect(view.candidates.answer).toEqual(
+      expect.objectContaining({
+        codes: ['GMB'],
+        region2: expect.objectContaining({ name: county('GMB').name }),
+      }),
+    );
+  });
+
+  it('candidates NEL → answer', () => {
+    const view = resultView('NEL', 'en');
+    expect(view.kind).toBe('candidates');
+    if (view.kind !== 'candidates') {
+      throw new Error('expected candidates');
+    }
+    expect(view.candidates.answer).toEqual(
+      expect.objectContaining({
+        codes: ['NEL'],
+        region2: expect.objectContaining({ name: county('NEL').name }),
+      }),
+    );
+  });
+
+  it('incomplete GD 1 → Gdańsk reading without types', () => {
+    const view = resultView('GD 1', 'en');
+    expect(view.kind).toBe('incomplete');
+    if (view.kind !== 'incomplete') {
+      throw new Error('expected incomplete');
+    }
     expect(view.heading).toEqual({
-      key: 'plate.heading.voivodeship',
-      params: { name: voivodeship('D').nameEn.value },
+      key: 'county.heading.city',
+      params: { name: county('GD').name },
     });
-    expect(view.candidates.answer).toBeUndefined();
-    expect(view.candidates.counties).toHaveLength(1);
-    expect(view.candidates.counties[0]?.codes).toEqual(['DWR']);
-    expect(view.link).toBeUndefined();
+    expect(view.reading.types).toBeUndefined();
+    expect(view.reading.link).toEqual({ slug: 'pomorskie', fragment: 'GD' });
+  });
+
+  it('incomplete DWR1234 → one county reading without types', () => {
+    const view = resultView('DWR1234', 'en');
+    expect(view.kind).toBe('incomplete');
+    if (view.kind !== 'incomplete') {
+      throw new Error('expected incomplete');
+    }
+    expect(view.heading).toEqual({
+      key: 'county.heading.land',
+      params: { name: county('DWR').name },
+    });
+    expect(view.reading.types).toBeUndefined();
+    expect(view.reading.link).toEqual({
+      slug: 'dolnoslaskie',
+      fragment: 'DWR',
+    });
+  });
+
+  it('incomplete GW → withoutRegion2', () => {
+    const view = resultView('GW', 'en');
+    expect(view.kind).toBe('incomplete');
+    if (view.kind !== 'incomplete') {
+      throw new Error('expected incomplete');
+    }
+    expect(view.withoutRegion2).toBe(true);
   });
 
   it('resolved WE 12345 → reading districts Mokotów', () => {

@@ -2,7 +2,18 @@ import type {
   AnswerCandidate,
   CandidatesFound,
   CandidatesView,
+  CountyCandidate,
 } from './plate.types';
+
+/** The sole county when there is no answer and exactly one county candidate. */
+export function singleCounty(
+  view: CandidatesView,
+): CountyCandidate | undefined {
+  if (view.answer === undefined && view.counties.length === 1) {
+    return view.counties[0];
+  }
+  return undefined;
+}
 
 export function candidatesView(
   result: CandidatesFound,

@@ -120,3 +120,33 @@ test(
     expect(textRight).toBeLessThanOrEqual(boxRight + PLATE_TEXT_TOLERANCE_PX);
   },
 );
+
+test('result-single-candidate', { tag: '@desktop' }, async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Polski' }).click();
+  await page.goto('/plate/GMB3837');
+  const main = page.getByRole('main');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Powiat malborski',
+  );
+  await expect(main.locator('p.note')).toHaveText(
+    'Tablica jest niekompletna; pasuje do niej tylko ten powiat.',
+  );
+  await expect(
+    main.getByRole('term').filter({ hasText: 'Rodzaj tablicy' }),
+  ).toHaveCount(0);
+  await expect(
+    main.getByRole('term').filter({ hasText: 'Możliwe rodzaje tablicy' }),
+  ).toHaveCount(0);
+  const country = page.locator('.country-map-box app-county-map');
+  await expect(country.locator('path.area-filled')).toHaveCount(1);
+  await expect(
+    country.locator('.seat-label-wide', { hasText: 'Malbork (GMB)' }),
+  ).toBeVisible();
+  await page.locator('button.map-dialog-open').click();
+  const dialog = page.locator('.ant-modal').first();
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.locator('.seat-label-wide', { hasText: 'Malbork (GMB)' }),
+  ).toBeVisible();
+});

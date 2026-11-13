@@ -15,8 +15,8 @@ import {
   type WarsawDistrictMap,
 } from '@plate-region/plate-data';
 
-import { candidatesView } from './candidates-view';
 import type { LoadedMap, MapTarget } from './plate.types';
+import { candidatesView, singleCounty } from './candidates-view';
 
 function districtNames(
   districts: readonly [UnofficialName, ...UnofficialName[]] | undefined,
@@ -81,7 +81,7 @@ function candidatesMapTarget(plate: string): MapTarget | undefined {
   return {
     kind: 'voivodeship',
     region1: view.region1,
-    filled: view.answer?.region2,
+    filled: view.answer?.region2 ?? singleCounty(view)?.region2,
   };
 }
 

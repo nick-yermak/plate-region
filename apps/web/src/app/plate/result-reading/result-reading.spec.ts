@@ -12,8 +12,10 @@ const cityReading: ReadingView = {
   captionKey: undefined,
   powiat: { name: 'Wrocław', kindKey: 'plate.kind.city' },
   voivodeshipName: 'Lower Silesian',
-  typesLabelKey: 'plate.reading.type',
-  plateTypes: ['ordinary'],
+  types: {
+    labelKey: 'plate.reading.type',
+    plateTypes: ['ordinary'],
+  },
   districts: undefined,
   link: { slug: 'dolnoslaskie', fragment: 'DW' },
 };
@@ -22,8 +24,10 @@ const voivodeshipOnlyReading: ReadingView = {
   captionKey: undefined,
   powiat: undefined,
   voivodeshipName: 'Masovian',
-  typesLabelKey: 'plate.reading.possibleTypes',
-  plateTypes: ['ordinary', 'vintage', 'temporary'],
+  types: {
+    labelKey: 'plate.reading.possibleTypes',
+    plateTypes: ['ordinary', 'vintage', 'temporary'],
+  },
   districts: undefined,
   link: { slug: 'mazowieckie', fragment: undefined },
 };
@@ -32,8 +36,10 @@ const captionedReading: ReadingView = {
   captionKey: 'plate.reading.withCounty',
   powiat: { name: 'Ostrołęka', kindKey: 'plate.kind.city' },
   voivodeshipName: 'Masovian',
-  typesLabelKey: 'plate.reading.type',
-  plateTypes: ['vintage'],
+  types: {
+    labelKey: 'plate.reading.type',
+    plateTypes: ['vintage'],
+  },
   districts: undefined,
   link: { slug: 'mazowieckie', fragment: 'WO' },
 };
@@ -91,6 +97,23 @@ describe('ResultReadingComponent', () => {
       testingText('en', 'plate.reading.voivodeship'),
       testingText('en', 'plate.reading.possibleTypes'),
     ]);
+  });
+
+  it('omits the plate type row when types is undefined', async () => {
+    const fixture = await render({
+      ...cityReading,
+      types: undefined,
+    });
+    expect(dtTexts(fixture.nativeElement)).toEqual([
+      testingText('en', 'plate.reading.voivodeship'),
+      testingText('en', 'plate.reading.county'),
+    ]);
+    expect(dtTexts(fixture.nativeElement)).not.toContain(
+      testingText('en', 'plate.reading.type'),
+    );
+    expect(dtTexts(fixture.nativeElement)).not.toContain(
+      testingText('en', 'plate.reading.possibleTypes'),
+    );
   });
 
   it('labels a single plate type', async () => {

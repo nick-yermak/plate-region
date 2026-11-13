@@ -38,7 +38,7 @@ Living specification of `apps/web` screens and behaviour. UI issues of Epic 2 re
 - Layout: cards (D-67). From 1200 px two columns, 5:6: the car card and the voivodeship card on the left, the map card on the right; below 1200 px one column of at most 40rem in the same order. In the car card the reading sits beside the car once the card is 33rem wide, else under it. Below 768 px the map keeps its 328 px width at 360 px (D-54 Update #161).
 - Map of Poland: at most 650 px wide and centred in its card (D-54 Update #167).
 - Covers every `ParseResult` variant, including service and military plates (a heading per series, D-54), unknown codes (`not-in-registry`), ambiguous readings and invalid input.
-- A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115).
+- A short code or an incomplete plate with candidates (`candidatesFor`) shows them under the car: the answer county as the heading when a county's code equals the whole normalised input, otherwise the voivodeship and a counted list of every county (D-54 Update #115). When there is no answer and exactly one county, the page shows that county as a reading with an incomplete-plate note and no plate type row (D-54 Update #166).
 
 ### Voivodeship — `/voivodeship/:slug`
 

@@ -27,7 +27,8 @@
     "notes": {
       "region1Only": "This plate shows only the voivodeship code, not a county.",
       "region2NotInRegistry": "The county code is not in the current registry.",
-      "ambiguous": "The characters can be read in two ways."
+      "ambiguous": "The characters can be read in two ways.",
+      "incomplete": "The plate is incomplete; only this county matches it."
     },
     "reading": {
       "withCounty": "Read with a county code",

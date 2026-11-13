@@ -11,11 +11,11 @@ import {
   type PlateType,
 } from '@plate-region/plate-domain';
 
-import { candidatesView } from './candidates-view';
 import type { Language } from '../i18n/language.types';
 import { SERIES_HEADING_KEYS } from './plate.constants';
 import type { TranslatableMessage } from '../i18n/i18n.types';
 import { countyHeading } from '../shared/county/county-heading';
+import { candidatesView, singleCounty } from './candidates-view';
 import type {
   CandidatesView,
   PowiatView,
@@ -30,7 +30,7 @@ function voivodeshipDisplayName(region1: Region1, language: Language): string {
 
 function typesLabelKey(
   plateTypes: readonly [PlateType, ...PlateType[]],
-): ReadingView['typesLabelKey'] {
+): 'plate.reading.type' | 'plate.reading.possibleTypes' {
   return plateTypes.length === 1
     ? 'plate.reading.type'
     : 'plate.reading.possibleTypes';
@@ -40,21 +40,34 @@ function powiatKindKey(kind: Region2['kind']): PowiatView['kindKey'] {
   return kind === 'city' ? 'plate.kind.city' : 'plate.kind.land';
 }
 
-function withCountyReading(
-  region1: Region1,
-  region2: Region2,
-  plateTypes: readonly [PlateType, ...PlateType[]],
-  language: Language,
-  captionKey: ReadingView['captionKey'],
-  districts: ReadingView['districts'],
-  code: string,
-): ReadingView {
+function withCountyReading({
+  region1,
+  region2,
+  language,
+  code,
+  plateTypes,
+  captionKey,
+  districts,
+}: {
+  region1: Region1;
+  region2: Region2;
+  language: Language;
+  code: string;
+  plateTypes?: readonly [PlateType, ...PlateType[]];
+  captionKey?: ReadingView['captionKey'];
+  districts?: ReadingView['districts'];
+}): ReadingView {
   return {
     captionKey,
     powiat: { name: region2.name, kindKey: powiatKindKey(region2.kind) },
     voivodeshipName: voivodeshipDisplayName(region1, language),
-    typesLabelKey: typesLabelKey(plateTypes),
-    plateTypes,
+    types:
+      plateTypes === undefined
+        ? undefined
+        : {
+            labelKey: typesLabelKey(plateTypes),
+            plateTypes,
+          },
     districts,
     link: {
       slug: voivodeshipSlug(region1),
@@ -73,8 +86,10 @@ function withoutCountyReading(
     captionKey,
     powiat: undefined,
     voivodeshipName: voivodeshipDisplayName(region1, language),
-    typesLabelKey: typesLabelKey(plateTypes),
-    plateTypes,
+    types: {
+      labelKey: typesLabelKey(plateTypes),
+      plateTypes,
+    },
     districts: undefined,
     link: {
       slug: voivodeshipSlug(region1),
@@ -111,6 +126,9 @@ export function resultPlateCode(view: ResultView): string | undefined {
   if (view.kind === 'candidates') {
     return view.link?.fragment;
   }
+  if (view.kind === 'incomplete') {
+    return view.reading.link.fragment;
+  }
   return undefined;
 }
 
@@ -124,15 +142,14 @@ export function resultView(plate: string, language: Language): ResultView {
         heading: countyHeading(result.region2),
         noteKey: undefined,
         readings: [
-          withCountyReading(
-            result.region1,
-            result.region2,
-            result.plateTypes,
+          withCountyReading({
+            region1: result.region1,
+            region2: result.region2,
             language,
-            undefined,
-            districtNames(result.districts),
-            result.code,
-          ),
+            code: result.code,
+            plateTypes: result.plateTypes,
+            districts: districtNames(result.districts),
+          }),
         ],
       };
     case 'region1-only':
@@ -169,15 +186,15 @@ export function resultView(plate: string, language: Language): ResultView {
         heading: voivodeshipHeading(result.region1, language),
         noteKey: 'plate.notes.ambiguous',
         readings: [
-          withCountyReading(
-            result.region1,
-            result.withRegion2.region2,
-            result.withRegion2.plateTypes,
+          withCountyReading({
+            region1: result.region1,
+            region2: result.withRegion2.region2,
             language,
-            'plate.reading.withCounty',
-            districtNames(result.withRegion2.districts),
-            result.withRegion2.code,
-          ),
+            code: result.withRegion2.code,
+            plateTypes: result.withRegion2.plateTypes,
+            captionKey: 'plate.reading.withCounty',
+            districts: districtNames(result.withRegion2.districts),
+          }),
           withoutCountyReading(
             result.region1,
             result.withoutRegion2.plateTypes,
@@ -230,6 +247,24 @@ function candidatesOrMessage(plate: string, language: Language): ResultView {
     );
   }
   const candidates = candidatesView(found, normalised.compact);
+  const candidate = singleCounty(candidates);
+  if (candidate !== undefined) {
+    // Compact is never one of the codes here, otherwise the county would be the answer.
+    const code = candidate.codes[0];
+    return {
+      kind: 'incomplete',
+      heading: countyHeading(candidate.region2),
+      noteKey: 'plate.notes.incomplete',
+      reading: withCountyReading({
+        region1: candidates.region1,
+        region2: candidate.region2,
+        language,
+        code,
+      }),
+      withoutRegion2: candidates.withoutRegion2,
+      notInRegistry: candidates.notInRegistry,
+    };
+  }
   return {
     kind: 'candidates',
     heading: candidatesPageHeading(candidates, language),

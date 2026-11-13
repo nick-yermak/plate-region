@@ -58,6 +58,26 @@
                   }
                 </div>
               }
+            } @else if (page.kind === 'incomplete') {
+              <p class="note">{{ page.noteKey | transloco }}</p>
+              <app-result-reading
+                [reading]="page.reading"
+                [language]="language()"
+              >
+                @if (mapTarget(); as target) {
+                  <app-map-dialog-open-button
+                    #mapDialogButton
+                    [filled]="!!target.filled"
+                    (openClick)="openMapDialog('card')"
+                  />
+                }
+              </app-result-reading>
+              @if (page.withoutRegion2) {
+                <p>{{ 'plate.candidates.withoutRegion2' | transloco }}</p>
+              }
+              @if (page.notInRegistry) {
+                <p>{{ 'plate.candidates.notInRegistry' | transloco }}</p>
+              }
             } @else {
               <app-candidates-list
                 [result]="page.candidates"

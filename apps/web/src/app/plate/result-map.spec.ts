@@ -67,6 +67,14 @@ describe('resultMapTarget', () => {
     });
   });
 
+  it('fills the single county for GMB3837', () => {
+    expect(resultMapTarget('GMB3837')).toEqual({
+      kind: 'voivodeship',
+      region1: voivodeship('G'),
+      filled: county('GMB'),
+    });
+  });
+
   it('shows no map for 2A12345', () => {
     expect(resultMapTarget('2A12345')).toBeUndefined();
   });

@@ -50,13 +50,15 @@
       </div>
     </div>
   }
-  <div>
-    <span nz-icon nzType="car" nzTheme="outline" aria-hidden="true"></span>
+  @if (reading().types; as types) {
     <div>
-      <dt>{{ reading().typesLabelKey | transloco }}</dt>
-      <dd>{{ typesText() }}</dd>
+      <span nz-icon nzType="car" nzTheme="outline" aria-hidden="true"></span>
+      <div>
+        <dt>{{ types.labelKey | transloco }}</dt>
+        <dd>{{ typesText() }}</dd>
+      </div>
     </div>
-  </div>
+  }
 </dl>
 <div class="actions">
   <ng-content />

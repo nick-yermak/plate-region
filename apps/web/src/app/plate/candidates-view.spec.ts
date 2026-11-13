@@ -1,10 +1,26 @@
-import { candidatesView } from './candidates-view';
 import { compactOf, county, found } from './plate.testing';
+import { candidatesView, singleCounty } from './candidates-view';
 import type { CandidatesFound, CandidatesView } from './plate.types';
 
 function view(input: string): CandidatesView {
   return candidatesView(found(input), compactOf(input));
 }
+
+describe('singleCounty', () => {
+  it('GMB3837 → malborski', () => {
+    expect(singleCounty(view('GMB3837'))?.region2.name).toBe(
+      county('GMB').name,
+    );
+  });
+
+  it('GMB (answer) → undefined', () => {
+    expect(singleCounty(view('GMB'))).toBeUndefined();
+  });
+
+  it('GK (3 counties) → undefined', () => {
+    expect(singleCounty(view('GK'))).toBeUndefined();
+  });
+});
 
 describe('candidatesView', () => {
   it('answers with the county whose code equals the compact input', () => {
