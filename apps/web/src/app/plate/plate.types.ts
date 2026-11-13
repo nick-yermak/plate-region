@@ -51,8 +51,12 @@ export interface ReadingView {
     | undefined;
   readonly powiat: PowiatView | undefined;
   readonly voivodeshipName: string;
-  readonly typesLabelKey: 'plate.reading.type' | 'plate.reading.possibleTypes';
-  readonly plateTypes: readonly [PlateType, ...PlateType[]];
+  readonly types:
+    | {
+        readonly labelKey: 'plate.reading.type' | 'plate.reading.possibleTypes';
+        readonly plateTypes: readonly [PlateType, ...PlateType[]];
+      }
+    | undefined;
   readonly districts: readonly [string, ...string[]] | undefined;
   readonly link: VoivodeshipLink;
 }
@@ -97,6 +101,14 @@ export type ResultView =
       readonly heading: TranslatableMessage;
       readonly candidates: CandidatesView;
       readonly link: VoivodeshipLink | undefined;
+    }
+  | {
+      readonly kind: 'incomplete';
+      readonly heading: TranslatableMessage;
+      readonly noteKey: 'plate.notes.incomplete';
+      readonly reading: ReadingView;
+      readonly withoutRegion2: boolean;
+      readonly notInRegistry: boolean;
     }
   | {
       readonly kind: 'message';

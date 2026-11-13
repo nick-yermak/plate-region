@@ -78,10 +78,14 @@ function candidatesMapTarget(plate: string): MapTarget | undefined {
     );
   }
   const view = candidatesView(found, normalised.compact);
+  const single =
+    view.answer === undefined && view.counties.length === 1
+      ? view.counties[0]
+      : undefined;
   return {
     kind: 'voivodeship',
     region1: view.region1,
-    filled: view.answer?.region2,
+    filled: view.answer?.region2 ?? single?.region2,
   };
 }
 

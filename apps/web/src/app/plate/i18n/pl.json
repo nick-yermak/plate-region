@@ -27,7 +27,8 @@
     "notes": {
       "region1Only": "Ta tablica ma tylko wyróżnik województwa, bez powiatu.",
       "region2NotInRegistry": "Wyróżnika powiatu nie ma w obecnym rejestrze.",
-      "ambiguous": "Znaki można odczytać na dwa sposoby."
+      "ambiguous": "Znaki można odczytać na dwa sposoby.",
+      "incomplete": "Tablica jest niekompletna; pasuje do niej tylko ten powiat."
     },
     "reading": {
       "withCounty": "Odczyt z wyróżnikiem powiatu",

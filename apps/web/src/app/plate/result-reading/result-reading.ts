@@ -34,9 +34,13 @@ export class ResultReadingComponent {
   readonly language = input.required<Language>();
 
   protected readonly typesText = computed(() => {
+    const types = this.reading().types;
+    if (types === undefined) {
+      return '';
+    }
     const labels = this.typeLabels();
-    const texts = this.reading()
-      .plateTypes.map((type) => {
+    const texts = types.plateTypes
+      .map((type) => {
         const label = (labels as Record<string, unknown>)[type];
         return typeof label === 'string' ? label : undefined;
       })

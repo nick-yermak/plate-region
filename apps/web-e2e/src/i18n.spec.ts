@@ -89,7 +89,6 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
   // Załącznik nr 13 (tmp/D20241709.txt). A county is counted when one of its
   // codes (column-4 letter + column-5 suffix) starts with the input, and the
   // input is not itself that county's full code (no answer — D-53 Update #115):
-  // GW: pomorskie (G, X), line 3659 wejherowski WE, WO → 1.
   // GK: lines 3647–3650 kartuski KA, KY, KZ; kościerski KS; kwidzyński KW → 3.
   // O: opolskie, every one of its 12 counties → 12.
   // N: warmińsko-mazurskie, 2 cities + 19 counties → 21.
@@ -98,7 +97,6 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
   await page.getByRole('button', { name: 'Polski' }).click();
   const main = page.getByRole('main');
   for (const [input, text] of [
-    ['GW', '1 możliwy powiat'],
     ['GK', '3 możliwe powiaty'],
     ['O', '12 możliwych powiatów'],
     ['N', '21 możliwych powiatów'],
@@ -111,10 +109,6 @@ test('i18n-plural-categories', { tag: '@desktop' }, async ({ page }) => {
   }
 
   await page.getByRole('button', { name: 'English' }).click();
-  await page.goto('/plate/GW');
-  await expect(
-    main.locator('app-candidates-list').getByRole('heading', { level: 2 }),
-  ).toHaveText('1 possible county');
   await page.goto('/plate/GK');
   await expect(
     main.locator('app-candidates-list').getByRole('heading', { level: 2 }),

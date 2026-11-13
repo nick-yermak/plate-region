@@ -181,6 +181,38 @@ describe('PlatePage', () => {
     ).toBeTruthy();
   });
 
+  it('renders the incomplete note, reading and map button for GMB3837', async () => {
+    const fixture = await renderPage('GMB3837');
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('h1')?.textContent?.trim()).toBe(
+      testingText('en', 'county.heading.land', { name: county('GMB').name }),
+    );
+    expect(root.querySelector('p.note')?.textContent?.trim()).toBe(
+      testingText('en', 'plate.notes.incomplete'),
+    );
+    expect(
+      fixture.debugElement.queryAll(By.directive(ResultReadingComponent)),
+    ).toHaveLength(1);
+    expect(root.querySelector('button.map-dialog-open')).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.directive(CandidatesListComponent)),
+    ).toBeNull();
+  });
+
+  it('renders the withoutRegion2 line for incomplete GW', async () => {
+    const fixture = await renderPage('GW');
+    const root = fixture.nativeElement as HTMLElement;
+    const view = resultView('GW', 'en');
+    expect(view.kind).toBe('incomplete');
+    if (view.kind !== 'incomplete') {
+      throw new Error('expected incomplete');
+    }
+    expect(view.withoutRegion2).toBe(true);
+    expect(root.textContent).toContain(
+      testingText('en', 'plate.candidates.withoutRegion2'),
+    );
+  });
+
   it('renders the voivodeship heading for GK', async () => {
     const fixture = await renderPage('GK');
     expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(

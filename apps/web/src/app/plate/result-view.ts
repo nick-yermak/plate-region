@@ -30,7 +30,7 @@ function voivodeshipDisplayName(region1: Region1, language: Language): string {
 
 function typesLabelKey(
   plateTypes: readonly [PlateType, ...PlateType[]],
-): ReadingView['typesLabelKey'] {
+): 'plate.reading.type' | 'plate.reading.possibleTypes' {
   return plateTypes.length === 1
     ? 'plate.reading.type'
     : 'plate.reading.possibleTypes';
@@ -43,7 +43,7 @@ function powiatKindKey(kind: Region2['kind']): PowiatView['kindKey'] {
 function withCountyReading(
   region1: Region1,
   region2: Region2,
-  plateTypes: readonly [PlateType, ...PlateType[]],
+  plateTypes: readonly [PlateType, ...PlateType[]] | undefined,
   language: Language,
   captionKey: ReadingView['captionKey'],
   districts: ReadingView['districts'],
@@ -53,8 +53,13 @@ function withCountyReading(
     captionKey,
     powiat: { name: region2.name, kindKey: powiatKindKey(region2.kind) },
     voivodeshipName: voivodeshipDisplayName(region1, language),
-    typesLabelKey: typesLabelKey(plateTypes),
-    plateTypes,
+    types:
+      plateTypes === undefined
+        ? undefined
+        : {
+            labelKey: typesLabelKey(plateTypes),
+            plateTypes,
+          },
     districts,
     link: {
       slug: voivodeshipSlug(region1),
@@ -73,8 +78,10 @@ function withoutCountyReading(
     captionKey,
     powiat: undefined,
     voivodeshipName: voivodeshipDisplayName(region1, language),
-    typesLabelKey: typesLabelKey(plateTypes),
-    plateTypes,
+    types: {
+      labelKey: typesLabelKey(plateTypes),
+      plateTypes,
+    },
     districts: undefined,
     link: {
       slug: voivodeshipSlug(region1),
@@ -110,6 +117,9 @@ export function resultPlateCode(view: ResultView): string | undefined {
   }
   if (view.kind === 'candidates') {
     return view.link?.fragment;
+  }
+  if (view.kind === 'incomplete') {
+    return view.reading.link.fragment;
   }
   return undefined;
 }
@@ -230,6 +240,31 @@ function candidatesOrMessage(plate: string, language: Language): ResultView {
     );
   }
   const candidates = candidatesView(found, normalised.compact);
+  if (candidates.answer === undefined && candidates.counties.length === 1) {
+    const [candidate] = candidates.counties;
+    if (candidate === undefined) {
+      throw new Error('expected one county candidate');
+    }
+    const code = candidate.codes.includes(normalised.compact)
+      ? normalised.compact
+      : candidate.codes[0];
+    return {
+      kind: 'incomplete',
+      heading: countyHeading(candidate.region2),
+      noteKey: 'plate.notes.incomplete',
+      reading: withCountyReading(
+        candidates.region1,
+        candidate.region2,
+        undefined,
+        language,
+        undefined,
+        undefined,
+        code,
+      ),
+      withoutRegion2: candidates.withoutRegion2,
+      notInRegistry: candidates.notInRegistry,
+    };
+  }
   return {
     kind: 'candidates',
     heading: candidatesPageHeading(candidates, language),
