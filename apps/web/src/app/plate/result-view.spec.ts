@@ -432,6 +432,15 @@ describe('resultView', () => {
     });
   });
 
+  it('incomplete GW → withoutRegion2', () => {
+    const view = resultView('GW', 'en');
+    expect(view.kind).toBe('incomplete');
+    if (view.kind !== 'incomplete') {
+      throw new Error('expected incomplete');
+    }
+    expect(view.withoutRegion2).toBe(true);
+  });
+
   it('resolved WE 12345 → reading districts Mokotów', () => {
     const view = resultView('WE 12345', 'en');
     expect(view.kind).toBe('readings');

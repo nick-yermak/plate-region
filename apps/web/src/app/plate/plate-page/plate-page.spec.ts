@@ -201,14 +201,7 @@ describe('PlatePage', () => {
 
   it('renders the withoutRegion2 line for incomplete GW', async () => {
     const fixture = await renderPage('GW');
-    const root = fixture.nativeElement as HTMLElement;
-    const view = resultView('GW', 'en');
-    expect(view.kind).toBe('incomplete');
-    if (view.kind !== 'incomplete') {
-      throw new Error('expected incomplete');
-    }
-    expect(view.withoutRegion2).toBe(true);
-    expect(root.textContent).toContain(
+    expect(fixture.nativeElement.textContent).toContain(
       testingText('en', 'plate.candidates.withoutRegion2'),
     );
   });

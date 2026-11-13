@@ -15,8 +15,8 @@ import {
   type WarsawDistrictMap,
 } from '@plate-region/plate-data';
 
-import { candidatesView } from './candidates-view';
 import type { LoadedMap, MapTarget } from './plate.types';
+import { candidatesView, singleCounty } from './candidates-view';
 
 function districtNames(
   districts: readonly [UnofficialName, ...UnofficialName[]] | undefined,
@@ -78,14 +78,10 @@ function candidatesMapTarget(plate: string): MapTarget | undefined {
     );
   }
   const view = candidatesView(found, normalised.compact);
-  const single =
-    view.answer === undefined && view.counties.length === 1
-      ? view.counties[0]
-      : undefined;
   return {
     kind: 'voivodeship',
     region1: view.region1,
-    filled: view.answer?.region2 ?? single?.region2,
+    filled: view.answer?.region2 ?? singleCounty(view)?.region2,
   };
 }
 
