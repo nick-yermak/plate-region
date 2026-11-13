@@ -24,7 +24,6 @@
     "showVoivodeshipOnMap": "Zobacz województwo na mapie",
     "mapDialogClose": "Zamknij",
     "mapDialogTitle": "Województwo {{name}}",
-    "mapDialogSubtitle": "Powiaty i kody rejestracyjne",
     "notes": {
       "region1Only": "Ta tablica ma tylko wyróżnik województwa, bez powiatu.",
       "region2NotInRegistry": "Wyróżnika powiatu nie ma w obecnym rejestrze.",

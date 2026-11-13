@@ -111,11 +111,6 @@ export class PlatePage {
     return { key: 'map.dialogTitle', params: { name } };
   });
 
-  protected readonly dialogSubtitle = computed(() => ({
-    key: 'map.dialogSubtitle',
-    params: {},
-  }));
-
   protected readonly dialogVoivodeshipLabel = computed(() => {
     const target = this.mapTarget();
     if (target === undefined) {
