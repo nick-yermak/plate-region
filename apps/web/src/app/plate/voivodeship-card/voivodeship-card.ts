@@ -1,9 +1,10 @@
+import { Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { Component, computed, input } from '@angular/core';
 import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
 
 import { InfoCircleOutline } from '../plate-icons';
 import type { TranslatableMessage } from '../../i18n/i18n.types';
+import type { VoivodeshipCardCode } from '../voivodeship-card-view';
 
 @Component({
   selector: 'app-voivodeship-card',
@@ -14,7 +15,5 @@ import type { TranslatableMessage } from '../../i18n/i18n.types';
 })
 export class VoivodeshipCardComponent {
   readonly heading = input.required<TranslatableMessage>();
-  readonly codes = input.required<readonly string[]>();
-
-  protected readonly codesJoined = computed(() => this.codes().join(', '));
+  readonly codes = input.required<readonly VoivodeshipCardCode[]>();
 }

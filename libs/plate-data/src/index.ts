@@ -12,6 +12,7 @@ export {
 } from './lib/pl/maps/county-maps';
 export { loadCountryMap } from './lib/pl/maps/country-map';
 export { registry } from './lib/pl/registry';
+export { voivodeshipCapitals } from './lib/pl/voivodeship-capitals';
 export { warsawDistricts } from './lib/pl/warsaw-districts';
 export type {
   Country,

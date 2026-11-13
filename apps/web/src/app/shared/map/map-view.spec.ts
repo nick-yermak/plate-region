@@ -101,8 +101,8 @@ describe('map-view', () => {
     const area = view.areas.find((entry) => entry.id === 'DW');
     expect(area?.codes).toEqual(['DW', 'DX', 'VW', 'VX']);
     expect(area?.heading).toEqual({
-      key: 'county.heading.city',
-      params: { name: 'Wrocław' },
+      key: 'county.heading.cityShared',
+      params: { seat: 'Wrocław' },
     });
     expect(area?.link).toEqual({ slug: 'dolnoslaskie', fragment: 'DW' });
   });

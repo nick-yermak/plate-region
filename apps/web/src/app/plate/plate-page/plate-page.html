@@ -98,7 +98,7 @@
         </div>
       </app-card>
       @if (voivodeshipCard(); as card) {
-        <app-card tone="info">
+        <app-card tone="info" class="voivodeship-card-wrap">
           <app-voivodeship-card [heading]="card.heading" [codes]="card.codes" />
         </app-card>
       }

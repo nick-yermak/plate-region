@@ -74,13 +74,7 @@ export class PlatePage {
     if (target === undefined) {
       return undefined;
     }
-    const page = this.view();
-    return voivodeshipCardView(
-      target.region1,
-      target.filled,
-      resultPlateCode(page),
-      this.language(),
-    );
+    return voivodeshipCardView(target.region1, this.language());
   });
 
   protected readonly dialogOpen = signal(false);

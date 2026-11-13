@@ -44,7 +44,7 @@
       "codesLink": "Kody w województwie"
     },
     "voivodeshipCard": {
-      "codes": "Rejestracje zaczynające się m.in. od: {{codes}}"
+      "mainCodes": "Główne kody"
     },
     "kind": {
       "city": "miasto na prawach powiatu",

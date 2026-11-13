@@ -21,7 +21,10 @@ describe('VoivodeshipCodesTable', () => {
     fixture.componentRef.setInput('rows', [
       {
         codes: ['DW', 'DX'] as const,
-        county: { key: 'county.heading.city', params: { name: 'Wrocław' } },
+        county: {
+          key: 'county.heading.cityShared',
+          params: { seat: 'Wrocław' },
+        },
         districts: null,
         plate: 'DW 12345',
       },
@@ -60,15 +63,18 @@ describe('VoivodeshipCodesTable', () => {
     fixture.componentRef.setInput('rows', [
       {
         codes: ['DW', 'DX'] as const,
-        county: { key: 'county.heading.city', params: { name: 'Wrocław' } },
+        county: {
+          key: 'county.heading.cityShared',
+          params: { seat: 'Wrocław' },
+        },
         districts: null,
         plate: 'DW 12345',
       },
       {
         codes: ['DWR'] as const,
         county: {
-          key: 'county.heading.land',
-          params: { name: 'wrocławski' },
+          key: 'county.heading.landShared',
+          params: { seat: 'Wrocław' },
         },
         districts: null,
         plate: 'DWR 12345',
@@ -102,7 +108,7 @@ describe('VoivodeshipCodesTable', () => {
         codes: ['WW', 'AW'] as const,
         county: {
           key: 'county.heading.city',
-          params: { name: 'm.st. Warszawa' },
+          params: { seat: 'Warszawa' },
         },
         districts: 'Rembertów, Wilanów, and Włochy',
         plate: 'WW 4PN15',
@@ -111,7 +117,7 @@ describe('VoivodeshipCodesTable', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.textContent).toContain(
-      'm.st. Warszawa — Rembertów, Wilanów, and Włochy',
+      'Warszawa — Rembertów, Wilanów, and Włochy',
     );
   });
 });

@@ -179,7 +179,7 @@ test('voivodeship-anchor', { tag: '@desktop' }, async ({ page }) => {
   await page.goto(`/plate/${encodeURIComponent(plateText)}`);
   await expect(
     page.getByRole('main').getByRole('heading', { level: 1 }),
-  ).toHaveText('żyrardowski county');
+  ).toHaveText('Żyrardów, żyrardowski county');
   await page
     .getByRole('main')
     .getByRole('link', { name: 'Codes in the voivodeship' })
@@ -248,7 +248,9 @@ test('voivodeship-code-link', { tag: '@desktop' }, async ({ page }) => {
   const main = page.getByRole('main');
   await main.getByRole('link', { name: 'DW', exact: true }).click();
   await expect(page).toHaveURL('/plate/DW');
-  await expect(main.getByRole('heading', { level: 1 })).toHaveText('Wrocław');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Wrocław (city)',
+  );
 });
 
 test('voivodeship-codes-once', { tag: '@desktop' }, async ({ page }) => {
@@ -275,9 +277,7 @@ test('voivodeship-codes-once', { tag: '@desktop' }, async ({ page }) => {
 test('voivodeship-warsaw-districts', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/voivodeship/mazowieckie');
   const row = page.getByRole('main').locator('tr:has(#WW)');
-  await expect(row).toContainText(
-    'm.st. Warszawa — Rembertów, Wilanów, and Włochy',
-  );
+  await expect(row).toContainText('Warszawa — Rembertów, Wilanów, and Włochy');
   await expect(row.locator('#AW')).toBeAttached();
 });
 
@@ -288,7 +288,7 @@ test('voivodeship-language-switch', { tag: '@desktop' }, async ({ page }) => {
     .getByRole('button', { name: 'Polski' })
     .click();
   await expect(page.locator('tr:has(#DBL)')).toContainText(
-    'Powiat bolesławiecki',
+    'Bolesławiec, powiat bolesławiecki',
   );
   await expect(page.getByRole('main')).toContainText('30 powiatów · 64 kody');
 });

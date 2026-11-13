@@ -30,6 +30,16 @@ h1 {
 
   .result-grid {
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    // Row height follows the taller column; the map stays natural (D-54 Update #169).
+    align-items: stretch;
+  }
+
+  .map-card {
+    align-self: start;
+  }
+
+  .voivodeship-card-wrap {
+    flex: 1;
   }
 }
 

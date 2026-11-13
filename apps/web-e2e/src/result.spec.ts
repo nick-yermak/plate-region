@@ -9,7 +9,9 @@ import {
 test('result-resolved-svg-car', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/DW%2012345');
   const main = page.getByRole('main');
-  await expect(main.getByRole('heading', { level: 1 })).toHaveText('Wrocław');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Wrocław (city)',
+  );
   await expect(
     page.locator('app-car-illustration > svg[aria-hidden="true"]'),
   ).toBeVisible();
@@ -53,7 +55,9 @@ test('result-share-reload', { tag: '@desktop' }, async ({ page }) => {
   await expect(page).toHaveURL(/\/plate\/DW%2012345$/);
   await page.reload();
   const main = page.getByRole('main');
-  await expect(main.getByRole('heading', { level: 1 })).toHaveText('Wrocław');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Wrocław (city)',
+  );
   await expect(
     page.locator('app-car-illustration > svg[aria-hidden="true"]'),
   ).toBeVisible();
@@ -65,6 +69,9 @@ test('result-share-reload', { tag: '@desktop' }, async ({ page }) => {
 test('result-warsaw-district', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/WE%2012345');
   const main = page.getByRole('main');
+  await expect(main.getByRole('heading', { level: 1 })).toHaveText(
+    'Warszawa – Mokotów',
+  );
   await expect(
     main.getByRole('term').filter({ hasText: 'District' }),
   ).toBeVisible();
@@ -77,7 +84,7 @@ test('result-mobile-layout', { tag: '@mobile' }, async ({ page }) => {
   await page.goto('/plate/CGD12345');
   const main = page.getByRole('main');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(
-    'golubsko-dobrzyński county',
+    'Golub-Dobrzyń, golubsko-dobrzyński county',
   );
   const noHorizontalScroll = await page.evaluate(() => {
     const { documentElement } = document;
@@ -127,7 +134,7 @@ test('result-single-candidate', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/GMB3837');
   const main = page.getByRole('main');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(
-    'Powiat malborski',
+    'Malbork, powiat malborski',
   );
   await expect(main.locator('p.note')).toHaveText(
     'Tablica jest niekompletna; pasuje do niej tylko ten powiat.',

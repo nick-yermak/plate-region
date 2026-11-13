@@ -13,6 +13,7 @@ describe('plate-data public API', () => {
       'loadCountryMap',
       'loadWarsawDistrictMap',
       'registry',
+      'voivodeshipCapitals',
       'warsawDistricts',
     ]);
   });

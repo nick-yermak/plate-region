@@ -44,7 +44,7 @@
       "codesLink": "Codes in the voivodeship"
     },
     "voivodeshipCard": {
-      "codes": "Plates starting with, among others: {{codes}}"
+      "mainCodes": "Main codes"
     },
     "kind": {
       "city": "city with county rights",

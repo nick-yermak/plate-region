@@ -40,8 +40,8 @@ describe('resultView', () => {
     expect(resultView('DW 12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
-        key: 'county.heading.city',
-        params: { name: county('DW').name },
+        key: 'county.heading.cityShared',
+        params: { seat: 'Wrocław' },
       },
       noteKey: undefined,
       readings: [
@@ -239,8 +239,8 @@ describe('resultView', () => {
     expect(resultView('VX12345', 'en')).toEqual({
       kind: 'readings',
       heading: {
-        key: 'county.heading.city',
-        params: { name: county('VX').name },
+        key: 'county.heading.cityShared',
+        params: { seat: 'Wrocław' },
       },
       noteKey: undefined,
       readings: [
@@ -288,7 +288,7 @@ describe('resultView', () => {
       kind: 'candidates',
       heading: {
         key: 'county.heading.city',
-        params: { name: county('GD').name },
+        params: { seat: 'Gdańsk' },
       },
       candidates: expect.objectContaining({
         answer: expect.objectContaining({
@@ -314,7 +314,7 @@ describe('resultView', () => {
     }
     expect(view.heading).toEqual({
       key: 'county.heading.land',
-      params: { name: county('GDA').name },
+      params: { seat: 'Pruszcz Gdański', name: county('GDA').name },
     });
     expect(view.link).toEqual({ slug: 'pomorskie', fragment: 'GDA' });
     expect(view.candidates.counties.map((entry) => entry.codes)).toEqual([
@@ -329,8 +329,8 @@ describe('resultView', () => {
       throw new Error('expected candidates');
     }
     expect(view.heading).toEqual({
-      key: 'county.heading.city',
-      params: { name: county('VX').name },
+      key: 'county.heading.cityShared',
+      params: { seat: 'Wrocław' },
     });
     expect(view.candidates.counties).toEqual([]);
     expect(view.candidates.withoutRegion2).toBe(true);
@@ -357,7 +357,7 @@ describe('resultView', () => {
       kind: 'incomplete',
       heading: {
         key: 'county.heading.land',
-        params: { name: county('GMB').name },
+        params: { seat: 'Malbork', name: county('GMB').name },
       },
       noteKey: 'plate.notes.incomplete',
       reading: {
@@ -409,7 +409,7 @@ describe('resultView', () => {
     }
     expect(view.heading).toEqual({
       key: 'county.heading.city',
-      params: { name: county('GD').name },
+      params: { seat: 'Gdańsk' },
     });
     expect(view.reading.types).toBeUndefined();
     expect(view.reading.link).toEqual({ slug: 'pomorskie', fragment: 'GD' });
@@ -422,8 +422,8 @@ describe('resultView', () => {
       throw new Error('expected incomplete');
     }
     expect(view.heading).toEqual({
-      key: 'county.heading.land',
-      params: { name: county('DWR').name },
+      key: 'county.heading.landShared',
+      params: { seat: 'Wrocław' },
     });
     expect(view.reading.types).toBeUndefined();
     expect(view.reading.link).toEqual({
@@ -441,21 +441,29 @@ describe('resultView', () => {
     expect(view.withoutRegion2).toBe(true);
   });
 
-  it('resolved WE 12345 → reading districts Mokotów', () => {
+  it('resolved WE 12345 → heading with Mokotów and reading districts', () => {
     const view = resultView('WE 12345', 'en');
     expect(view.kind).toBe('readings');
     if (view.kind !== 'readings') {
       throw new Error('expected readings');
     }
+    expect(view.heading).toEqual({
+      key: 'county.heading.cityWithDistrict',
+      params: { seat: 'Warszawa', district: 'Mokotów' },
+    });
     expect(view.readings[0].districts).toEqual(['Mokotów']);
   });
 
-  it('resolved WW 12345 → three districts', () => {
+  it('resolved WW 12345 → Warszawa heading and three districts', () => {
     const view = resultView('WW 12345', 'en');
     expect(view.kind).toBe('readings');
     if (view.kind !== 'readings') {
       throw new Error('expected readings');
     }
+    expect(view.heading).toEqual({
+      key: 'county.heading.city',
+      params: { seat: 'Warszawa' },
+    });
     expect(view.readings[0].districts).toEqual([
       'Rembertów',
       'Wilanów',

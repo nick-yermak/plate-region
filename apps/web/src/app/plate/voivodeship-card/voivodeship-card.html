@@ -1,5 +1,14 @@
 <span nz-icon nzType="info-circle" nzTheme="outline" aria-hidden="true"></span>
 <h2>{{ heading().key | transloco: heading().params }}</h2>
-<p>
-  {{ 'plate.voivodeshipCard.codes' | transloco: { codes: codesJoined() } }}
+<p class="main-codes-caption">
+  {{ 'plate.voivodeshipCard.mainCodes' | transloco }}
 </p>
+<ul class="main-codes">
+  @for (row of codes(); track row.code) {
+    <li>
+      <span class="main-codes-code">{{ row.code }}</span>
+      —
+      <span>{{ row.name.key | transloco: row.name.params }}</span>
+    </li>
+  }
+</ul>
