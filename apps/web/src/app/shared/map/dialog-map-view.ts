@@ -50,7 +50,6 @@ export function voivodeshipDialogMapView(
   plateCode: string | undefined,
   language: Language,
   country: CountryMap,
-  selectedId?: string,
 ): MapView {
   const capitals = capitalIdsFor(country, region1);
   const base = voivodeshipMapView(map, region1, filled, language);
@@ -63,8 +62,7 @@ export function voivodeshipDialogMapView(
       filled.suffixes[0] === region2.suffixes[0];
     const codeText = isFilled && plateCode !== undefined ? plateCode : codes[0];
     const fullText = `${countySeat(region2)} (${codeText})`;
-    const selected =
-      selectedId !== undefined ? selectedId === codes[0] : isFilled;
+    const selected = isFilled;
     return {
       id: codes[0],
       x: county.label.x,
@@ -135,7 +133,6 @@ export function warsawDialogMapView(
   districts: readonly [string, ...string[]],
   plateCode: string | undefined,
   language: Language,
-  selectedId?: string,
 ): MapView {
   const base = warsawMapView(map, region1, districts, language);
   const seatAreas = map.districts.map((district) => {
@@ -150,8 +147,7 @@ export function warsawDialogMapView(
       ...string[],
     ];
     const isFilled = districts.includes(district.name);
-    const primarySelected = selectedId ?? districts[0];
-    const selected = district.name === primarySelected;
+    const selected = district.name === districts[0];
     const codeText = isFilled && plateCode !== undefined ? plateCode : codes[0];
     const fullText = `${district.name} (${codeText})`;
     return {

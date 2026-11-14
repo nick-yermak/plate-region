@@ -67,7 +67,6 @@ export class VoivodeshipMapDialogComponent {
     const loaded = this.loaded();
     const language = this.language();
     const plateCode = this.plateCode();
-    const selectedId = this.selectedId();
     if (loaded.target.kind === 'warsaw') {
       return warsawDialogMapView(
         loaded.map as Extract<LoadedMap, { target: { kind: 'warsaw' } }>['map'],
@@ -75,7 +74,6 @@ export class VoivodeshipMapDialogComponent {
         loaded.target.districts,
         plateCode,
         language,
-        selectedId,
       );
     }
     return voivodeshipDialogMapView(
@@ -88,7 +86,6 @@ export class VoivodeshipMapDialogComponent {
       plateCode,
       language,
       loaded.country,
-      selectedId,
     );
   });
 
