@@ -62,7 +62,7 @@ export function decodeMlzPath(
 }
 
 /** Bounding box of SVG path data plus a fractional margin on each side. */
-export function pathViewBox(path: string, marginFraction = 0.1): PathViewBox {
+export function pathViewBox(path: string, marginFraction = 0.2): PathViewBox {
   const points = decodeMlzPath(path);
   if (points.length === 0) {
     throw new Error('path has no points');

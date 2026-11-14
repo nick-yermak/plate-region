@@ -14,12 +14,12 @@ describe('pathViewBox', () => {
       [5, 0],
       [5, 4],
     ]);
-    // Bounds x 0–20, y 0–25 → size 20×25; 10% → pad 2×2.5.
+    // Bounds x 0–20, y 0–25 → size 20×25; 20% → pad 4×5.
     expect(pathViewBox(path)).toEqual({
-      x: -2,
-      y: -2.5,
-      width: 24,
-      height: 30,
+      x: -4,
+      y: -5,
+      width: 28,
+      height: 35,
     });
   });
 
@@ -46,10 +46,10 @@ describe('pathViewBox', () => {
       expect(Number.isFinite(box.y)).toBe(true);
       expect(box.width).toBeGreaterThan(0);
       expect(box.height).toBeGreaterThan(0);
-      expect(box.x).toBeGreaterThanOrEqual(-map.viewBox.width * 0.1);
-      expect(box.y).toBeGreaterThanOrEqual(-map.viewBox.height * 0.1);
-      expect(box.x + box.width).toBeLessThanOrEqual(map.viewBox.width * 1.1);
-      expect(box.y + box.height).toBeLessThanOrEqual(map.viewBox.height * 1.1);
+      expect(box.x).toBeGreaterThanOrEqual(-map.viewBox.width * 0.2);
+      expect(box.y).toBeGreaterThanOrEqual(-map.viewBox.height * 0.2);
+      expect(box.x + box.width).toBeLessThanOrEqual(map.viewBox.width * 1.2);
+      expect(box.y + box.height).toBeLessThanOrEqual(map.viewBox.height * 1.2);
     }
   });
 });
