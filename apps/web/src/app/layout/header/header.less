@@ -20,11 +20,15 @@
 // Three equal-side columns keep the menu centred; when one side needs more
 // than its share the menu shifts instead of being overlapped (D-50 Update #127).
 // Divider keeps the 64 px box because nz-header is border-box (D-50 Update #122).
+// Inline padding matches nz-content so brand/actions align with the content box
+// under the 1440 px shell cap (D-50 Update #175); the bar itself stays full-bleed.
 nz-header {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   column-gap: var(--pr-padding-xs);
+  // Quoted so Less does not evaluate CSS max() as its own function.
+  padding-inline: ~'calc(var(--pr-layout-padding-inline) + max(0px, (100% - var(--pr-layout-max-width)) / 2))';
   border-bottom: 1px solid var(--pr-border-split);
 }
 
