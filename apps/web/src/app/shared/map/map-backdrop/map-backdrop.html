@@ -1,0 +1,17 @@
+<svg
+  [attr.viewBox]="
+    viewBox().x +
+    ' ' +
+    viewBox().y +
+    ' ' +
+    viewBox().width +
+    ' ' +
+    viewBox().height
+  "
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path class="borders" [attr.d]="borders()" />
+  <path class="region" [attr.d]="regionPath()" />
+</svg>

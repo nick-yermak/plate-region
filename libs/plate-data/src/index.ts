@@ -11,6 +11,7 @@ export {
   loadWarsawDistrictMap,
 } from './lib/pl/maps/county-maps';
 export { loadCountryMap } from './lib/pl/maps/country-map';
+export { PATH_GRAMMAR } from './lib/pl/maps/path-grammar';
 export { registry } from './lib/pl/registry';
 export { voivodeshipCapitals } from './lib/pl/voivodeship-capitals';
 export { warsawDistricts } from './lib/pl/warsaw-districts';

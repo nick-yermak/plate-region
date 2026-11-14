@@ -1,4 +1,5 @@
 import { registry } from '../registry';
+import { PATH_GRAMMAR } from './path-grammar';
 import { loadCountryMap } from './country-map';
 import { warsawDistricts } from '../warsaw-districts';
 import { countyMapLoaders, loadWarsawDistrictMap } from './county-maps';
@@ -56,8 +57,6 @@ async function loadAllCountyMaps(): Promise<
 async function loadWarsawMap(): Promise<WarsawDistrictMap> {
   return loadWarsawDistrictMap();
 }
-
-const PATH_GRAMMAR = /^[Mlz\d -]+$/;
 
 /** Absolute points of a path written as `M x y`, `l dx dy …` and `z`, one or more rings. */
 function decodePath(path: string): Array<readonly [number, number]> {

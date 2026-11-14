@@ -14,6 +14,7 @@ import {
 import type { LoadedMap } from '../plate.types';
 import { countryMapView } from '../../shared/map/map-view';
 import { CardComponent } from '../../shared/card/card/card';
+import { pathViewBox } from '../../shared/map/path-view-box';
 import { voivodeshipCardView } from '../voivodeship-card-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
@@ -127,6 +128,21 @@ export class PlatePage {
       this.language(),
       this.dialogPlateCode(),
     );
+  });
+
+  /** Faint country map behind the tags; only once country geometry is loaded. */
+  protected readonly voivodeshipBackdrop = computed(() => {
+    const view = this.countryView();
+    const path = view?.voivodeshipButton?.path;
+    const borders = view?.borders;
+    if (path === undefined || borders === undefined) {
+      return undefined;
+    }
+    return {
+      borders,
+      regionPath: path,
+      viewBox: pathViewBox(path),
+    };
   });
 
   private readonly mapDialogButton = viewChild('mapDialogButton', {
