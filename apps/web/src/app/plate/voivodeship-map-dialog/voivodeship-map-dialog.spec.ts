@@ -9,6 +9,7 @@ import {
   type Region2,
 } from '@plate-region/plate-data';
 
+import { county } from '../plate.testing';
 import type { LoadedMap } from '../plate.types';
 import { TRANSLOCO_TESTING } from '../../i18n/testing-langs';
 import { VoivodeshipMapDialogComponent } from './voivodeship-map-dialog';
@@ -23,8 +24,34 @@ function region2ByName(name: string, region1Letter: string): Region2 {
   return found;
 }
 
+type SeatLabelShot = {
+  readonly id: string | null;
+  readonly text: string;
+  readonly x: string | null;
+  readonly y: string | null;
+  readonly forced: string | null;
+  readonly display: string;
+};
+
+function seatLabelSnapshot(root: ParentNode): SeatLabelShot[] {
+  return [...root.querySelectorAll('svg.labels text[data-area-id]')].map(
+    (el) => ({
+      id: el.getAttribute('data-area-id'),
+      text: el.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+      x: el.getAttribute('x'),
+      y: el.getAttribute('y'),
+      forced: el.getAttribute('data-forced'),
+      display: getComputedStyle(el).display,
+    }),
+  );
+}
+
 describe('VoivodeshipMapDialogComponent', () => {
-  async function render(open: boolean, selectedId = 'GMB') {
+  async function render(
+    open: boolean,
+    selectedId = 'GMB',
+    options?: { filled?: Region2; plateCode?: string },
+  ) {
     const map = await countyMapLoaders['G']();
     const country = await loadCountryMap();
     const region1 = registry.region1.find(
@@ -33,11 +60,13 @@ describe('VoivodeshipMapDialogComponent', () => {
     if (region1 === undefined) {
       throw new Error('no region1 G');
     }
+    const filled = options?.filled ?? region2ByName('malborski', 'G');
+    const plateCode = options?.plateCode ?? 'GMB';
     const loaded: LoadedMap = {
       target: {
         kind: 'voivodeship',
         region1,
-        filled: region2ByName('malborski', 'G'),
+        filled,
       },
       map,
       country,
@@ -52,7 +81,7 @@ describe('VoivodeshipMapDialogComponent', () => {
     const fixture = TestBed.createComponent(VoivodeshipMapDialogComponent);
     fixture.componentRef.setInput('open', open);
     fixture.componentRef.setInput('loaded', loaded);
-    fixture.componentRef.setInput('plateCode', 'GMB');
+    fixture.componentRef.setInput('plateCode', plateCode);
     fixture.componentRef.setInput('language', 'en');
     fixture.componentRef.setInput('title', {
       key: 'map.dialogTitle',
@@ -130,6 +159,40 @@ describe('VoivodeshipMapDialogComponent', () => {
       expect(closed.length).toBeGreaterThanOrEqual(1);
     });
     expect(closed[0]).toBe(true);
+  });
+
+  it('keeps every label in place when any county is selected', async () => {
+    const filled = county('GD');
+    const { fixture, root, loaded } = await render(true, 'GD', {
+      filled,
+      plateCode: 'GD',
+    });
+    await fixtureWhenModal();
+    const map =
+      document.querySelector('app-county-map') ??
+      root.querySelector('app-county-map');
+    expect(map).not.toBeNull();
+    await vi.waitFor(() => {
+      expect(
+        (map ?? document).querySelectorAll('svg.labels text[data-area-id]')
+          .length,
+      ).toBeGreaterThan(0);
+    });
+    const host = map ?? document;
+    const baseline = seatLabelSnapshot(host);
+    expect(baseline.length).toBeGreaterThan(0);
+    const countyIds = loaded.map.counties.map(
+      (entry) => `${loaded.target.region1.letters[0]}${entry.firstSuffix}`,
+    );
+    expect(countyIds).toContain('GTC');
+    expect(countyIds).toContain('GSZ');
+    expect(countyIds).toContain('GST');
+    for (const id of countyIds) {
+      fixture.componentRef.setInput('selectedId', id);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(seatLabelSnapshot(host)).toEqual(baseline);
+    }
   });
 });
 
