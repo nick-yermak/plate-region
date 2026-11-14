@@ -2,28 +2,7 @@
 @import (reference) '../../shared/plate/plate-frame/plate-frame.less';
 
 :host {
-  position: relative;
   display: block;
-  z-index: 0;
-}
-
-app-map-backdrop {
-  position: absolute;
-  // Reach the app-card edges under its padding (D-54 Update #176).
-  inset: calc(-1 * var(--pr-padding-md));
-  z-index: 0;
-  pointer-events: none;
-}
-
-@media (width >= 768px) {
-  app-map-backdrop {
-    inset: calc(-1 * var(--pr-padding-lg));
-  }
-}
-
-.voivodeship-card-body {
-  position: relative;
-  z-index: 1;
 }
 
 h2 {

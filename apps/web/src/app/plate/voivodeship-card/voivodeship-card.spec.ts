@@ -41,14 +41,6 @@ describe('VoivodeshipCardComponent', () => {
         link: { slug: 'pomorskie', fragment: 'GS' },
       },
     ]);
-    fixture.componentRef.setInput('borders', 'M0 0L10 0L10 10L0 10Z');
-    fixture.componentRef.setInput('regionPath', 'M2 2L8 2L8 8L2 8Z');
-    fixture.componentRef.setInput('viewBox', {
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-    });
     await fixture.whenStable();
     return fixture;
   }
@@ -64,12 +56,5 @@ describe('VoivodeshipCardComponent', () => {
     expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
       `GD — ${gdName}`,
     );
-  });
-
-  it('marks the map backdrop as aria-hidden', async () => {
-    const fixture = await render('en');
-    const backdrop = fixture.nativeElement.querySelector('app-map-backdrop');
-    expect(backdrop).not.toBeNull();
-    expect(backdrop?.getAttribute('aria-hidden')).toBe('true');
   });
 });

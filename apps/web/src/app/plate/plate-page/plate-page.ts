@@ -19,6 +19,7 @@ import { voivodeshipCardView } from '../voivodeship-card-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
 import { RESULT_MAP_LOADER, resultMapTarget } from '../result-map';
+import { MapBackdrop } from '../../shared/map/map-backdrop/map-backdrop';
 import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
@@ -41,6 +42,7 @@ function isWarsawLoaded(
     CarIllustrationComponent,
     CardComponent,
     CountyMapComponent,
+    MapBackdrop,
     MapDialogOpenButtonComponent,
     PlateComponent,
     ResultReadingComponent,

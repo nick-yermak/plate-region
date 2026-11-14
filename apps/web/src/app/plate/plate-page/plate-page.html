@@ -117,13 +117,14 @@
       </app-card>
       @if (voivodeshipCard(); as card) {
         <app-card tone="info" class="voivodeship-card-wrap">
-          <app-voivodeship-card
-            [heading]="card.heading"
-            [codes]="card.codes"
-            [borders]="voivodeshipBackdrop()?.borders"
-            [regionPath]="voivodeshipBackdrop()?.regionPath"
-            [viewBox]="voivodeshipBackdrop()?.viewBox"
-          />
+          @if (voivodeshipBackdrop(); as backdrop) {
+            <app-map-backdrop
+              [borders]="backdrop.borders"
+              [regionPath]="backdrop.regionPath"
+              [viewBox]="backdrop.viewBox"
+            />
+          }
+          <app-voivodeship-card [heading]="card.heading" [codes]="card.codes" />
         </app-card>
       }
     </div>
