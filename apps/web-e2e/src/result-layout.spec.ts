@@ -80,56 +80,92 @@ test(
   },
 );
 
-test('result-layout-desktop', { tag: '@desktop' }, async ({ page }) => {
-  await page.goto('/plate/GMB%202397T');
-  const cards = page.locator('app-card');
-  await expect(cards).toHaveCount(3);
-  const carCard = cards.nth(0);
-  const voivodeshipCard = cards.nth(1);
-  const mapCard = cards.nth(2);
-  await expect(carCard.locator('app-car-illustration')).toBeVisible();
-  await expect(
-    voivodeshipCard.getByRole('heading', {
-      level: 2,
-      name: 'Pomeranian Voivodeship',
-    }),
-  ).toBeVisible();
-  await expect(
-    mapCard.getByRole('heading', { level: 2, name: 'Poland – voivodeships' }),
-  ).toBeVisible();
+for (const width of [1200, 1280, 1440] as const) {
+  test(
+    `result-layout-desktop-${width}`,
+    { tag: '@desktop' },
+    async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/plate/GMB%202397T');
+      const heading = page.getByRole('heading', { level: 1 });
+      const carCard = page.locator('app-card').filter({
+        has: page.locator('app-car-illustration'),
+      });
+      const voivodeshipCard = page.locator('app-card').filter({
+        has: page.getByRole('heading', {
+          level: 2,
+          name: 'Pomeranian Voivodeship',
+        }),
+      });
+      const mapCard = page.locator('app-card').filter({
+        has: page.getByRole('heading', {
+          level: 2,
+          name: 'Poland – voivodeships',
+        }),
+      });
+      await expect(carCard.locator('app-car-illustration')).toBeVisible();
+      await expect(voivodeshipCard).toBeVisible();
+      await expect(mapCard).toBeVisible();
 
-  const carBox = await boxOf(carCard);
-  const voiBox = await boxOf(voivodeshipCard);
-  const mapBox = await boxOf(mapCard);
-  expect(Math.abs(carBox.y - mapBox.y)).toBeLessThanOrEqual(1);
-  expect(mapBox.x).toBeGreaterThan(carBox.x + carBox.width - 1);
-  expect(Math.abs(voiBox.x - carBox.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(voiBox.width - carBox.width)).toBeLessThanOrEqual(1);
-  expect(voiBox.y).toBeGreaterThan(carBox.y + carBox.height - 1);
-  const ratio = carBox.width / mapBox.width;
-  expect(Math.abs(ratio - 5 / 6)).toBeLessThanOrEqual(0.02);
-  const list = carCard
-    .locator('app-result-reading, app-candidates-list')
-    .first();
-  const listBox = await boxOf(list);
-  const car = await boxOf(carCard.locator('app-car-illustration'));
-  expect(listBox.y).toBeGreaterThan(car.y + car.height - 1);
-});
-
-test('result-layout-wide', { tag: '@desktop' }, async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/plate/GMB%202397T');
-  const carCard = page.locator('app-card').first();
-  const car = await boxOf(carCard.locator('app-car-illustration'));
-  const list = await boxOf(
-    carCard.locator('app-result-reading, app-candidates-list').first(),
+      const h1 = await boxOf(heading);
+      const carBox = await boxOf(carCard);
+      const voiBox = await boxOf(voivodeshipCard);
+      const mapBox = await boxOf(mapCard);
+      // Map leads in the left column; car + voivodeship share the right.
+      expect(carBox.x).toBeGreaterThan(mapBox.x + mapBox.width - 1);
+      expect(Math.abs(h1.x - mapBox.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(mapBox.y - (h1.y + h1.height + 16))).toBeLessThanOrEqual(
+        1,
+      );
+      expect(Math.abs(carBox.y - h1.y)).toBeLessThanOrEqual(1);
+      expect(Math.abs(voiBox.x - carBox.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(voiBox.width - carBox.width)).toBeLessThanOrEqual(1);
+      expect(voiBox.y).toBeGreaterThan(carBox.y + carBox.height - 1);
+      const ratio = carBox.width / mapBox.width;
+      expect(Math.abs(ratio - 5 / 6)).toBeLessThanOrEqual(0.02);
+    },
   );
-  expect(car.width).toBeGreaterThanOrEqual(303);
-  expect(car.x + car.width).toBeLessThan(list.x + 1);
-});
+}
+
+/**
+ * Narrowest window where /plate/GMB%202397T shows the reading beside the car
+ * (Playwright Chromium e2e viewport; D-54 Update #173, corrected from 1390).
+ */
+const RESULT_W_SBS = 1388;
+
+for (const width of [
+  1200,
+  1280,
+  RESULT_W_SBS - 1,
+  RESULT_W_SBS,
+  1440,
+] as const) {
+  test(`result-car-width-${width}`, { tag: '@desktop' }, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/plate/GMB%202397T');
+    const carCard = page.locator('app-card').filter({
+      has: page.locator('app-car-illustration'),
+    });
+    const car = await boxOf(carCard.locator('app-car-illustration'));
+    const list = await boxOf(
+      carCard.locator('app-result-reading, app-candidates-list').first(),
+    );
+    expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
+    if (width < RESULT_W_SBS) {
+      expect(list.y).toBeGreaterThan(car.y + car.height - 1);
+      const cardBox = await boxOf(carCard);
+      const carCentre = car.x + car.width / 2;
+      const cardCentre = cardBox.x + cardBox.width / 2;
+      expect(Math.abs(carCentre - cardCentre)).toBeLessThanOrEqual(1);
+    } else {
+      expect(car.x + car.width).toBeLessThan(list.x + 1);
+    }
+  });
+}
 
 test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   await page.goto('/plate/GMB%202397T');
+  const h1 = await boxOf(page.getByRole('heading', { level: 1 }));
   const carCard = page.locator('app-card').filter({
     has: page.locator('app-car-illustration'),
   });
@@ -142,6 +178,7 @@ test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   const carBox = await boxOf(carCard);
   const voiBox = await boxOf(voiCard);
   const mapBox = await boxOf(mapCard);
+  expect(carBox.y).toBeGreaterThan(h1.y + h1.height - 1);
   expect(voiBox.y).toBeGreaterThan(carBox.y);
   expect(mapBox.y).toBeGreaterThan(voiBox.y);
   expect(Math.abs(carBox.x - voiBox.x)).toBeLessThanOrEqual(1);
@@ -153,7 +190,7 @@ test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   const list = await boxOf(
     carCard.locator('app-result-reading, app-candidates-list').first(),
   );
-  expect(car.width).toBeGreaterThanOrEqual(303);
+  expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
   expect(car.x + car.width).toBeLessThan(list.x + 1);
 });
 
@@ -164,8 +201,24 @@ test('result-layout-mobile', { tag: '@mobile' }, async ({ page }) => {
     return documentElement.scrollWidth <= documentElement.clientWidth;
   });
   expect(noHorizontalScroll).toBe(true);
-  const mapBox = await boxOf(page.locator('.country-map-box'));
-  expect(Math.abs(mapBox.width - 328)).toBeLessThanOrEqual(0.5);
+  const h1 = await boxOf(page.getByRole('heading', { level: 1 }));
+  const carCard = page.locator('app-card').filter({
+    has: page.locator('app-car-illustration'),
+  });
+  const voiCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
+  });
+  const mapCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Poland – voivodeships' }),
+  });
+  const carBox = await boxOf(carCard);
+  const voiBox = await boxOf(voiCard);
+  const mapBox = await boxOf(mapCard);
+  expect(carBox.y).toBeGreaterThan(h1.y + h1.height - 1);
+  expect(voiBox.y).toBeGreaterThan(carBox.y);
+  expect(mapBox.y).toBeGreaterThan(voiBox.y);
+  const mapInner = await boxOf(page.locator('.country-map-box'));
+  expect(Math.abs(mapInner.width - 328)).toBeLessThanOrEqual(0.5);
   const car = await boxOf(page.locator('app-car-illustration'));
   expect(car.width).toBeGreaterThanOrEqual(312);
   const viewport = page.viewportSize();
@@ -236,16 +289,30 @@ test('result-actions', { tag: '@desktop' }, async ({ page }) => {
 test('result-layout-breakpoint', { tag: '@desktop' }, async ({ page }) => {
   await page.setViewportSize({ width: 1199, height: 800 });
   await page.goto('/plate/GMB%202397T');
-  const cards = page.locator('app-card');
-  const voiBox = await boxOf(cards.nth(1));
-  const mapBox = await boxOf(cards.nth(2));
+  const heading = page.getByRole('heading', { level: 1 });
+  const carCard = page.locator('app-card').filter({
+    has: page.locator('app-car-illustration'),
+  });
+  const voiCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
+  });
+  const mapCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Poland – voivodeships' }),
+  });
+  const h1Narrow = await boxOf(heading);
+  const carNarrow = await boxOf(carCard);
+  const voiBox = await boxOf(voiCard);
+  const mapBox = await boxOf(mapCard);
+  expect(carNarrow.y).toBeGreaterThan(h1Narrow.y + h1Narrow.height - 1);
   expect(mapBox.y).toBeGreaterThan(voiBox.y);
 
   await page.setViewportSize({ width: 1200, height: 800 });
-  const carBox = await boxOf(cards.nth(0));
-  const mapBoxWide = await boxOf(cards.nth(2));
-  expect(mapBoxWide.x).toBeGreaterThan(carBox.x + carBox.width - 1);
-  expect(Math.abs(mapBoxWide.y - carBox.y)).toBeLessThanOrEqual(1);
+  const h1 = await boxOf(heading);
+  const carBox = await boxOf(carCard);
+  const mapBoxWide = await boxOf(mapCard);
+  expect(carBox.x).toBeGreaterThan(mapBoxWide.x + mapBoxWide.width - 1);
+  expect(Math.abs(h1.x - mapBoxWide.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(carBox.y - h1.y)).toBeLessThanOrEqual(1);
 });
 
 test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
@@ -282,11 +349,28 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/HA12345');
   await expect(page.locator('app-voivodeship-card')).toHaveCount(0);
   await expect(page.locator('.country-map-box')).toHaveCount(0);
-  const haCar = await boxOf(
-    page
-      .locator('app-card')
-      .filter({ has: page.locator('app-car-illustration') }),
-  );
+  const haHeading = page.getByRole('heading', { level: 1 });
+  const haCarCard = page.locator('app-card').filter({
+    has: page.locator('app-car-illustration'),
+  });
+  const haH1 = await boxOf(haHeading);
+  const haCar = await boxOf(haCarCard);
+  expect(Math.abs(haH1.x - haCar.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(haH1.width - haCar.width)).toBeLessThanOrEqual(1);
+  expect(haCar.y).toBeGreaterThan(haH1.y + haH1.height - 1);
+
+  await page.goto('/plate/2A12345');
+  await expect(page.locator('.country-map-box')).toHaveCount(0);
+  const noMapHeading = page.getByRole('heading', { level: 1 });
+  const noMapCarCard = page.locator('app-card').filter({
+    has: page.locator('app-car-illustration'),
+  });
+  const noMapH1 = await boxOf(noMapHeading);
+  const noMapCar = await boxOf(noMapCarCard);
+  expect(Math.abs(noMapH1.x - noMapCar.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(noMapH1.width - noMapCar.width)).toBeLessThanOrEqual(1);
+  expect(noMapCar.y).toBeGreaterThan(noMapH1.y + noMapH1.height - 1);
+
   await page.goto('/plate/GMB%202397T');
   const gmbCar = await boxOf(
     page
@@ -317,33 +401,30 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   expect(buttonBox.y).toBeGreaterThanOrEqual(linkBox.y - 1);
 });
 
-/** Narrowest window where the car card shows the reading beside the car (D-54 Update #169). */
-const RESULT_W_SBS = 1390;
-
 async function columnGeometry(
   page: Page,
   platePath: string,
   width: number,
 ): Promise<{
-  leftBottom: number;
+  sideBottom: number;
   mapBottom: number;
-  leftHeight: number;
+  sideHeight: number;
   mapHeight: number;
   mapContentBottom: number;
   mapPaddingBottom: number;
 }> {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(platePath);
-  const left = page.locator('.result-main');
+  const side = page.locator('.result-main');
   const mapCard = page.locator('app-card.map-card');
-  await expect(left).toBeVisible();
+  await expect(side).toBeVisible();
   await expect(mapCard).toBeVisible();
   await expect(mapCard.locator('svg[role="img"]')).toBeVisible();
   return page.evaluate(() => {
-    const leftEl = document.querySelector('.result-main');
+    const sideEl = document.querySelector('.result-main');
     const mapEl = document.querySelector('app-card.map-card');
-    if (leftEl === null || mapEl === null) {
-      throw new Error('left column or map card missing');
+    if (sideEl === null || mapEl === null) {
+      throw new Error('side column or map card missing');
     }
     const mapBox = mapEl.getBoundingClientRect();
     const paddingBottom = parseFloat(getComputedStyle(mapEl).paddingBottom);
@@ -355,9 +436,9 @@ async function columnGeometry(
       );
     }
     return {
-      leftBottom: leftEl.getBoundingClientRect().bottom,
+      sideBottom: sideEl.getBoundingClientRect().bottom,
       mapBottom: mapBox.bottom,
-      leftHeight: leftEl.getBoundingClientRect().height,
+      sideHeight: sideEl.getBoundingClientRect().height,
       mapHeight: mapBox.height,
       mapContentBottom: contentBottom,
       mapPaddingBottom: paddingBottom,
@@ -374,12 +455,12 @@ for (const width of [RESULT_W_SBS, 1440] as const) {
       `result-columns-level-${name}-${width}`,
       { tag: '@desktop' },
       async ({ page }) => {
-        const { leftBottom, mapBottom } = await columnGeometry(
+        const { sideBottom, mapBottom } = await columnGeometry(
           page,
           path,
           width,
         );
-        expect(Math.abs(leftBottom - mapBottom)).toBeLessThanOrEqual(1);
+        expect(Math.abs(sideBottom - mapBottom)).toBeLessThanOrEqual(1);
       },
     );
   }
@@ -388,15 +469,14 @@ for (const width of [RESULT_W_SBS, 1440] as const) {
 for (const width of [1200, 1280] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
-    ['two-readings', '/plate/WOO1A'],
     ['candidates', '/plate/G%2012345'],
   ] as const) {
     test(
-      `result-map-natural-${name}-${width}`,
+      `result-side-taller-${name}-${width}`,
       { tag: '@desktop' },
       async ({ page }) => {
         const g = await columnGeometry(page, path, width);
-        expect(g.leftBottom).toBeGreaterThan(g.mapBottom + 1);
+        expect(g.sideBottom).toBeGreaterThan(g.mapBottom + 1);
         expect(
           Math.abs(g.mapBottom - (g.mapContentBottom + g.mapPaddingBottom)),
         ).toBeLessThanOrEqual(1);
@@ -404,3 +484,29 @@ for (const width of [1200, 1280] as const) {
     );
   }
 }
+
+// Two readings stay taller than the map at every width (no level assertion).
+for (const width of [1200, 1280, RESULT_W_SBS, 1440] as const) {
+  test(
+    `result-side-taller-two-readings-${width}`,
+    { tag: '@desktop' },
+    async ({ page }) => {
+      const g = await columnGeometry(page, '/plate/WOO1A', width);
+      expect(g.sideBottom).toBeGreaterThan(g.mapBottom + 1);
+      expect(
+        Math.abs(g.mapBottom - (g.mapContentBottom + g.mapPaddingBottom)),
+      ).toBeLessThanOrEqual(1);
+    },
+  );
+}
+
+test('result-map-label-tier-1200', { tag: '@desktop' }, async ({ page }) => {
+  // placeSeatLabels lays out country labels for 541 px from 768 px (D-64 Update #161);
+  // mirrored 6:5 keeps the box on that tier (measured 541.27 at 1200).
+  await page.setViewportSize({ width: 1200, height: 900 });
+  await page.goto('/plate/GMB%202397T');
+  const mapBox = page.locator('.country-map-box');
+  await expect(mapBox).toBeVisible();
+  const box = await boxOf(mapBox);
+  expect(box.width).toBeGreaterThanOrEqual(541);
+});

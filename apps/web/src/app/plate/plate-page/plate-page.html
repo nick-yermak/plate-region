@@ -1,7 +1,7 @@
 @let page = view();
-<h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
 @if (page.kind === 'message') {
   <div class="result-grid">
+    <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
     <div class="result-main">
       <app-card class="car-card">
         <div class="car-card-body">
@@ -16,7 +16,8 @@
     </div>
   </div>
 } @else {
-  <div class="result-grid">
+  <div class="result-grid" [class.has-map]="!!mapTarget()">
+    <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
     <div class="result-main">
       <app-card class="car-card">
         <div class="car-card-body">
