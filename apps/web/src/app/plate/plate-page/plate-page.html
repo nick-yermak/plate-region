@@ -5,12 +5,12 @@
     <div class="result-main">
       <app-card class="car-card">
         <div class="car-card-body">
-          <app-car-illustration>
-            <app-plate [plate]="plateText()" />
-          </app-car-illustration>
           <div class="car-card-content">
             <a routerLink="/">{{ 'plate.backHome' | transloco }}</a>
           </div>
+          <app-car-illustration>
+            <app-plate [plate]="plateText()" />
+          </app-car-illustration>
         </div>
       </app-card>
     </div>
@@ -18,12 +18,26 @@
 } @else {
   <div class="result-grid" [class.has-map]="!!mapTarget()">
     <h1>{{ page.heading.key | transloco: page.heading.params }}</h1>
+    @if (mapTarget()) {
+      <app-card class="map-card">
+        <h2>{{ 'map.countryTitle' | transloco }}</h2>
+        <p class="country-map-subtitle">
+          {{ 'map.countrySubtitle' | transloco }}
+        </p>
+        <div class="country-map-box">
+          @if (countryView(); as country) {
+            <app-county-map
+              [view]="country"
+              interaction="none"
+              (openDialog)="openMapDialog('map')"
+            />
+          }
+        </div>
+      </app-card>
+    }
     <div class="result-main">
       <app-card class="car-card">
         <div class="car-card-body">
-          <app-car-illustration>
-            <app-plate [plate]="plateText()" />
-          </app-car-illustration>
           <div class="car-card-content">
             @if (page.kind === 'readings') {
               @if (page.noteKey) {
@@ -96,6 +110,9 @@
               </div>
             }
           </div>
+          <app-car-illustration>
+            <app-plate [plate]="plateText()" />
+          </app-car-illustration>
         </div>
       </app-card>
       @if (voivodeshipCard(); as card) {
@@ -104,23 +121,6 @@
         </app-card>
       }
     </div>
-    @if (mapTarget()) {
-      <app-card class="map-card">
-        <h2>{{ 'map.countryTitle' | transloco }}</h2>
-        <p class="country-map-subtitle">
-          {{ 'map.countrySubtitle' | transloco }}
-        </p>
-        <div class="country-map-box">
-          @if (countryView(); as country) {
-            <app-county-map
-              [view]="country"
-              interaction="none"
-              (openDialog)="openMapDialog('map')"
-            />
-          }
-        </div>
-      </app-card>
-    }
   </div>
 }
 @defer (when dialogRequested(); prefetch on idle) {

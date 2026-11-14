@@ -251,6 +251,74 @@ test(
   },
 );
 
+test(
+  'shell-header-content-edges-1280',
+  { tag: '@desktop' },
+  async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await readyHome(page);
+    const banner = page.getByRole('banner');
+    const brand = banner.getByRole('link', { name: 'Tablicomat' });
+    const actions = banner.locator('.header-actions');
+    const main = page.getByRole('main');
+    await expect(brand).toBeVisible();
+    await expect(actions).toBeVisible();
+    const brandBox = await boxOf(brand);
+    const actionsBox = await boxOf(actions);
+    const edges = await main.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        contentLeft: box.left + parseFloat(style.paddingLeft),
+        contentRight: box.right - parseFloat(style.paddingRight),
+      };
+    });
+    expect(Math.abs(brandBox.x - edges.contentLeft)).toBeLessThanOrEqual(0.5);
+    expect(
+      Math.abs(actionsBox.x + actionsBox.width - edges.contentRight),
+    ).toBeLessThanOrEqual(0.5);
+  },
+);
+
+test(
+  'shell-header-content-edges-1920',
+  { tag: '@desktop' },
+  async ({ page }) => {
+    // Cap keeps a 1340 px content box: side inset (1920 − 1340) / 2 = 290.
+    const inset = (1920 - 1340) / 2;
+    await page.setViewportSize({ width: 1920, height: 900 });
+    await readyHome(page);
+    const banner = page.getByRole('banner');
+    const brand = banner.getByRole('link', { name: 'Tablicomat' });
+    const actions = banner.locator('.header-actions');
+    const main = page.getByRole('main');
+    await expect(brand).toBeVisible();
+    await expect(actions).toBeVisible();
+    const brandBox = await boxOf(brand);
+    const actionsBox = await boxOf(actions);
+    const edges = await main.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        contentLeft: box.left + parseFloat(style.paddingLeft),
+        contentRight: box.right - parseFloat(style.paddingRight),
+      };
+    });
+    expect(Math.abs(brandBox.x - inset)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(edges.contentLeft - inset)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(brandBox.x - edges.contentLeft)).toBeLessThanOrEqual(0.5);
+    expect(
+      Math.abs(actionsBox.x + actionsBox.width - (1920 - inset)),
+    ).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(edges.contentRight - (1920 - inset))).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(
+      Math.abs(actionsBox.x + actionsBox.width - edges.contentRight),
+    ).toBeLessThanOrEqual(0.5);
+  },
+);
+
 test('header-burger-tablet', { tag: '@tablet' }, async ({ page }) => {
   await readyHome(page);
   await page.getByRole('button', { name: 'Polski' }).click();

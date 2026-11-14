@@ -68,6 +68,39 @@ async function mapGaps(
   });
 }
 
+/** Vertical card order at a single-column width: h1 → map → car → voivodeship. */
+async function expectVerticalCardOrder(page: Page): Promise<{
+  carCard: Locator;
+  car: { x: number; y: number; width: number; height: number };
+  list: { x: number; y: number; width: number; height: number };
+}> {
+  const h1 = await boxOf(page.getByRole('heading', { level: 1 }));
+  const carCard = page.locator('app-card').filter({
+    has: page.locator('app-car-illustration'),
+  });
+  const voiCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
+  });
+  const mapCard = page.locator('app-card').filter({
+    has: page.getByRole('heading', { name: 'Poland – voivodeships' }),
+  });
+  const carBox = await boxOf(carCard);
+  const voiBox = await boxOf(voiCard);
+  const mapBox = await boxOf(mapCard);
+  expect(mapBox.y).toBeGreaterThan(h1.y + h1.height - 1);
+  expect(carBox.y).toBeGreaterThan(mapBox.y + mapBox.height - 1);
+  expect(voiBox.y).toBeGreaterThan(carBox.y + carBox.height - 1);
+  expect(Math.abs(carBox.x - voiBox.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(voiBox.x - mapBox.x)).toBeLessThanOrEqual(1);
+
+  const car = await boxOf(carCard.locator('app-car-illustration'));
+  const list = await boxOf(
+    carCard.locator('app-result-reading, app-candidates-list').first(),
+  );
+  expect(car.width).toBeLessThanOrEqual(250);
+  return { carCard, car, list };
+}
+
 test(
   'centres the map of Poland in its card',
   { tag: '@desktop' },
@@ -80,7 +113,7 @@ test(
   },
 );
 
-for (const width of [1200, 1280, 1440] as const) {
+for (const width of [1200, 1280, 1440, 1920] as const) {
   test(
     `result-layout-desktop-${width}`,
     { tag: '@desktop' },
@@ -111,27 +144,31 @@ for (const width of [1200, 1280, 1440] as const) {
       const carBox = await boxOf(carCard);
       const voiBox = await boxOf(voivodeshipCard);
       const mapBox = await boxOf(mapCard);
-      // Map leads in the left column; car + voivodeship share the right.
+      // Soft: must report even when the h1-span check fails first (car is level with h1 today).
+      expect.soft(Math.abs(mapBox.y - carBox.y)).toBeLessThanOrEqual(0.5);
+      // Full-width h1 over both columns; map leads on the left.
       expect(carBox.x).toBeGreaterThan(mapBox.x + mapBox.width - 1);
-      expect(Math.abs(h1.x - mapBox.x)).toBeLessThanOrEqual(1);
-      expect(Math.abs(mapBox.y - (h1.y + h1.height + 16))).toBeLessThanOrEqual(
-        1,
-      );
-      expect(Math.abs(carBox.y - h1.y)).toBeLessThanOrEqual(1);
+      expect(Math.abs(h1.x - mapBox.x)).toBeLessThanOrEqual(0.5);
+      expect(
+        Math.abs(h1.x + h1.width - (carBox.x + carBox.width)),
+      ).toBeLessThanOrEqual(0.5);
       expect(Math.abs(voiBox.x - carBox.x)).toBeLessThanOrEqual(1);
       expect(Math.abs(voiBox.width - carBox.width)).toBeLessThanOrEqual(1);
       expect(voiBox.y).toBeGreaterThan(carBox.y + carBox.height - 1);
       const ratio = carBox.width / mapBox.width;
       expect(Math.abs(ratio - 5 / 6)).toBeLessThanOrEqual(0.02);
+      const car = await boxOf(carCard.locator('app-car-illustration'));
+      expect(Math.abs(car.width - 250)).toBeLessThanOrEqual(0.5);
     },
   );
 }
 
 /**
  * Narrowest window where /plate/GMB%202397T shows the reading beside the car
- * (Playwright Chromium e2e viewport; D-54 Update #173, corrected from 1390).
+ * (Playwright Chromium e2e viewport, 900 px tall; D-54 Update #175).
+ * Measured 1269 (1268 stacked).
  */
-const RESULT_W_SBS = 1388;
+const RESULT_W_SBS = 1269;
 
 for (const width of [
   1200,
@@ -139,6 +176,7 @@ for (const width of [
   RESULT_W_SBS - 1,
   RESULT_W_SBS,
   1440,
+  1920,
 ] as const) {
   test(`result-car-width-${width}`, { tag: '@desktop' }, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -150,25 +188,26 @@ for (const width of [
     const list = await boxOf(
       carCard.locator('app-result-reading, app-candidates-list').first(),
     );
-    expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(car.width - 250)).toBeLessThanOrEqual(0.5);
     if (width < RESULT_W_SBS) {
-      expect(list.y).toBeGreaterThan(car.y + car.height - 1);
+      // Stacked: reading above car; car centred in the card.
+      expect(car.y).toBeGreaterThan(list.y + list.height - 1);
       const cardBox = await boxOf(carCard);
       const carCentre = car.x + car.width / 2;
       const cardCentre = cardBox.x + cardBox.width / 2;
       expect(Math.abs(carCentre - cardCentre)).toBeLessThanOrEqual(1);
     } else {
-      expect(car.x + car.width).toBeLessThan(list.x + 1);
+      // Side by side: reading left, car right (not centred).
+      expect(list.x + list.width).toBeLessThan(car.x + 1);
     }
   });
 }
 
 test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   await page.goto('/plate/GMB%202397T');
-  const h1 = await boxOf(page.getByRole('heading', { level: 1 }));
-  const carCard = page.locator('app-card').filter({
-    has: page.locator('app-car-illustration'),
-  });
+  // Card ~640 px > 29.625rem: reading left of car.
+  const { carCard, car, list } = await expectVerticalCardOrder(page);
+  expect(list.x + list.width).toBeLessThan(car.x + 1);
   const voiCard = page.locator('app-card').filter({
     has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
   });
@@ -178,20 +217,9 @@ test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   const carBox = await boxOf(carCard);
   const voiBox = await boxOf(voiCard);
   const mapBox = await boxOf(mapCard);
-  expect(carBox.y).toBeGreaterThan(h1.y + h1.height - 1);
-  expect(voiBox.y).toBeGreaterThan(carBox.y);
-  expect(mapBox.y).toBeGreaterThan(voiBox.y);
-  expect(Math.abs(carBox.x - voiBox.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(voiBox.x - mapBox.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(carBox.width - voiBox.width)).toBeLessThanOrEqual(1);
   expect(Math.abs(voiBox.width - mapBox.width)).toBeLessThanOrEqual(1);
   expect(carBox.width).toBeLessThanOrEqual(640);
-  const car = await boxOf(carCard.locator('app-car-illustration'));
-  const list = await boxOf(
-    carCard.locator('app-result-reading, app-candidates-list').first(),
-  );
-  expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
-  expect(car.x + car.width).toBeLessThan(list.x + 1);
 });
 
 test('result-layout-mobile', { tag: '@mobile' }, async ({ page }) => {
@@ -201,26 +229,11 @@ test('result-layout-mobile', { tag: '@mobile' }, async ({ page }) => {
     return documentElement.scrollWidth <= documentElement.clientWidth;
   });
   expect(noHorizontalScroll).toBe(true);
-  const h1 = await boxOf(page.getByRole('heading', { level: 1 }));
-  const carCard = page.locator('app-card').filter({
-    has: page.locator('app-car-illustration'),
-  });
-  const voiCard = page.locator('app-card').filter({
-    has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
-  });
-  const mapCard = page.locator('app-card').filter({
-    has: page.getByRole('heading', { name: 'Poland – voivodeships' }),
-  });
-  const carBox = await boxOf(carCard);
-  const voiBox = await boxOf(voiCard);
-  const mapBox = await boxOf(mapCard);
-  expect(carBox.y).toBeGreaterThan(h1.y + h1.height - 1);
-  expect(voiBox.y).toBeGreaterThan(carBox.y);
-  expect(mapBox.y).toBeGreaterThan(voiBox.y);
+  // Card narrower than 29.625rem: reading above car.
+  const { car, list } = await expectVerticalCardOrder(page);
+  expect(car.y).toBeGreaterThan(list.y + list.height - 1);
   const mapInner = await boxOf(page.locator('.country-map-box'));
   expect(Math.abs(mapInner.width - 328)).toBeLessThanOrEqual(0.5);
-  const car = await boxOf(page.locator('app-car-illustration'));
-  expect(car.width).toBeGreaterThanOrEqual(312);
   const viewport = page.viewportSize();
   if (viewport === null) {
     throw new Error('viewport missing');
@@ -289,30 +302,27 @@ test('result-actions', { tag: '@desktop' }, async ({ page }) => {
 test('result-layout-breakpoint', { tag: '@desktop' }, async ({ page }) => {
   await page.setViewportSize({ width: 1199, height: 800 });
   await page.goto('/plate/GMB%202397T');
+  // Single column; card ~640 px > 29.625rem: reading left of car.
+  const { car, list } = await expectVerticalCardOrder(page);
+  expect(list.x + list.width).toBeLessThan(car.x + 1);
+
+  await page.setViewportSize({ width: 1200, height: 800 });
   const heading = page.getByRole('heading', { level: 1 });
   const carCard = page.locator('app-card').filter({
     has: page.locator('app-car-illustration'),
   });
-  const voiCard = page.locator('app-card').filter({
-    has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
-  });
   const mapCard = page.locator('app-card').filter({
     has: page.getByRole('heading', { name: 'Poland – voivodeships' }),
   });
-  const h1Narrow = await boxOf(heading);
-  const carNarrow = await boxOf(carCard);
-  const voiBox = await boxOf(voiCard);
-  const mapBox = await boxOf(mapCard);
-  expect(carNarrow.y).toBeGreaterThan(h1Narrow.y + h1Narrow.height - 1);
-  expect(mapBox.y).toBeGreaterThan(voiBox.y);
-
-  await page.setViewportSize({ width: 1200, height: 800 });
   const h1 = await boxOf(heading);
   const carBox = await boxOf(carCard);
   const mapBoxWide = await boxOf(mapCard);
+  expect.soft(Math.abs(mapBoxWide.y - carBox.y)).toBeLessThanOrEqual(0.5);
   expect(carBox.x).toBeGreaterThan(mapBoxWide.x + mapBoxWide.width - 1);
-  expect(Math.abs(h1.x - mapBoxWide.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(carBox.y - h1.y)).toBeLessThanOrEqual(1);
+  expect(Math.abs(h1.x - mapBoxWide.x)).toBeLessThanOrEqual(0.5);
+  expect(
+    Math.abs(h1.x + h1.width - (carBox.x + carBox.width)),
+  ).toBeLessThanOrEqual(0.5);
 });
 
 test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
@@ -355,8 +365,9 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   });
   const haH1 = await boxOf(haHeading);
   const haCar = await boxOf(haCarCard);
+  // Without a map, h1 still spans the full grid; the car stays in the 5fr column.
   expect(Math.abs(haH1.x - haCar.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(haH1.width - haCar.width)).toBeLessThanOrEqual(1);
+  expect(haH1.width).toBeGreaterThan(haCar.width + 1);
   expect(haCar.y).toBeGreaterThan(haH1.y + haH1.height - 1);
 
   await page.goto('/plate/2A12345');
@@ -368,7 +379,7 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   const noMapH1 = await boxOf(noMapHeading);
   const noMapCar = await boxOf(noMapCarCard);
   expect(Math.abs(noMapH1.x - noMapCar.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(noMapH1.width - noMapCar.width)).toBeLessThanOrEqual(1);
+  expect(noMapH1.width).toBeGreaterThan(noMapCar.width + 1);
   expect(noMapCar.y).toBeGreaterThan(noMapH1.y + noMapH1.height - 1);
 
   await page.goto('/plate/GMB%202397T');
@@ -400,6 +411,51 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   const buttonBox = await boxOf(mapButton);
   expect(buttonBox.y).toBeGreaterThanOrEqual(linkBox.y - 1);
 });
+
+test(
+  'result-content-cap-1920-matches-1440',
+  { tag: '@desktop' },
+  async ({ page }) => {
+    async function contentBoxes(): Promise<{
+      mainContentWidth: number;
+      gridWidth: number;
+    }> {
+      const main = page.getByRole('main');
+      const grid = page.locator('.result-grid');
+      await expect(main).toBeVisible();
+      await expect(grid).toBeVisible();
+      return page.evaluate(() => {
+        const mainEl = document.querySelector('[role="main"]');
+        const gridEl = document.querySelector('.result-grid');
+        if (mainEl === null || gridEl === null) {
+          throw new Error('main or result-grid missing');
+        }
+        const mainStyle = getComputedStyle(mainEl);
+        const padInline =
+          parseFloat(mainStyle.paddingLeft) +
+          parseFloat(mainStyle.paddingRight);
+        return {
+          mainContentWidth: mainEl.getBoundingClientRect().width - padInline,
+          gridWidth: gridEl.getBoundingClientRect().width,
+        };
+      });
+    }
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/plate/GMB%202397T');
+    const at1440 = await contentBoxes();
+    expect(Math.abs(at1440.mainContentWidth - 1340)).toBeLessThanOrEqual(0.5);
+
+    await page.setViewportSize({ width: 1920, height: 900 });
+    const at1920 = await contentBoxes();
+    expect(
+      Math.abs(at1920.mainContentWidth - at1440.mainContentWidth),
+    ).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(at1920.gridWidth - at1440.gridWidth)).toBeLessThanOrEqual(
+      0.5,
+    );
+  },
+);
 
 async function columnGeometry(
   page: Page,
@@ -446,7 +502,9 @@ async function columnGeometry(
   });
 }
 
-for (const width of [RESULT_W_SBS, 1440] as const) {
+// Columns level once the map is at least as tall as the side content (~1360 px
+// for resolved). Measured bottoms 884.28 at 1440 and 1920 (D-54 Update #175).
+for (const width of [1440, 1920] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
     ['candidates', '/plate/G%2012345'],
@@ -466,7 +524,10 @@ for (const width of [RESULT_W_SBS, 1440] as const) {
   }
 }
 
-for (const width of [1200, 1280] as const) {
+// Through W_sbs and 1280 the side content is still taller than the map
+// (resolved mapHeight 644.70 / 685.64 / 680.00; side bottoms 1064.70 / 862.73 /
+// 862.73), so the map keeps its natural height.
+for (const width of [1200, 1280, RESULT_W_SBS] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
     ['candidates', '/plate/G%2012345'],
@@ -486,7 +547,8 @@ for (const width of [1200, 1280] as const) {
 }
 
 // Two readings stay taller than the map at every width (no level assertion).
-for (const width of [1200, 1280, RESULT_W_SBS, 1440] as const) {
+// Measured side bottoms 1417.70 / 1325.73 / 1325.73 / 1215.73 / 1215.73.
+for (const width of [1200, 1280, RESULT_W_SBS, 1440, 1920] as const) {
   test(
     `result-side-taller-two-readings-${width}`,
     { tag: '@desktop' },

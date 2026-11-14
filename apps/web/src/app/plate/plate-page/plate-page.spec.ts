@@ -165,7 +165,7 @@ describe('PlatePage', () => {
     );
   });
 
-  it('renders the candidates list under the car for GD', async () => {
+  it('renders the candidates list before the car for GD', async () => {
     const fixture = await renderPage('GD');
     expect(fixture.nativeElement.querySelector('h1')?.textContent?.trim()).toBe(
       county('GD').name,
@@ -176,7 +176,7 @@ describe('PlatePage', () => {
     );
     expect(list).not.toBeNull();
     expect(
-      car?.nativeElement.compareDocumentPosition(list.nativeElement) &
+      list?.nativeElement.compareDocumentPosition(car?.nativeElement) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
@@ -294,9 +294,38 @@ describe('PlatePage', () => {
     expect(root.querySelector('h1')?.textContent?.trim()).toBe(
       testingText('en', 'county.heading.cityShared', { seat: 'Wrocław' }),
     );
-    const carCard = root.querySelector('app-card');
-    expect(carCard?.querySelector('app-car-illustration')).not.toBeNull();
-    expect(carCard?.querySelector('app-result-reading')).not.toBeNull();
+    const h1 = root.querySelector('h1');
+    const mapCard = root.querySelector('.map-card');
+    const carCard = root.querySelector('.car-card');
+    const voivodeshipWrap = root.querySelector('.voivodeship-card-wrap');
+    expect(h1).not.toBeNull();
+    expect(mapCard).not.toBeNull();
+    expect(carCard).not.toBeNull();
+    expect(voivodeshipWrap).not.toBeNull();
+    if (!h1 || !mapCard || !carCard || !voivodeshipWrap) {
+      return;
+    }
+    // DOM order: h1 → map card → car card → voivodeship card.
+    expect(
+      h1.compareDocumentPosition(mapCard) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      mapCard.compareDocumentPosition(carCard) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      carCard.compareDocumentPosition(voivodeshipWrap) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const reading = carCard.querySelector('app-result-reading');
+    const car = carCard.querySelector('app-car-illustration');
+    expect(reading).not.toBeNull();
+    expect(car).not.toBeNull();
+    if (reading && car) {
+      expect(
+        reading.compareDocumentPosition(car) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
     const mapButton = root.querySelector(
       'app-map-dialog-open-button button.map-dialog-open.ant-btn-primary',
     );

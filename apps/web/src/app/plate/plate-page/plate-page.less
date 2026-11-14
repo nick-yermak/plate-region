@@ -4,7 +4,7 @@
   margin-inline: auto;
 }
 
-// Spacing to the next card comes from .result-grid gap (D-54 Update #173).
+// Spacing to the next card comes from .result-grid gap (D-54 Update #175).
 h1 {
   margin: 0;
 }
@@ -29,12 +29,13 @@ h1 {
     max-width: none;
   }
 
-  // Map leads; mirrored 6:5 keeps the map at 541.27 px at 1200, on the 541 px label tier (D-64 Update #161).
+  // Full-width h1; map and side share one top row. Mirrored 6:5 keeps the map
+  // at 541.27 px at 1200, on the 541 px label tier (D-64 Update #161).
   .result-grid.has-map {
     grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
     grid-template-rows: auto 1fr;
     grid-template-areas:
-      'heading side'
+      'heading heading'
       'map side';
     align-items: stretch;
   }
@@ -57,7 +58,11 @@ h1 {
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
   }
 
-  .result-grid:not(.has-map) > h1,
+  // Without a map the h1 still spans the full grid; the car stays in the 5fr column.
+  .result-grid:not(.has-map) > h1 {
+    grid-column: 1 / -1;
+  }
+
   .result-grid:not(.has-map) .result-main {
     grid-column: 1;
   }
@@ -78,20 +83,18 @@ h1 {
   gap: var(--pr-padding-md);
 }
 
-// Cap the car at the side-by-side column width; centre it when the reading stacks.
-@media (width >= 768px) {
-  .car-card-body > app-car-illustration {
-    max-width: 19rem;
-    margin-inline: auto;
-  }
+// Cap the car at 250 px on the result page; centre it when the reading stacks.
+.car-card-body > app-car-illustration {
+  width: 100%;
+  max-width: 250px;
+  margin-inline: auto;
 }
 
-// At 1440 px the card is 554 px inside ((1340 − 16) × 5/11 − 48); at 1280 px 481 px.
-// Fixed 19rem car column: minmax(0, 19rem) only grows when content asks for it.
-@container (width >= 33rem) {
+// 250 px car + 1rem gap + 13rem reading at a 16 px root.
+@container (width >= 29.625rem) {
   .car-card-body {
     display: grid;
-    grid-template-columns: 19rem minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 250px;
     align-items: start;
   }
 
