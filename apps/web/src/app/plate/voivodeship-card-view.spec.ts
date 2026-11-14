@@ -1,59 +1,46 @@
-import { registry } from '@plate-region/plate-data';
+import { voivodeshipSlug } from '@plate-region/plate-domain';
 
 import { voivodeship } from './plate.testing';
+import { voivodeshipCardView } from './voivodeship-card-view';
 import { voivodeshipMainCodes } from './voivodeship-main-codes';
-import {
-  VOIVODESHIP_CARD_MAIN_CODES_COUNT,
-  voivodeshipCardView,
-} from './voivodeship-card-view';
 
 describe('voivodeshipCardView', () => {
-  it('shows a positive number of main codes', () => {
-    expect(VOIVODESHIP_CARD_MAIN_CODES_COUNT).toBeGreaterThan(0);
-  });
-
-  it('returns the first N main codes for G in English', () => {
-    const expected = voivodeshipMainCodes(voivodeship('G')).slice(
-      0,
-      VOIVODESHIP_CARD_MAIN_CODES_COUNT,
-    );
-    expect(voivodeshipCardView(voivodeship('G'), 'en')).toEqual({
+  it('returns every main code for G in order with voivodeship #CODE links', () => {
+    const region1 = voivodeship('G');
+    const slug = voivodeshipSlug(region1);
+    const expected = voivodeshipMainCodes(region1).map((row) => ({
+      code: row.code,
+      name: row.name,
+      link: { slug, fragment: row.code },
+    }));
+    expect(expected.length).toBeGreaterThan(10);
+    expect(voivodeshipCardView(region1, 'en')).toEqual({
       heading: {
         key: 'plate.heading.voivodeship',
-        params: { name: voivodeship('G').nameEn.value },
+        params: { name: region1.nameEn.value },
+      },
+      codes: expected,
+    });
+    expect(voivodeshipCardView(region1, 'pl')).toEqual({
+      heading: {
+        key: 'plate.heading.voivodeship',
+        params: { name: region1.name },
       },
       codes: expected,
     });
   });
 
-  it('returns the first N main codes for G in Polish', () => {
-    const expected = voivodeshipMainCodes(voivodeship('G')).slice(
-      0,
-      VOIVODESHIP_CARD_MAIN_CODES_COUNT,
-    );
-    expect(voivodeshipCardView(voivodeship('G'), 'pl')).toEqual({
-      heading: {
-        key: 'plate.heading.voivodeship',
-        params: { name: voivodeship('G').name },
-      },
-      codes: expected,
+  it('lists one Mazowieckie entry per main-code row with a single Warszawa tag', () => {
+    const region1 = voivodeship('W');
+    const main = voivodeshipMainCodes(region1);
+    const codes = voivodeshipCardView(region1, 'en').codes;
+    expect(codes).toHaveLength(main.length);
+    expect(codes.map((row) => row.code)).toEqual(main.map((row) => row.code));
+    expect(codes.filter((row) => row.code === 'WA')).toHaveLength(1);
+    expect(codes.some((row) => row.code === 'AA')).toBe(false);
+    expect(codes.find((row) => row.code === 'WA')?.link).toEqual({
+      slug: 'mazowieckie',
+      fragment: 'WA',
     });
-  });
-
-  it('returns min(N, count) codes for every voivodeship', () => {
-    for (const region1 of registry.region1) {
-      const all = voivodeshipMainCodes(region1);
-      const expectedCount = Math.min(
-        VOIVODESHIP_CARD_MAIN_CODES_COUNT,
-        all.length,
-      );
-      const codes = voivodeshipCardView(region1, 'en').codes;
-      expect(codes).toHaveLength(expectedCount);
-      expect(new Set(codes.map((row) => row.code)).size).toBe(expectedCount);
-      expect(codes).toEqual(all.slice(0, expectedCount));
-    }
-    expect(voivodeshipCardView(voivodeship('G'), 'en').codes[0]?.code).toBe(
-      'GD',
-    );
   });
 });

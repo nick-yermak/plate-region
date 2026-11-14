@@ -117,6 +117,14 @@
       </app-card>
       @if (voivodeshipCard(); as card) {
         <app-card tone="info" class="voivodeship-card-wrap">
+          @if (voivodeshipBackdrop(); as backdrop) {
+            <app-map-backdrop
+              [regionPath]="backdrop.regionPath"
+              [countyBorders]="backdrop.countyBorders"
+              [borders]="backdrop.borders"
+              [viewBox]="backdrop.viewBox"
+            />
+          }
           <app-voivodeship-card [heading]="card.heading" [codes]="card.codes" />
         </app-card>
       }

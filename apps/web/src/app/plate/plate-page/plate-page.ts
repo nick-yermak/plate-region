@@ -14,10 +14,12 @@ import {
 import type { LoadedMap } from '../plate.types';
 import { countryMapView } from '../../shared/map/map-view';
 import { CardComponent } from '../../shared/card/card/card';
+import { pathViewBox } from '../../shared/map/path-view-box';
 import { voivodeshipCardView } from '../voivodeship-card-view';
 import { PlateComponent } from '../../shared/plate/plate/plate';
 import { LanguageService } from '../../language/language.service';
 import { RESULT_MAP_LOADER, resultMapTarget } from '../result-map';
+import { MapBackdrop } from '../../shared/map/map-backdrop/map-backdrop';
 import { ResultReadingComponent } from '../result-reading/result-reading';
 import { CountyMapComponent } from '../../shared/map/county-map/county-map';
 import { CandidatesListComponent } from '../candidates-list/candidates-list';
@@ -40,6 +42,7 @@ function isWarsawLoaded(
     CarIllustrationComponent,
     CardComponent,
     CountyMapComponent,
+    MapBackdrop,
     MapDialogOpenButtonComponent,
     PlateComponent,
     ResultReadingComponent,
@@ -127,6 +130,22 @@ export class PlatePage {
       this.language(),
       this.dialogPlateCode(),
     );
+  });
+
+  /** Faint country map behind the tags; only once country geometry is loaded. */
+  protected readonly voivodeshipBackdrop = computed(() => {
+    const view = this.countryView();
+    const path = view?.voivodeshipButton?.path;
+    const borders = view?.borders;
+    if (path === undefined || borders === undefined || view === undefined) {
+      return undefined;
+    }
+    return {
+      regionPath: path,
+      countyBorders: view.areas.map((area) => area.path).join(''),
+      borders,
+      viewBox: pathViewBox(path),
+    };
   });
 
   private readonly mapDialogButton = viewChild('mapDialogButton', {

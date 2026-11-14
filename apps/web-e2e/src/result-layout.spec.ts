@@ -331,26 +331,73 @@ test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
     has: page.getByRole('heading', { name: 'Pomeranian Voivodeship' }),
   });
   await expect(card).toHaveCount(1);
+  await expect(card.locator('app-map-backdrop')).toHaveCount(1);
   for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
-    const colours = await card.evaluate((el) => {
+    const measured = await card.evaluate((el) => {
       const style = getComputedStyle(el);
-      const text = el.querySelector('h2, p') ?? el;
+      const textEl = el.querySelector('h2, p') ?? el;
+      const tag = el.querySelector('a.main-codes-tag') ?? el.querySelector('a');
+      const backdrop = el.querySelector('app-map-backdrop');
+      const layers: string[] = [];
+      let backdropOpacity = 1;
+      if (backdrop !== null) {
+        const svg = backdrop.querySelector('svg');
+        if (svg !== null) {
+          backdropOpacity = Number(getComputedStyle(svg).opacity);
+        }
+        for (const path of backdrop.querySelectorAll('path')) {
+          const pathStyle = getComputedStyle(path);
+          for (const value of [pathStyle.fill, pathStyle.stroke]) {
+            if (value !== '' && value !== 'none') {
+              layers.push(value);
+            }
+          }
+        }
+      }
       return {
-        color: getComputedStyle(text).color,
+        color: getComputedStyle(textEl).color,
+        tagColor:
+          tag === null
+            ? getComputedStyle(textEl).color
+            : getComputedStyle(tag).color,
         background: style.backgroundColor,
         page: getComputedStyle(document.body).backgroundColor,
+        layers,
+        backdropOpacity,
       };
     });
-    const surface = parseCssColor(colours.page);
-    const tint = parseCssColor(colours.background);
-    const text = parseCssColor(colours.color);
-    // Tint is 12% blue over the page surface; contrast against the composite.
+    const surface = parseCssColor(measured.page);
+    const tint = parseCssColor(measured.background);
+    const text = parseCssColor(measured.color);
+    const tagText = parseCssColor(measured.tagColor);
     expect(tint.a).toBeLessThan(1);
-    const composed = composeOver(tint, surface);
-    const ratio = contrastRatio(text, composed);
-    console.log(`result-card-contrast-${scheme}`, ratio);
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
+    expect(measured.layers.length).toBeGreaterThan(0);
+    expect(measured.backdropOpacity).toBeGreaterThan(0);
+    expect(measured.backdropOpacity).toBeLessThan(1);
+    const cardSurface = composeOver(tint, surface);
+    let darkest = cardSurface;
+    let darkestLuma = Infinity;
+    for (const layer of measured.layers) {
+      const sample = parseCssColor(layer);
+      const faded = {
+        ...sample,
+        a: sample.a * measured.backdropOpacity,
+      };
+      const over = composeOver(faded, cardSurface);
+      const luma = 0.2126 * over.r + 0.7152 * over.g + 0.0722 * over.b;
+      if (luma < darkestLuma) {
+        darkestLuma = luma;
+        darkest = over;
+      }
+    }
+    // Tag glyphs sit on the plate-white face; compose that over the darkest pixel.
+    const tagFace = composeOver({ r: 255, g: 255, b: 255, a: 1 }, darkest);
+    const textRatio = contrastRatio(text, darkest);
+    const tagRatio = contrastRatio(tagText, tagFace);
+    console.log(`result-card-contrast-${scheme}`, textRatio, tagRatio);
+    expect(textRatio).toBeGreaterThanOrEqual(4.5);
+    expect(tagRatio).toBeGreaterThanOrEqual(4.5);
   }
 });
 
@@ -393,7 +440,13 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   await page.goto('/plate/G%2012345');
   const card = page.locator('app-voivodeship-card');
   await expect(card).toBeVisible();
-  await expect(card.getByRole('listitem').first()).toHaveText(/GD — Gdańsk/);
+  const gdTag = card.getByRole('link', { name: 'GD — Gdańsk' });
+  await expect(gdTag).toBeVisible();
+  await expect(gdTag).toHaveAttribute('href', /#GD$/);
+  await gdTag.click();
+  await expect(page).toHaveURL(/\/voivodeship\/pomorskie#GD/);
+  await expect(page.locator('#GD')).toBeVisible();
+  await page.goto('/plate/G%2012345');
   await expect(page.locator('button.map-dialog-open')).toHaveText(
     /Show the voivodeship on the map/,
   );
@@ -411,6 +464,63 @@ test('result-states-layout', { tag: '@desktop' }, async ({ page }) => {
   const buttonBox = await boxOf(mapButton);
   expect(buttonBox.y).toBeGreaterThanOrEqual(linkBox.y - 1);
 });
+
+async function expectVoivodeshipTagsWrap(
+  page: Page,
+  size: { width: number; height: number },
+): Promise<void> {
+  await page.setViewportSize(size);
+  await page.goto('/plate/WOO1A');
+  const card = page.locator('app-card.card-info').filter({
+    has: page.locator('app-voivodeship-card'),
+  });
+  await expect(card).toBeVisible();
+  const list = card.locator('.main-codes');
+  await expect(list).toBeVisible();
+  const metrics = await card.evaluate((el) => {
+    const listEl = el.querySelector('.main-codes');
+    if (listEl === null) {
+      throw new Error('main-codes list missing');
+    }
+    const tags = [...listEl.querySelectorAll('a')];
+    if (tags.length < 2) {
+      throw new Error(`expected wrapping tags, got ${tags.length}`);
+    }
+    const cardBox = el.getBoundingClientRect();
+    const tops = new Set(
+      tags.map((tag) => Math.round(tag.getBoundingClientRect().top)),
+    );
+    const overflow = tags.some((tag) => {
+      const box = tag.getBoundingClientRect();
+      return box.right > cardBox.right + 1 || box.left < cardBox.left - 1;
+    });
+    return {
+      wrapRows: tops.size,
+      overflow,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    };
+  });
+  expect(metrics.wrapRows).toBeGreaterThan(1);
+  expect(metrics.overflow).toBe(false);
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+}
+
+test(
+  'result-voivodeship-tags-wrap-mobile',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    await expectVoivodeshipTagsWrap(page, { width: 360, height: 800 });
+  },
+);
+
+test(
+  'result-voivodeship-tags-wrap-desktop',
+  { tag: '@desktop' },
+  async ({ page }) => {
+    await expectVoivodeshipTagsWrap(page, { width: 1280, height: 800 });
+  },
+);
 
 test(
   'result-content-cap-1920-matches-1440',
@@ -502,9 +612,10 @@ async function columnGeometry(
   });
 }
 
-// Columns level once the map is at least as tall as the side content (~1360 px
-// for resolved). Measured bottoms 884.28 at 1440 and 1920 (D-54 Update #175).
-for (const width of [1440, 1920] as const) {
+// Larger plate tags (1.15 rem) wrap Pomeranian to 3 rows below 1440, but
+// columns still level from 1280 (and W_sbs) instead of ~1360 (D-54 Update #176).
+// Measured bottoms: 823.23 at 1280, 793.03 at W_sbs, 884.28 at 1440 and 1920.
+for (const width of [1280, RESULT_W_SBS, 1440, 1920] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
     ['candidates', '/plate/G%2012345'],
@@ -524,10 +635,9 @@ for (const width of [1440, 1920] as const) {
   }
 }
 
-// Through W_sbs and 1280 the side content is still taller than the map
-// (resolved mapHeight 644.70 / 685.64 / 655.44; side bottoms 1042.39 / 862.73 /
-// 862.73), so the map keeps its natural height.
-for (const width of [1200, 1280, RESULT_W_SBS] as const) {
+// At 1200 the map is still shorter than the side (resolved mapHeight 644.70;
+// side bottoms ~913.11 / 874.11 with 3 tag rows), so the map keeps its natural height.
+for (const width of [1200] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
     ['candidates', '/plate/G%2012345'],

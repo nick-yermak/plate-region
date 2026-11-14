@@ -6,9 +6,18 @@
 <ul class="main-codes">
   @for (row of codes(); track row.code) {
     <li>
-      <span class="main-codes-code">{{ row.code }}</span>
-      —
-      <span>{{ row.name.key | transloco: row.name.params }}</span>
+      <a
+        class="main-codes-tag"
+        [routerLink]="['/voivodeship', row.link.slug]"
+        [fragment]="row.link.fragment"
+        [attr.title]="row.name.key | transloco: row.name.params"
+      >
+        {{ row.code
+        }}<span class="visually-hidden">
+          —
+          {{ row.name.key | transloco: row.name.params }}</span
+        >
+      </a>
     </li>
   }
 </ul>

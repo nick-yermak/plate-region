@@ -1,3 +1,6 @@
+// D-51 plate colours — reference so this sheet does not emit plate-frame rules.
+@import (reference) '../../shared/plate/plate-frame/plate-frame.less';
+
 :host {
   display: block;
 }
@@ -21,16 +24,51 @@ span[nz-icon],
 }
 
 .main-codes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pr-padding-xs);
   margin: var(--pr-padding-xs) 0 0;
   padding: 0;
   list-style: none;
-  color: var(--pr-text);
 }
 
 .main-codes li {
   margin: 0;
 }
 
-.main-codes-code {
-  font-variant-numeric: tabular-nums;
+.main-codes-tag {
+  display: inline-block;
+  box-sizing: border-box;
+  width: max-content;
+  padding: 0.05em 0.2em 0.05em 0.25em;
+  border: 0.08em solid @plate-black;
+  border-left-width: 0.37em;
+  border-left-color: @plate-eu-blue;
+  border-radius: 0.1em;
+  background: @plate-white;
+  color: @plate-black;
+  font-family: 'DINish Condensed', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.1;
+  text-decoration: none;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.main-codes-tag:focus-visible {
+  outline: 2px solid var(--pr-focus-ring);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

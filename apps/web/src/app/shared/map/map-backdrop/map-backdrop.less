@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  pointer-events: none;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: var(--pr-map-backdrop-opacity);
+}
+
+.region,
+.county-borders,
+.borders {
+  vector-effect: non-scaling-stroke;
+}
+
+.region {
+  fill: var(--pr-map-backdrop-region);
+  stroke: none;
+}
+
+.county-borders {
+  fill: none;
+  stroke: var(--pr-map-backdrop-county-line);
+  stroke-width: 1px;
+}
+
+.borders {
+  fill: none;
+  stroke: var(--pr-map-backdrop-line);
+  stroke-width: 2px;
+}

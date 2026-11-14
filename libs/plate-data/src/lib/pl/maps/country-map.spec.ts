@@ -1,5 +1,6 @@
 import { registry } from '../registry';
 import type { Region2 } from '../model';
+import { PATH_GRAMMAR } from './path-grammar';
 import type { CountryMapModule } from './model';
 import { countryMapModule } from './country-map-data';
 import { decodeCountryMap, loadCountryMap } from './country-map';
@@ -30,8 +31,6 @@ const PRIMARY_LETTERS = [
   'P',
   'Z',
 ] as const;
-
-const PATH_GRAMMAR = /^[Mlz\d -]+$/;
 
 function moduleWith(
   capitals: CountryMapModule['capitals'],

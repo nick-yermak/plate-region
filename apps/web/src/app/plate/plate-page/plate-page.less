@@ -72,6 +72,23 @@ h1 {
   }
 }
 
+.voivodeship-card-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.voivodeship-card-wrap > app-map-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.voivodeship-card-wrap > app-voivodeship-card {
+  position: relative;
+  z-index: 1;
+}
+
 // Container on the card host so @container can style .car-card-body (a descendant).
 .car-card {
   container-type: inline-size;

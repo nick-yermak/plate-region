@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NzIconDirective, provideNzIconsPatch } from 'ng-zorro-antd/icon';
@@ -8,7 +9,7 @@ import type { VoivodeshipCardCode } from '../voivodeship-card-view';
 
 @Component({
   selector: 'app-voivodeship-card',
-  imports: [NzIconDirective, TranslocoPipe],
+  imports: [NzIconDirective, RouterLink, TranslocoPipe],
   providers: [provideNzIconsPatch([InfoCircleOutline])],
   templateUrl: './voivodeship-card.html',
   styleUrl: './voivodeship-card.less',
