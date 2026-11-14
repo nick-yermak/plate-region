@@ -4,8 +4,9 @@
   margin-inline: auto;
 }
 
+// Spacing to the next card comes from .result-grid gap (D-54 Update #173).
 h1 {
-  margin-block: 0 var(--pr-padding-md);
+  margin: 0;
 }
 
 .result-grid {
@@ -28,14 +29,37 @@ h1 {
     max-width: none;
   }
 
-  .result-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    // Row height follows the taller column; the map stays natural (D-54 Update #169).
+  // Map leads; mirrored 6:5 keeps the ~543 px map at 1200 (D-54 Update #173).
+  .result-grid.has-map {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'heading side'
+      'map side';
     align-items: stretch;
   }
 
-  .map-card {
+  .result-grid.has-map > h1 {
+    grid-area: heading;
+  }
+
+  .result-grid.has-map .result-main {
+    grid-area: side;
+  }
+
+  .result-grid.has-map .map-card {
+    grid-area: map;
     align-self: start;
+  }
+
+  // Same 5fr column width as the mapped layout's car column (ha ≈ gmb width).
+  .result-grid:not(.has-map) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+
+  .result-grid:not(.has-map) > h1,
+  .result-grid:not(.has-map) .result-main {
+    grid-column: 1;
   }
 
   .voivodeship-card-wrap {
@@ -54,6 +78,14 @@ h1 {
   gap: var(--pr-padding-md);
 }
 
+// Cap the car at the side-by-side column width; centre it when the reading stacks.
+@media (width >= 768px) {
+  .car-card-body > app-car-illustration {
+    max-width: 19rem;
+    margin-inline: auto;
+  }
+}
+
 // At 1440 px the card is 554 px inside ((1340 − 16) × 5/11 − 48); at 1280 px 481 px.
 // Fixed 19rem car column: minmax(0, 19rem) only grows when content asks for it.
 @container (width >= 33rem) {
@@ -61,6 +93,10 @@ h1 {
     display: grid;
     grid-template-columns: 19rem minmax(0, 1fr);
     align-items: start;
+  }
+
+  .car-card-body > app-car-illustration {
+    margin-inline: 0;
   }
 
   .car-card-content {

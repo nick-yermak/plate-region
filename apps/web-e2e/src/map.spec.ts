@@ -224,10 +224,10 @@ test('map-country-desktop', { tag: '@desktop' }, async ({ page }) => {
   const car = page.locator('app-car-illustration');
   const countryBox = await boxOf(country);
   const carBox = await boxOf(car);
-  // Two-column result grid from 1200 px: map card on the right, width min(100%, 650).
+  // Two-column result grid from 1200 px: map card on the left (D-54 Update #173), width min(100%, 650).
   expect(Math.abs(countryBox.width - 584.921875)).toBeLessThanOrEqual(0.5);
   expect(Math.abs(countryBox.height - 548.65625)).toBeLessThanOrEqual(0.5);
-  expect(countryBox.x).toBeGreaterThan(carBox.x + carBox.width - 1);
+  expect(carBox.x).toBeGreaterThan(countryBox.x + countryBox.width - 1);
   const map = country.locator('app-county-map');
   await expect(map.locator('path.area-tinted')).toHaveCount(30);
   await expect(map.locator('path.area-filled')).toHaveCount(1);
