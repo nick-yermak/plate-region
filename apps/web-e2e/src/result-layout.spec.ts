@@ -340,7 +340,12 @@ test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
       const tag = el.querySelector('a.main-codes-tag') ?? el.querySelector('a');
       const backdrop = el.querySelector('app-map-backdrop');
       const layers: string[] = [];
+      let backdropOpacity = 1;
       if (backdrop !== null) {
+        const svg = backdrop.querySelector('svg');
+        if (svg !== null) {
+          backdropOpacity = Number(getComputedStyle(svg).opacity);
+        }
         for (const path of backdrop.querySelectorAll('path')) {
           const pathStyle = getComputedStyle(path);
           for (const value of [pathStyle.fill, pathStyle.stroke]) {
@@ -359,6 +364,7 @@ test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
         background: style.backgroundColor,
         page: getComputedStyle(document.body).backgroundColor,
         layers,
+        backdropOpacity,
       };
     });
     const surface = parseCssColor(measured.page);
@@ -367,12 +373,18 @@ test('result-card-contrast', { tag: '@desktop' }, async ({ page }) => {
     const tagText = parseCssColor(measured.tagColor);
     expect(tint.a).toBeLessThan(1);
     expect(measured.layers.length).toBeGreaterThan(0);
+    expect(measured.backdropOpacity).toBeGreaterThan(0);
+    expect(measured.backdropOpacity).toBeLessThan(1);
     const cardSurface = composeOver(tint, surface);
     let darkest = cardSurface;
     let darkestLuma = Infinity;
     for (const layer of measured.layers) {
       const sample = parseCssColor(layer);
-      const over = composeOver(sample, cardSurface);
+      const faded = {
+        ...sample,
+        a: sample.a * measured.backdropOpacity,
+      };
+      const over = composeOver(faded, cardSurface);
       const luma = 0.2126 * over.r + 0.7152 * over.g + 0.0722 * over.b;
       if (luma < darkestLuma) {
         darkestLuma = luma;

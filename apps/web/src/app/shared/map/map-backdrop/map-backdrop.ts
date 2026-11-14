@@ -12,7 +12,8 @@ import type { PathViewBox } from '../path-view-box';
   },
 })
 export class MapBackdrop {
-  readonly borders = input.required<string>();
   readonly regionPath = input.required<string>();
+  readonly countyBorders = input.required<string>();
+  readonly borders = input.required<string>();
   readonly viewBox = input.required<PathViewBox>();
 }

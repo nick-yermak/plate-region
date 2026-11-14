@@ -353,9 +353,10 @@ describe('PlatePage', () => {
     ) as HTMLElement;
     expect(backdrop.getAttribute('aria-hidden')).toBe('true');
     const backdropPaths = backdrop.querySelectorAll('svg path');
-    expect(backdropPaths).toHaveLength(2);
+    expect(backdropPaths).toHaveLength(3);
     expect(backdropPaths[0]?.getAttribute('d')?.length).toBeGreaterThan(0);
     expect(backdropPaths[1]?.getAttribute('d')?.length).toBeGreaterThan(0);
+    expect(backdropPaths[2]?.getAttribute('d')?.length).toBeGreaterThan(0);
     expect(
       [...root.querySelectorAll('h2')].some(
         (node) => node.textContent?.trim() === 'Poland – voivodeships',

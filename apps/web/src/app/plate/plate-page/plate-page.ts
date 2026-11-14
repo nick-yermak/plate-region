@@ -137,12 +137,13 @@ export class PlatePage {
     const view = this.countryView();
     const path = view?.voivodeshipButton?.path;
     const borders = view?.borders;
-    if (path === undefined || borders === undefined) {
+    if (path === undefined || borders === undefined || view === undefined) {
       return undefined;
     }
     return {
-      borders,
       regionPath: path,
+      countyBorders: view.areas.map((area) => area.path).join(''),
+      borders,
       viewBox: pathViewBox(path),
     };
   });

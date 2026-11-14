@@ -29,9 +29,11 @@
   --pr-map-tint: @blue-2;
   --pr-map-label-on-fill: @component-background;
   --pr-map-neighbour: @border-color-base;
-  // Faint card backdrop under voivodeship main-code tags (D-54 Update #176).
-  --pr-map-backdrop-borders: fade(@pr-map-line, 40%);
-  --pr-map-backdrop-region: fade(@blue-7, 14%);
+  // Card map backdrop under voivodeship tags: opaque paints, faint via svg opacity (D-54 Update #176).
+  --pr-map-backdrop-region: @blue-2;
+  --pr-map-backdrop-county-line: @border-color-base;
+  --pr-map-backdrop-line: @pr-map-line;
+  --pr-map-backdrop-opacity: 0.2;
   --pr-border-radius: @border-radius-base;
   --pr-shadow: @box-shadow-base;
 }
