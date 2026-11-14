@@ -150,7 +150,7 @@ for (const width of [
     const list = await boxOf(
       carCard.locator('app-result-reading, app-candidates-list').first(),
     );
-    expect(car.width).toBeLessThanOrEqual(304);
+    expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
     if (width < RESULT_W_SBS) {
       expect(list.y).toBeGreaterThan(car.y + car.height - 1);
       const cardBox = await boxOf(carCard);
@@ -190,7 +190,7 @@ test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   const list = await boxOf(
     carCard.locator('app-result-reading, app-candidates-list').first(),
   );
-  expect(car.width).toBeLessThanOrEqual(304);
+  expect(Math.abs(car.width - 304)).toBeLessThanOrEqual(0.5);
   expect(car.x + car.width).toBeLessThan(list.x + 1);
 });
 
@@ -484,3 +484,29 @@ for (const width of [1200, 1280] as const) {
     );
   }
 }
+
+// Two readings stay taller than the map at every width (no level assertion).
+for (const width of [1200, 1280, RESULT_W_SBS, 1440] as const) {
+  test(
+    `result-side-taller-two-readings-${width}`,
+    { tag: '@desktop' },
+    async ({ page }) => {
+      const g = await columnGeometry(page, '/plate/WOO1A', width);
+      expect(g.sideBottom).toBeGreaterThan(g.mapBottom + 1);
+      expect(
+        Math.abs(g.mapBottom - (g.mapContentBottom + g.mapPaddingBottom)),
+      ).toBeLessThanOrEqual(1);
+    },
+  );
+}
+
+test('result-map-label-tier-1200', { tag: '@desktop' }, async ({ page }) => {
+  // placeSeatLabels lays out country labels for 541 px from 768 px (D-64 Update #161);
+  // mirrored 6:5 keeps the box on that tier (measured 541.27 at 1200).
+  await page.setViewportSize({ width: 1200, height: 900 });
+  await page.goto('/plate/GMB%202397T');
+  const mapBox = page.locator('.country-map-box');
+  await expect(mapBox).toBeVisible();
+  const box = await boxOf(mapBox);
+  expect(box.width).toBeGreaterThanOrEqual(541);
+});
