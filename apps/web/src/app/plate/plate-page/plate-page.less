@@ -83,18 +83,19 @@ h1 {
   gap: var(--pr-padding-md);
 }
 
-// Cap the car at 250 px on the result page; centre it when the reading stacks.
+// Cap the car at 220 px on the result page; centre it when the reading stacks.
 .car-card-body > app-car-illustration {
   width: 100%;
-  max-width: 250px;
+  max-width: 220px;
   margin-inline: auto;
 }
 
-// 250 px car + 1rem gap + 13rem reading at a 16 px root.
-@container (width >= 29.625rem) {
+// 220 px car + 24 px gap + 13rem reading at a 16 px root.
+@container (width >= 28.25rem) {
   .car-card-body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 250px;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: var(--pr-padding-lg);
     align-items: start;
   }
 

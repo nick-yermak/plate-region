@@ -97,7 +97,7 @@ async function expectVerticalCardOrder(page: Page): Promise<{
   const list = await boxOf(
     carCard.locator('app-result-reading, app-candidates-list').first(),
   );
-  expect(car.width).toBeLessThanOrEqual(250);
+  expect(car.width).toBeLessThanOrEqual(220);
   return { carCard, car, list };
 }
 
@@ -158,7 +158,7 @@ for (const width of [1200, 1280, 1440, 1920] as const) {
       const ratio = carBox.width / mapBox.width;
       expect(Math.abs(ratio - 5 / 6)).toBeLessThanOrEqual(0.02);
       const car = await boxOf(carCard.locator('app-car-illustration'));
-      expect(Math.abs(car.width - 250)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(car.width - 220)).toBeLessThanOrEqual(0.5);
     },
   );
 }
@@ -166,9 +166,9 @@ for (const width of [1200, 1280, 1440, 1920] as const) {
 /**
  * Narrowest window where /plate/GMB%202397T shows the reading beside the car
  * (Playwright Chromium e2e viewport, 900 px tall; D-54 Update #175).
- * Measured 1269 (1268 stacked).
+ * Measured 1221 (1220 stacked; 1200 stays stacked).
  */
-const RESULT_W_SBS = 1269;
+const RESULT_W_SBS = 1221;
 
 for (const width of [
   1200,
@@ -188,7 +188,7 @@ for (const width of [
     const list = await boxOf(
       carCard.locator('app-result-reading, app-candidates-list').first(),
     );
-    expect(Math.abs(car.width - 250)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(car.width - 220)).toBeLessThanOrEqual(0.5);
     if (width < RESULT_W_SBS) {
       // Stacked: reading above car; car centred in the card.
       expect(car.y).toBeGreaterThan(list.y + list.height - 1);
@@ -205,7 +205,7 @@ for (const width of [
 
 test('result-layout-tablet', { tag: '@tablet' }, async ({ page }) => {
   await page.goto('/plate/GMB%202397T');
-  // Card ~640 px > 29.625rem: reading left of car.
+  // Card ~640 px > 28.25rem: reading left of car.
   const { carCard, car, list } = await expectVerticalCardOrder(page);
   expect(list.x + list.width).toBeLessThan(car.x + 1);
   const voiCard = page.locator('app-card').filter({
@@ -229,7 +229,7 @@ test('result-layout-mobile', { tag: '@mobile' }, async ({ page }) => {
     return documentElement.scrollWidth <= documentElement.clientWidth;
   });
   expect(noHorizontalScroll).toBe(true);
-  // Card narrower than 29.625rem: reading above car.
+  // Card narrower than 28.25rem: reading above car.
   const { car, list } = await expectVerticalCardOrder(page);
   expect(car.y).toBeGreaterThan(list.y + list.height - 1);
   const mapInner = await boxOf(page.locator('.country-map-box'));
@@ -302,7 +302,7 @@ test('result-actions', { tag: '@desktop' }, async ({ page }) => {
 test('result-layout-breakpoint', { tag: '@desktop' }, async ({ page }) => {
   await page.setViewportSize({ width: 1199, height: 800 });
   await page.goto('/plate/GMB%202397T');
-  // Single column; card ~640 px > 29.625rem: reading left of car.
+  // Single column; card ~640 px > 28.25rem: reading left of car.
   const { car, list } = await expectVerticalCardOrder(page);
   expect(list.x + list.width).toBeLessThan(car.x + 1);
 
@@ -525,7 +525,7 @@ for (const width of [1440, 1920] as const) {
 }
 
 // Through W_sbs and 1280 the side content is still taller than the map
-// (resolved mapHeight 644.70 / 685.64 / 680.00; side bottoms 1064.70 / 862.73 /
+// (resolved mapHeight 644.70 / 685.64 / 655.44; side bottoms 1042.39 / 862.73 /
 // 862.73), so the map keeps its natural height.
 for (const width of [1200, 1280, RESULT_W_SBS] as const) {
   for (const [name, path] of [
@@ -547,7 +547,7 @@ for (const width of [1200, 1280, RESULT_W_SBS] as const) {
 }
 
 // Two readings stay taller than the map at every width (no level assertion).
-// Measured side bottoms 1417.70 / 1325.73 / 1325.73 / 1215.73 / 1215.73.
+// Measured side bottoms 1395.39 / 1325.73 / 1325.73 / 1215.73 / 1215.73.
 for (const width of [1200, 1280, RESULT_W_SBS, 1440, 1920] as const) {
   test(
     `result-side-taller-two-readings-${width}`,
