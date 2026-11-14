@@ -612,9 +612,9 @@ async function columnGeometry(
   });
 }
 
-// Wrapping main-code tags are shorter than the old N = 10 lines, so columns
-// level from 1280 (and W_sbs) instead of ~1360 (D-54 Update #176). Measured
-// bottoms: 823.23 at 1280, 793.03 at W_sbs, 884.28 at 1440 and 1920.
+// Larger plate tags (1.15 rem) wrap Pomeranian to 3 rows below 1440, but
+// columns still level from 1280 (and W_sbs) instead of ~1360 (D-54 Update #176).
+// Measured bottoms: 823.23 at 1280, 793.03 at W_sbs, 884.28 at 1440 and 1920.
 for (const width of [1280, RESULT_W_SBS, 1440, 1920] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
@@ -635,8 +635,8 @@ for (const width of [1280, RESULT_W_SBS, 1440, 1920] as const) {
   }
 }
 
-// At 1200 the map is still shorter than the side (resolved mapHeight 644.70),
-// so the map keeps its natural height.
+// At 1200 the map is still shorter than the side (resolved mapHeight 644.70;
+// side bottoms ~913.11 / 874.11 with 3 tag rows), so the map keeps its natural height.
 for (const width of [1200] as const) {
   for (const [name, path] of [
     ['resolved', '/plate/GMB%202397T'],
