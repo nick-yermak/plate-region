@@ -45,6 +45,7 @@ libs/plate-data     Registry of voivodeship and powiat codes
 - Do nothing without an explicit request. Tasks normally come as a mentor brief (see "Working from a brief"). Without a brief, for anything larger than a small edit, propose a plan first and wait for approval.
 - Plan mode creates no files anywhere, including `/tmp`. A fact that needs a command is given as the command and marked unverified.
 - On the GitHub Projects board, only epics that have started have issues; later epics stay in `docs/backlog.md` (D-16). Do not create issues for them unless asked.
+- If the GitHub MCP server is unavailable, use the `gh` CLI for the same operation (issues, PRs, project items) and say so in the report.
 - File-scoped technical rules live in `.cursor/rules/` and load by file globs; review criteria live in `.cursor/BUGBOT.md`. Do not restate them here. Multi-step workflows live in `.cursor/skills/` (D-25).
 - In rule frontmatter, a `globs` value must not start with `*` (YAML alias token — the rule silently fails to load). Start with a literal path segment, e.g. `apps/**/*.spec.ts`, not `**/*.spec.ts`.
 - Never commit or push unless asked. Branch from an up-to-date `origin/main` (`git fetch origin && git switch --no-track -c <branch> origin/main`; without `--no-track` the branch tracks `origin/main`) and confirm `git --no-pager log --oneline origin/main..HEAD` is empty before any edit. Squash merge — the PR title is the commit message, so it must be a Conventional Commit (`feat:`, `fix:`, `docs:`, `chore:` …; optional Nx project scope). Never `--no-verify`.
